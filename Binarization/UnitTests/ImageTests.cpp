@@ -39,10 +39,23 @@ namespace Binarization::UnitTests
 			Assert::AreEqual(copy.width, image.width);
 			Assert::IsNotNull(copy.data);
 
-			// Set pixel value from coordinate.  Note: Expensive
-			image.Pixel(1, 1) = 0xf0f0f0;
+			// Create a scope to trigger the reference image destructor
+			{
+				// Create Image Reference
+				Image reference = Image::Reference(image.width, image.height, image.data);
+				Assert::AreEqual(reference.height, image.height);
+				Assert::AreEqual(reference.width, image.width);
+				Assert::AreEqual(reference.data, image.data);
+
+				// Set pixel value from coordinate.
+				image.Pixel(1, 1) = 0xf0f0f0;
+				Assert::AreEqual(image.Pixel(1, 1), (Pixel32)0xf0f0f0);
+				Assert::AreEqual(copy.Pixel(1, 1), (Pixel32)0xff00ff); // Copy should not change.
+				Assert::AreEqual(reference.Pixel(1, 1), image.Pixel(1, 1)); // Reference should change
+			}
+
+			// Reference should not free our image storage
 			Assert::AreEqual(image.Pixel(1, 1), (Pixel32)0xf0f0f0);
-			Assert::AreEqual(copy.Pixel(1, 1), (Pixel32)0xff00ff); // Copy should not change.
 		}
 	};
 }

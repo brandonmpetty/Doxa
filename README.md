@@ -19,7 +19,7 @@ In English, this means that it has the ability to turn a color or gray scale ima
 * PSNR
 
 **Native Image Support**
-* Portal Pixel Map: RGBA PAM
+* Portable Pixel Map: RGBA PAM
 
 ## Overview
 The goal of this library is to provide the building blocks one might use to advance the state of handwritten manuscript binarization.
@@ -45,6 +45,29 @@ Algorithms::Sauvola<Shafait>(imageSauvola, image, 26, 0.11);
 
 // Save the processed image
 PPM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
+```
+<br/>
+ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party frameworks like Qt.
+```cpp
+// Qt has great support for working with complex file formats
+// Prompt the user to select an image to open, using Qt
+QString imagePath = 
+	QFileDialog::getOpenFileName(
+		this,
+		tr("Open File"),
+		"",
+		tr("JPEG (*.jpg *.jpeg);;PNG (*.png)")); // Must be 32b RGBA
+
+// Load the image into a Qt QImage
+QImage qImage(imagePath);
+
+// Operations on the ΔBF Image will directly change the QImage when set as a reference.
+Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel32*)qImage.bits());
+Preprocessor::ToGreyScale(image);
+Algorithms::Niblack<Shafait>(image, image);  // Due to Shafait, there are no conflicts writing to the same image
+
+// Save the updated QImage to the file system, using Qt
+qImage.save("binary-image.png");
 ```
 
 ### Performance Analysis

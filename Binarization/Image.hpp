@@ -11,21 +11,30 @@ namespace Binarization
 {
 	struct Image
 	{
-		Image() : Image(0, 0)
-		{
-			//CTOR - For reading PAM data into the object.  This keeps the image header information on the stack.
-		}
+		Image() {}
 
-		Image(int width, int height, Pixel32* bits = nullptr, int depth = 4, int maxVal = 255, const std::string& tupleType = TupleTypes::RGBA)
-			: width(width), height(height), depth(depth), maxVal(maxVal), tupleType(tupleType), size(width*height)
+		Image(int width, int height, Pixel32* bits = nullptr)
+			: width(width), height(height), size(width*height)
 		{
 			data = new Pixel32[size];
 
 			if (bits != nullptr)  std::memcpy(data, bits, size * sizeof(Pixel32));
 		}
 
+		static Image Reference(int width, int height, Pixel32* bits)
+		{
+			Image referenceImage;
+			referenceImage.width = width;
+			referenceImage.height = height;
+			referenceImage.size = width * height;
+			referenceImage.data = bits;
+			referenceImage.managedExternally = true;
+
+			return referenceImage;
+		}
+
 		// Note: https://en.wikipedia.org/wiki/Copy_elision
-		~Image() { delete[] data; }
+		~Image() { if (!managedExternally) delete[] data; }
 
 		Image(const Image& image)
 			: width(image.width), height(image.height), depth(image.depth), maxVal(image.maxVal), tupleType(image.tupleType), size(image.size)
@@ -34,18 +43,21 @@ namespace Binarization
 			std::memcpy(data, image.data, size * sizeof(Pixel32));
 		}
 
+		// External Memory Management
+		bool managedExternally = false;
+
 		// PPM Values
-		int width;
-		int height;
-		int size;
-		int depth;
-		int maxVal;
-		std::string tupleType;
+		int width = 0;
+		int height = 0;
+		int size = 0;
+		int depth = 4;
+		int maxVal = 255;
+		std::string tupleType = TupleTypes::RGBA;
 
 		// Compilers are forced to optimize array access, not std::vector access.
 		// This may be slightly faster for data access than vector.
 		// std:vector [] operator implementation: return (*(this->_Myfirst + _Pos));
-		Pixel32* data;
+		Pixel32* data = nullptr;
 
 		inline Pixel32& Pixel(int x, int y) { return data[(y * width) + x]; }
 		inline Pixel32  Pixel(int x, int y) const { return data[(y * width) + x]; }
