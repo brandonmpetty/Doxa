@@ -48,6 +48,7 @@ PPM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 ```
 <br/>
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party frameworks like Qt.
+
 ```cpp
 // Qt has great support for working with complex file formats
 // Prompt the user to select an image to open, using Qt
