@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.hpp" />
+    <ClInclude Include="DRDMPerformance.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="MetricUtils.hpp" />

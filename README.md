@@ -16,7 +16,8 @@ In English, this means that it has the ability to turn a color or gray scale ima
 **Performance Metrics**
 * Overall Accuracy
 * F-Measure
-* PSNR
+* Peak Signal-To-Noise Ratio (PSNR)
+* Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
 * Portable Pixel Map: RGBA PAM
@@ -87,7 +88,7 @@ A Photoshop PSD file is attached that can be used to make corrections to the Gro
 
 ### Goals
 * Refactor to incorporate tiling in order to reduce memory utilization
-* Provide the Distance Reciprocal Distortion  (DRD) metric
+* ~~Provide the Distance Reciprocal Distortion  (DRD) metric~~
 * Improve and expand the PPM image format support
 * Internally process 8 bit images to reduce memory consumption
 

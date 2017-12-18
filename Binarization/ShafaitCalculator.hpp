@@ -60,8 +60,8 @@ namespace Binarization
 
 				if (window.upperLeft.y)
 				{
-					int xmax_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + window.bottomRight.x;
-					int xmin_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + (window.upperLeft.x - 1);
+					const int xmax_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + window.bottomRight.x;
+					const int xmin_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + (window.upperLeft.x - 1);
 
 					diff = (integral_image[xmax_ymax] + integral_image[xmin_ymin]) - (integral_image[xmax_ymin] + integral_image[xmin_ymax]);
 					sqdiff = (integral_sqimg[xmax_ymax] + integral_sqimg[xmin_ymin]) - (integral_sqimg[xmax_ymin] + integral_sqimg[xmin_ymax]);

@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmsTests.cpp" />
+    <ClCompile Include="DRDMPerformanceTests.cpp" />
     <ClCompile Include="Kumite.cpp" />
     <ClCompile Include="ImageTests.cpp" />
     <ClCompile Include="LocalWindowTests.cpp" />

@@ -52,6 +52,11 @@ namespace Binarization::UnitTests
 				Assert::AreEqual(image.Pixel(1, 1), (Pixel32)0xf0f0f0);
 				Assert::AreEqual(copy.Pixel(1, 1), (Pixel32)0xff00ff); // Copy should not change.
 				Assert::AreEqual(reference.Pixel(1, 1), image.Pixel(1, 1)); // Reference should change
+
+				// Copy a memory managed Image but no longer manage the memory
+				Image deepReference = Image(reference, true);
+				deepReference.Pixel(1, 1) = 0xffffff;
+				Assert::AreEqual(reference.Pixel(1, 1), (Pixel32)0xf0f0f0); // Reference should not change
 			}
 
 			// Reference should not free our image storage

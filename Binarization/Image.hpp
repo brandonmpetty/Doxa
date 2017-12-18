@@ -36,11 +36,25 @@ namespace Binarization
 		// Note: https://en.wikipedia.org/wiki/Copy_elision
 		~Image() { if (!managedExternally) delete[] data; }
 
-		Image(const Image& image)
-			: width(image.width), height(image.height), depth(image.depth), maxVal(image.maxVal), tupleType(image.tupleType), size(image.size)
+		Image(const Image& image, bool forceDeepCopy = false)
+			: width(image.width), 
+			height(image.height), 
+			depth(image.depth), 
+			maxVal(image.maxVal), 
+			tupleType(image.tupleType), 
+			size(image.size), 
+			managedExternally(image.managedExternally)
 		{
-			data = new Pixel32[size];
-			std::memcpy(data, image.data, size * sizeof(Pixel32));
+			if (managedExternally && !forceDeepCopy) // Shallow Copy
+			{
+				data = image.data;
+			}
+			else // Deep Copy
+			{
+				data = new Pixel32[size];
+				std::memcpy(data, image.data, size * sizeof(Pixel32));
+				managedExternally = false;
+			}
 		}
 
 		// External Memory Management
