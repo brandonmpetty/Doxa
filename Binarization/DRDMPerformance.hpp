@@ -1,7 +1,7 @@
 ﻿/// Δoxa Binarization Framework
 /// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
-#ifndef PERFORMANCE_HPP
-#define PERFORMANCE_HPP
+#ifndef DRDMPERFORMANCE_HPP
+#define DRDMPERFORMANCE_HPP
 
 #include <algorithm>
 #include <list>
@@ -22,7 +22,7 @@ namespace Binarization
 			PixelDifferences(s, controlImage, expirementImage);
 
 			// DRDk - For every difference, get its DRDk value and sum them all
-			int sumDRDk = 0;
+			uint64_t sumDRDk = 0;
 			for (Region::Point point : s)
 			{
 				sumDRDk += DRDk(point, controlImage, expirementImage.Pixel(point.x, point.y));
@@ -145,4 +145,4 @@ namespace Binarization
 }
 
 
-#endif //PERFORMANCE_HPP
+#endif //DRDMPERFORMANCE_HPP
