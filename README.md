@@ -72,7 +72,7 @@ Algorithms::Niblack<Shafait>(image, image);  // Due to Shafait, there are no con
 qImage.save("binary-image.png");
 ```
 
-Other examples can be found in the Demo folder, like the [PerformanceMetrics](https://github.com/brandonmpetty/Doxa/Demo/PerformanceMetrics) tool.
+Other examples can be found in the Demo folder, like the [PerformanceMetrics](https://github.com/brandonmpetty/Doxa/tree/master/Demo/PerformanceMetrics) tool.
 
 ### Performance Analysis
 
