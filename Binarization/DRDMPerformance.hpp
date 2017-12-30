@@ -34,7 +34,7 @@ namespace Binarization
 
 	protected:
 
-		static int DRDk(const Region::Point& point, const Image& controlImage, const Pixel32& g)
+		static unsigned int DRDk(const Region::Point& point, const Image& controlImage, const Pixel32& g)
 		{
 			const int N = 5; // Hard coded for now.
 			const int NPadding = N / 2; // Ammount of padding around the pixel based on an NxN matrix with that pixel in the center.
@@ -44,7 +44,7 @@ namespace Binarization
 			// These values are more granular than the example matrix given in the research paper.
 			// If you use those values, you will hit rounding problems with their sample data because they are actually using more 
 			// precise Normalized Matrix values when calculating DRD than what is provided in that example.
-			const int Wm[N][N] = {
+			const unsigned int Wm[N][N] = {
 				{ 25582, 32359, 36179, 32359, 25582 },
 				{ 32359, 51164, 72357, 51164, 32359 },
 				{ 36179, 72357,     0, 72357, 36179 },
@@ -52,15 +52,10 @@ namespace Binarization
 				{ 25582, 32359, 36179, 32359, 25582 }
 			};
 
-			long sumDRDkBlock = 0;
+			unsigned int sumDRDkBlock = 0;
 
-			// Create a window around a point
-			Region window(
-				point.x - NPadding,
-				point.y - NPadding,
-				point.x + NPadding,
-				point.y + NPadding
-			);
+			// Create a point in the upper left of our window.  We will traverse it differently below.
+			Region::Point upperLeftPoint(point.x - NPadding, point.y - NPadding);
 
 			// Move from the upper left to the bottom right of our window, pixel by pixel
 			for (int x = 0; x < N; ++x)
@@ -72,7 +67,7 @@ namespace Binarization
 					// This is really just a fancy mathematical trick to say this: 
 					//     For all of the cells in your control block (B) that do not match the different pixel (g), 
 					//     take the values at those cooridates in the Weighted Matrix (Wm) and sum them up.  You're welcome.
-					const int Dk = (controlImage.Pixel(window.upperLeft.x + x, window.upperLeft.y + y, g) - g) == 0 ? 0 : 1;
+					const unsigned int Dk = (controlImage.Pixel(upperLeftPoint.x + x, upperLeftPoint.y + y, g) - g) == 0 ? 0 : 1;
 					sumDRDkBlock +=  Dk * Wm[x][y];
 				}
 			}
@@ -96,9 +91,9 @@ namespace Binarization
 		}
 
 		// The number of blocks in the image that are not uniform.  This means blocks that have both white and black pixels.
-		static int NUBN(const Image& controlImage, const int M = 8)
+		static unsigned int NUBN(const Image& controlImage, const int M = 8)
 		{
-			int nubn = 0;
+			unsigned int nubn = 0;
 
 			const int columns = ceil(controlImage.width / M);
 			const int rows = ceil(controlImage.height / M);
@@ -116,7 +111,7 @@ namespace Binarization
 		}
 
 		// Determines if a block is uniform (0) or not (1).
-		static int NonUniformBlock(const Image& controlImage, const int column, const int row, const int M = 8)
+		static unsigned int NonUniformBlock(const Image& controlImage, const int column, const int row, const int M = 8)
 		{
 			// Process all of the pixels in said block
 			const int startX = column * M;
@@ -125,7 +120,7 @@ namespace Binarization
 			const int stopX = startX + M;
 			const int stopY = startY + M;
 
-			Pixel32 pixel = controlImage.Pixel(startX, startY);
+			const Pixel32 pixel = controlImage.Pixel(startX, startY);
 
 			for (int x = startX; x < stopX; ++x)
 			{
