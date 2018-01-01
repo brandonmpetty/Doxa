@@ -71,7 +71,7 @@ namespace Binarization::UnitTests
 
 			double mean = 0.0;
 			double stddev = 0.0;
-			double sqrstddev = 0.0;
+			double variance = 0.0;
 			double diff = 0.0;
 			double sqdiff = 0.0;
 
@@ -80,9 +80,9 @@ namespace Binarization::UnitTests
 			Assert::AreEqual(mean, 29.44, 0.01);
 			Assert::AreEqual(stddev, 22.90, 0.01);
 
-			shafait.CalculateMeanSqrStdDev(mean, sqrstddev, window);
+			shafait.CalculateMeanVariance(mean, variance, window);
 			Assert::AreEqual(mean, 29.44, 0.01);
-			Assert::AreEqual(sqrstddev, 524.77, 0.01);
+			Assert::AreEqual(variance, 524.77, 0.01);
 
 			shafait.CalculateDiffs(diff, sqdiff, window);
 			Assert::AreEqual(diff, 265.00, 0.01);

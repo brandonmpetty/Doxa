@@ -74,12 +74,12 @@ namespace Binarization
 			Calculator calculator(grayScaleImageIn);
 			calculator.Initialize();
 
-			double mean, sqrstddev;
+			double mean, variance;
 
 			LocalWindow::Process(binaryImageOut, grayScaleImageIn, windowSize, [&](const Region& window) {
-				calculator.CalculateMeanSqrStdDev(mean, sqrstddev, window);
+				calculator.CalculateMeanVariance(mean, variance, window);
 
-				return mean + (k * sqrt(sqrstddev + (mean*mean)));
+				return mean + (k * sqrt(variance + (mean*mean)));
 			});
 		}
 	};

@@ -12,6 +12,7 @@ namespace Binarization
 	class Preprocessor
 	{
 	public:
+
 		// Grey Scale Convertion
 		// Note: The image is 32b color but will become 8b gray scale.  The actually image depth will not be updated.
 		//		You will have to convert it to Palette::Black or White which will convert it back to 32b values.

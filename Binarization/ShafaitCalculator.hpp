@@ -28,26 +28,21 @@ namespace Binarization
 
 		inline void CalculateMeanStdDev(double& mean, double& stddev, const Region& window) const
 		{
-			// Note: This data type has a large impact on performance.
-			double diff, sqdiff;
-			CalculateDiffs(diff, sqdiff, window);
+			CalculateMeanVariance(mean, stddev, window);
 
-			// Get the Mean and StdDev using our Shafait inspired algorithm
-			const int area = window.Area();
-			mean = diff / area;
-			stddev = sqrt((sqdiff - diff*diff / area) / (area - 1));
+			stddev = sqrt(stddev);
 		}
 
-		inline void CalculateMeanSqrStdDev(double& mean, double& sqrstddev, const Region& window) const
+		inline void CalculateMeanVariance(double& mean, double& variance, const Region& window) const
 		{
 			// Note: This data type has a large impact on performance.
 			double diff, sqdiff;
 			CalculateDiffs(diff, sqdiff, window);
 
-			// Get the Mean and Squared StdDev using our Shafait inspired algorithm
+			// Get the Mean and Variance using our Shafait inspired algorithm
 			const int area = window.Area();
 			mean = diff / area;
-			sqrstddev = (sqdiff - diff*diff / area) / (area - 1);
+			variance = (sqdiff - diff*diff / area) / (area - 1);
 		}
 
 		inline void CalculateDiffs(double& diff, double& sqdiff, const Region& window) const

@@ -91,6 +91,9 @@
     <ClInclude Include="ShafaitCalculator.hpp" />
     <ClInclude Include="Types.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GatosWorkflow.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

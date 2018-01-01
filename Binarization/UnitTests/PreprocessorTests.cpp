@@ -10,7 +10,7 @@ namespace Binarization::UnitTests
 	{
 	public:
 
-		TEST_METHOD(PreprocessorTest)
+		TEST_METHOD(ToGreyScaleTest)
 		{
 			Image image(3, 2);
 

@@ -4,7 +4,6 @@
 #define DRDMPERFORMANCE_HPP
 
 #include <algorithm>
-#include <list>
 #include "Image.hpp"
 #include "Palette.hpp"
 #include "Region.hpp"
@@ -17,16 +16,7 @@ namespace Binarization
 	public:
 		static double CalculateDRDM(const Image& controlImage, const Image& expirementImage)
 		{
-			// S - Get a list of all points that differ between the two images
-			std::list<Region::Point> s;
-			PixelDifferences(s, controlImage, expirementImage);
-
-			// DRDk - For every difference, get its DRDk value and sum them all
-			uint64_t sumDRDk = 0;
-			for (Region::Point point : s)
-			{
-				sumDRDk += DRDk(point, controlImage, expirementImage.Pixel(point.x, point.y));
-			}
+			const uint64_t sumDRDk = SumDRDkForMismatchedPixels(controlImage, expirementImage);
 
 			// To avoid rounding issues we are using ints instead of doubles, which we accomplished by using a 1000000 multiplier.
 			return sumDRDk / (double)(NUBN(controlImage) * 1000000);
@@ -75,19 +65,25 @@ namespace Binarization
 			return sumDRDkBlock;
 		}
 
-		// Returns a list of points that differ between the two images
-		static void PixelDifferences(std::list<Region::Point>& points, const Image& controlImage, const Image& expirementImage)
+		static uint64_t SumDRDkForMismatchedPixels(const Image& controlImage, const Image& expirementImage)
 		{
+			uint64_t sumDRDk = 0;
+
+			// S - Get a list of all points that differ between the two images
 			for (int x = 0; x < controlImage.width; ++x)
 			{
 				for (int y = 0; y < controlImage.height; ++y)
 				{
 					if (controlImage.Pixel(x, y) != expirementImage.Pixel(x, y))
 					{
-						points.push_back(Region::Point(x, y));
+						// DRDk - For every difference, get its DRDk value and sum them all
+						const Region::Point point(x, y);
+						sumDRDk += DRDk(point, controlImage, expirementImage.Pixel(x, y));
 					}
 				}
 			}
+
+			return sumDRDk;
 		}
 
 		// The number of blocks in the image that are not uniform.  This means blocks that have both white and black pixels.
