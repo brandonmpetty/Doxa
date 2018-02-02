@@ -13,12 +13,26 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Binarization::UnitTests
 {
-	// This code is still experimental
+	/// <summary>
+	/// WARNING!  The Gatos Workflow is highly experimental.
+	/// None of these tests will run by default.  They are mostly, if not all, stubbed and make no real assertions.
+	/// </summary>
 	TEST_CLASS(GatosWorkflowTests)
 	{
 		static std::string projFolder;
 
 	public:
+
+		// Exposes protected methods for Unit Testing
+		class GatosWorkflowTestharness : public GatosWorkflow
+		{
+		public:			
+			using GatosWorkflow::WienerFilter;
+			using GatosWorkflow::ExtractBackground;
+			using GatosWorkflow::AverageBgTextValue;
+			using GatosWorkflow::AverageFgBgDistance;
+			using GatosWorkflow::Threshold;
+		};
 
 		TEST_CLASS_INITIALIZE(Initialize)
 		{
@@ -33,7 +47,6 @@ namespace Binarization::UnitTests
 		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowTest)
 			TEST_IGNORE()
 		END_TEST_METHOD_ATTRIBUTE()
-
 		TEST_METHOD(GatosWorkflowTest)
 		{
 			// Load Color Image
@@ -53,6 +66,82 @@ namespace Binarization::UnitTests
 
 			// TODO: Update this test to assert correctness
 			Assert::IsNotNull(binaryImage.data);
+
+			// Analyze the results outside of the test
+			//PPM::Write(binaryImage, projFolder + "2JohnCV13-Gatos.pam");
+		}
+
+		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowWienerFilterTest)
+			TEST_IGNORE()
+		END_TEST_METHOD_ATTRIBUTE()
+		TEST_METHOD(GatosWorkflowWienerFilterTest)
+		{
+			Image inputImage;
+			Image outputImage;
+
+			GatosWorkflowTestharness gatos;
+			gatos.WienerFilter<Shafait>(outputImage, inputImage);
+
+			Assert::IsNotNull(outputImage.data);
+		}
+
+		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowExtractBackgroundTest)
+			TEST_IGNORE()
+		END_TEST_METHOD_ATTRIBUTE()
+		TEST_METHOD(GatosWorkflowExtractBackgroundTest)
+		{
+			Image backgroundImage;
+			Image filteredImage;
+			Image binaryImage;
+
+			GatosWorkflowTestharness gatos;
+			gatos.ExtractBackground(backgroundImage, filteredImage, binaryImage);
+
+			Assert::IsNotNull(backgroundImage.data);
+		}
+
+		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowAverageBgTextValueTest)
+			TEST_IGNORE()
+		END_TEST_METHOD_ATTRIBUTE()
+		TEST_METHOD(GatosWorkflowAverageBgTextValueTest)
+		{
+			Image backgroundImage;
+			Image binaryImage;
+
+			GatosWorkflowTestharness gatos;
+			double value = gatos.AverageBgTextValue(backgroundImage, binaryImage);
+
+			Assert::AreEqual(0.0, value);
+		}
+
+		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowAverageFgBgDistanceTest)
+			TEST_IGNORE()
+		END_TEST_METHOD_ATTRIBUTE()
+		TEST_METHOD(GatosWorkflowAverageFgBgDistanceTest)
+		{
+			Image backgroundImage;
+			Image filteredImage;
+			Image binaryImage;
+
+			GatosWorkflowTestharness gatos;
+			double value = gatos.AverageFgBgDistance(backgroundImage, filteredImage, binaryImage);
+
+			Assert::AreEqual(0.0, value);
+		}
+
+		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowThresholdTest)
+			TEST_IGNORE()
+		END_TEST_METHOD_ATTRIBUTE()
+		TEST_METHOD(GatosWorkflowThresholdTest)
+		{
+			int backgroundValue = 0;
+			double d = 0;
+			double b = 0;
+
+			GatosWorkflowTestharness gatos;
+			double value = gatos.Threshold(backgroundValue, d, b);
+
+			Assert::AreEqual(0.0, value);
 		}
 	};
 

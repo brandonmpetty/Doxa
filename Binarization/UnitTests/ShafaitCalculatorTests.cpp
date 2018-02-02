@@ -12,15 +12,12 @@ namespace Binarization::UnitTests
 
 		// Exposes protected methods for Unit Testing
 		template<typename Calculator>
-		class ShafaitExposer : public Calculator
+		class ShafaitTestharness : public Calculator
 		{
 		public:
-			ShafaitExposer(Image& image) : Calculator(image) {}
-
-			void Initialize() { Calculator::Initialize(); }
-
-			Shafait::IntegralImage GetIntegralImage() { return Calculator::integral_image; }
-			Shafait::IntegralImage GetIntegralSquareImage() { return Calculator::integral_sqimg; }
+			ShafaitTestharness(Image& image) : Calculator(image) {}
+			using Calculator::integral_image;
+			using Calculator::integral_sqimg;
 		};
 
 
@@ -34,7 +31,7 @@ namespace Binarization::UnitTests
 			};
 			Image image(3, 3, bits);
 
-			ShafaitExposer<Shafait> shafait(image);
+			ShafaitTestharness<Shafait> shafait(image);
 
 			Shafait::IntegralImage integralImage = {
 				18,  66, 144,
@@ -52,8 +49,8 @@ namespace Binarization::UnitTests
 			shafait.Initialize();
 
 			// Assert
-			Assert::IsTrue(shafait.GetIntegralImage() == integralImage);
-			Assert::IsTrue(shafait.GetIntegralSquareImage() == integralSquareImage);
+			Assert::IsTrue(shafait.integral_image == integralImage);
+			Assert::IsTrue(shafait.integral_sqimg == integralSquareImage);
 		}
 
 		TEST_METHOD(ShafaitCalculatorCalculate)
@@ -99,16 +96,16 @@ namespace Binarization::UnitTests
 			};
 			Image image(3, 3, bits);
 
-			ShafaitExposer<Shafait> shafait(image);
-			ShafaitExposer<Shafait_LowMem> shafaitLowMem(image);
+			ShafaitTestharness<Shafait> shafait(image);
+			ShafaitTestharness<Shafait_LowMem> shafaitLowMem(image);
 
 			// Test
 			shafait.Initialize();
 			shafaitLowMem.Initialize();
 
 			// Assert
-			Assert::IsTrue(shafait.GetIntegralImage() == shafaitLowMem.GetIntegralImage());
-			Assert::IsTrue(shafait.GetIntegralSquareImage() == shafaitLowMem.GetIntegralSquareImage());
+			Assert::IsTrue(shafait.integral_image == shafaitLowMem.integral_image);
+			Assert::IsTrue(shafait.integral_sqimg == shafaitLowMem.integral_sqimg);
 		}
 	};
 }

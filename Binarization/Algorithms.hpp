@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef ALGORITHMS_HPP
 #define ALGORITHMS_HPP
 
@@ -13,7 +13,11 @@ namespace Binarization
 	{
 	public:
 
-		template<typename Calculator>
+		/// <summary>
+		/// The Niblack Algorithm
+		/// </summary>
+		/// <remarks>"An Introduction to Digital Image Processing", 1986.</remarks>
+		template<typename Calculator> 
 		static void Niblack(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize = 75, const double k = 0.2)
 		{
 			Calculator calculator(grayScaleImageIn);
@@ -28,6 +32,10 @@ namespace Binarization
 			});
 		}
 
+		/// <summary>
+		/// The Sauvola Algorithm
+		/// </summary>
+		/// <remarks>"Adaptive document image binarization", 1999.</remarks>
 		template<typename Calculator>
 		static void Sauvola(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize = 75, const double k = 0.2)
 		{
@@ -43,6 +51,10 @@ namespace Binarization
 			});
 		}
 
+		/// <summary>
+		/// The Wolf Algorithm
+		/// </summary>
+		/// <remarks>"Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.</remarks>
 		template<typename Calculator>
 		static void Wolf(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize = 75, const double k = 0.2)
 		{
@@ -68,6 +80,10 @@ namespace Binarization
 			});
 		}
 
+		/// <summary>
+		/// The NICK Algorithm
+		/// </summary>
+		/// <remarks>"Comparison of Niblack inspired Binarization methods for ancient documents", 2009.</remarks>
 		template<typename Calculator>
 		static void Nick(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize = 75, const double k = -0.2)
 		{

@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef SHAFAITCALCULATOR_HPP
 #define SHAFAITCALCULATOR_HPP
 
@@ -11,6 +11,11 @@
 
 namespace Binarization
 {
+	/// <summary>
+	/// This class provides an efficient way of calculating mean, variance, and standard deviation for an image.
+	/// It uses an Integral Image technique which works perfectly with windowed areas.
+	/// </summary>
+	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
 	class Shafait
 	{
 	public:
@@ -131,7 +136,9 @@ namespace Binarization
 		const Image& grayScaleImageIn;
 	};
 
-
+	/// <summary>
+	/// This is a slight variation of the algorithm Shafait had inspired which avoids the creation of two temporary Integral Images.
+	/// </summary>
 	class Shafait_LowMem : public Shafait
 	{
 	public:

@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 #include "CppUnitTest.h"
 #include "../Algorithms.hpp"
 #include "../ShafaitCalculator.hpp"
@@ -13,47 +15,162 @@ namespace Binarization::UnitTests
 {
 	TEST_CLASS(MetricUtilsTests)
 	{
-		TEST_METHOD(MetricUtilsAccuracyTest)
+		TEST_METHOD(MetricUtilsTimeTest)
 		{
-			// Build a small image.  This image mirrors the one used in our Shafait calculator tests.
-			Pixel32 bits[] = {
-				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
-				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
-				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)
-			};
-			Image grayScaleImage(3, 3, bits);
-
-			const int windowSize = 3;
-			const double k = 0.15;
-
-			// Create a psuedo ground truth to verify that we can detect 100% accuracy
-			Image imageSauvolaShafait(grayScaleImage.width, grayScaleImage.height);
-			Algorithms::Sauvola<Shafait>(imageSauvolaShafait, grayScaleImage, windowSize, k);
-
-			Image imageSauvolaShafait2(grayScaleImage.width, grayScaleImage.height);
-			Algorithms::Sauvola<Shafait>(imageSauvolaShafait2, grayScaleImage, windowSize, k);
-
-			// Verify that our performance calculator is operational
-			double accuracy = Performance::CalculateAccuracy(imageSauvolaShafait, imageSauvolaShafait2);
-			Assert::AreEqual(accuracy, 100.00);
-
-			// Search parameters
-			const int windowSizeStart = 1;
-			const int windowSizeStop = 3;
-			const double kStart = 0.10;
-			const double kStop = 0.20;
-
-			// Calculate Best Accuracy Stats
-			MetricUtils::Score score = MetricUtils::Accuracy(imageSauvolaShafait, grayScaleImage, windowSizeStart, windowSizeStop, kStart, kStop,
-				[](Image& binaryImageOut, const Image& grayScaleImageIn, const int ws, const double k) {
-					Algorithms::Sauvola<Shafait>(binaryImageOut, grayScaleImageIn, ws, k);
+			double seconds = MetricUtils::Time([](){ 
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 			});
 
-			// Note: We cannot assert windowSize nor k, because other values could also achieve 100% accuracy.
-			Assert::AreEqual(score.accuracy, 100.00);
-			Assert::AreEqual(score.fmeasure, 100.00);
-			Assert::AreEqual(score.psnr, std::numeric_limits<double>::infinity());
-			Assert::AreEqual(score.total, std::numeric_limits<double>::infinity());
+			Assert::IsTrue(1.0 <= seconds && seconds < 1.1);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateMeasureRankAccuracy)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score { "test", 0, 0, 1.0, 0, 0, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score { "test", 0, 0, 1.2, 0, 0, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score { "test", 0, 0, 0.99, 0, 0, 0, 0, 0 });
+
+			MetricUtils::CalculateMeasureRank(scores, MetricUtils::rankAccuracy);
+
+			Assert::AreEqual(1.2, scores[0].accuracy);
+			Assert::AreEqual(1.0, scores[0].score);
+
+			Assert::AreEqual(1.0, scores[1].accuracy);
+			Assert::AreEqual(2.0, scores[1].score);
+
+			Assert::AreEqual(0.99, scores[2].accuracy);
+			Assert::AreEqual(3.0, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateMeasureRankFMeasure)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 1.0, 0, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 1.2, 0, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0.99, 0, 0, 0, 0 });
+
+			MetricUtils::CalculateMeasureRank(scores, MetricUtils::rankFMeasure);
+
+			Assert::AreEqual(1.2, scores[0].fmeasure);
+			Assert::AreEqual(1.0, scores[0].score);
+
+			Assert::AreEqual(1.0, scores[1].fmeasure);
+			Assert::AreEqual(2.0, scores[1].score);
+
+			Assert::AreEqual(0.99, scores[2].fmeasure);
+			Assert::AreEqual(3.0, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateMeasureRankPSNR)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 1.0, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 1.2, 0, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0.99, 0, 0, 0 });
+
+			MetricUtils::CalculateMeasureRank(scores, MetricUtils::rankPSNR);
+
+			Assert::AreEqual(1.2, scores[0].psnr);
+			Assert::AreEqual(1.0, scores[0].score);
+
+			Assert::AreEqual(1.0, scores[1].psnr);
+			Assert::AreEqual(2.0, scores[1].score);
+
+			Assert::AreEqual(0.99, scores[2].psnr);
+			Assert::AreEqual(3.0, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateMeasureRankDRDM)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 1.0, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 1.2, 0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 0.99, 0, 0 });
+
+			MetricUtils::CalculateMeasureRank(scores, MetricUtils::rankDRDM);
+
+			Assert::AreEqual(0.99, scores[0].drdm);
+			Assert::AreEqual(1.0, scores[0].score);
+
+			Assert::AreEqual(1.0, scores[1].drdm);
+			Assert::AreEqual(2.0, scores[1].score);
+
+			Assert::AreEqual(1.2, scores[2].drdm);
+			Assert::AreEqual(3.0, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateMeasureRankTime)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 0, 1.0, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 0, 1.2, 0 });
+			scores.push_back(MetricUtils::Score{ "test", 0, 0, 0, 0, 0, 0, 0.99, 0 });
+
+			MetricUtils::CalculateMeasureRank(scores, MetricUtils::rankTime);
+
+			Assert::AreEqual(0.99, scores[0].time);
+			Assert::AreEqual(1.0, scores[0].score);
+
+			Assert::AreEqual(1.0, scores[1].time);
+			Assert::AreEqual(2.0, scores[1].score);
+
+			Assert::AreEqual(1.2, scores[2].time);
+			Assert::AreEqual(3.0, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsCalculateTopRank)
+		{
+			MetricUtils::Scores scores;
+
+			scores.push_back(MetricUtils::Score{ "2nd", 0, 0, 1.0, 2.0, 3.0, 3.0, 1.0, 1234.56 });
+			scores.push_back(MetricUtils::Score{ "3rd", 0, 0, 2.0, 1.0, 1.0, 2.0, 3.0, 1234.56 });
+			scores.push_back(MetricUtils::Score{ "1st", 0, 0, 3.0, 3.0, 2.0, 1.0, 2.0, 1234.56 });
+
+			MetricUtils::CalculateTopRank(scores);
+
+			Assert::AreEqual("1st", scores[0].ID.c_str());
+			Assert::AreEqual((double)1 + 1 + 2 + 1, scores[0].score);
+
+			Assert::AreEqual("2nd", scores[1].ID.c_str());
+			Assert::AreEqual((double)3 + 2 + 1 + 3, scores[1].score);
+
+			Assert::AreEqual("3rd", scores[2].ID.c_str());
+			Assert::AreEqual((double)2 + 3 + 3 + 2, scores[2].score);
+		}
+
+		TEST_METHOD(MetricUtilsDeathBy1000PaperCuts)
+		{
+			Pixel32 dataGT[] = {
+				Palette::White,  Palette::Black
+			};
+			Image groundTruthImage(1, 2, dataGT);
+
+			Pixel32 dataExp[] = {
+				Palette::White,  Palette::Black
+			};
+			Image experimentImage(1, 2, dataExp);
+
+			int callCounter = 0;
+
+			MetricUtils::Scores scores;
+			MetricUtils::DeathBy1000PaperCuts(scores, groundTruthImage, experimentImage, 1, 3, 0.01, 0.03,
+				[&](Image& binaryImage, const Image& inputImage, const int ws, const double k) {
+				
+				binaryImage.data[0] = groundTruthImage.data[0];
+				binaryImage.data[1] = groundTruthImage.data[1];
+
+				++callCounter;
+			});
+
+			Assert::AreEqual(9, callCounter);
+
+			Assert::IsTrue(std::all_of(scores.begin(), scores.end(), [](auto& score) { return score.accuracy == 100; }));
 		}
 	};
 }

@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef PERFORMANCE_HPP
 #define PERFORMANCE_HPP
 
@@ -14,10 +14,10 @@ namespace Binarization
 	public:
 		struct Classifications
 		{
-			int truePositive = 0;
-			int trueNegative = 0;
-			int falsePositive = 0;
-			int falseNegative = 0;
+			int truePositive = 0;	// A correctly chosen black pixel
+			int trueNegative = 0;	// A correctly chosen white pixel
+			int falsePositive = 0;	// An incorrectly chosen black pixel
+			int falseNegative = 0;	// An incorrectly chosen white pixel
 
 			int Total() const
 			{

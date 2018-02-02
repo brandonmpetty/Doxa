@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef DRDMPERFORMANCE_HPP
 #define DRDMPERFORMANCE_HPP
 
@@ -11,6 +11,10 @@
 
 namespace Binarization
 {
+	/// <summary>
+	/// The Distance-Reciprocal Distortion Measure (DRDM) Algorithm
+	/// </summary>
+	/// <remarks>"An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.</remarks>
 	class DRDMPerformance
 	{
 	public:

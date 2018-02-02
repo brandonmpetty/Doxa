@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef GATOSWORKFLOW_HPP
 #define GATOSWORKFLOW_HPP
 
@@ -15,13 +15,19 @@
 
 namespace Binarization
 {
-	// Gatos - This algorithm has not been fully implemented yet
+	/// <summary>
+	/// The Gatos binarization workflow.
+	/// This is a 5 step workflow consisting of a Wiener Filter, the Sauvola algorithm, and a background estimation based thresholding algorithm.
+	/// The optional Upsampling on the fourth step is not currently performed, nor the Post-processing for the fifth step.
+	/// This is only a partial implementation and has not been optimized.
+	/// </summary>
+	/// <remarks>"Adaptive degraded document image binarization", 2005.</remarks>
 	class GatosWorkflow
 	{
 	public:
 
 		template<typename Calculator>
-		void Run(Image& binaryImageOut, const Image& grayScaleImageIn, const int glyphSize = 60, const int windowSize = 75, const double k = 0.2)
+		void Run(Image& binaryImageOut, const Image& grayScaleImageIn, const int glyphSize = 60, const int windowSize = 75, const double k = 0.2) const
 		{
 			// Step 1 - Pre-processing: Run greyscale through Wiener Filter
 			Image filteredImage(grayScaleImageIn);
@@ -47,15 +53,16 @@ namespace Binarization
 					Palette::Black : Palette::White;
 			}
 
-			// Step 5 - Upsampling
+			// Step 4.5 - Upsampling
 			// TODO - Implement
 
-			// Step 6 - Post-processing			// TODO - Implement
+			// Step 5 - Post-processing
+			// TODO - Implement
 		}
 
 	protected:
 
-		double AverageFgBgDistance(const Image& backgroundImage, const Image& filteredImage, const Image& binaryImage)
+		double AverageFgBgDistance(const Image& backgroundImage, const Image& filteredImage, const Image& binaryImage) const
 		{
 			int numerator = 0;
 			int denominator = 0;
@@ -69,7 +76,7 @@ namespace Binarization
 			return numerator / (double)denominator;
 		}
 
-		double AverageBgTextValue(const Image& backgroundImage, const Image& binaryImage)
+		double AverageBgTextValue(const Image& backgroundImage, const Image& binaryImage) const
 		{
 			int numerator = 0;
 			int denominator = 0;
@@ -83,14 +90,14 @@ namespace Binarization
 			return numerator / (double)denominator;
 		}
 
-		double Threshold(const int backroundValue, const double d, const double b, const double q = 0.6, const double p1 = 0.5, const double p2 = 0.8)
+		double Threshold(const int backgroundValue, const double d, const double b, const double q = 0.6, const double p1 = 0.5, const double p2 = 0.8) const
 		{
-			const double expVal = exp(((-4 * backroundValue) / (b * (1 - p1))) + ((2 * (1 + p1)) / (1 - p1)));
+			const double expVal = exp(((-4 * backgroundValue) / (b * (1 - p1))) + ((2 * (1 + p1)) / (1 - p1)));
 			return q * d * (((1 - p2) / (1 + expVal)) + p2);
 		}
 
 		template<typename Calculator>
-		void WienerFilter(Image& outputImage, const Image& inputImage, const int windowSize = 3)
+		void WienerFilter(Image& outputImage, const Image& inputImage, const int windowSize = 3) const
 		{
 			Calculator calculator(inputImage);
 			calculator.Initialize();
@@ -120,7 +127,7 @@ namespace Binarization
 		}
 
 		// backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the backround entirely
-		void ExtractBackground(Image& backgroundImage, const Image& filteredImage, const Image& binaryImage, const int windowSize = 51)
+		void ExtractBackground(Image& backgroundImage, const Image& filteredImage, const Image& binaryImage, const int windowSize = 51) const
 		{
 			const int HALF_WINDOW = windowSize / 2;
 

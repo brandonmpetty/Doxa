@@ -1,5 +1,5 @@
-﻿/// Δoxa Binarization Framework
-/// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+﻿// Δoxa Binarization Framework
+// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef PPM_HPP
 #define PPM_HPP
 
@@ -11,6 +11,10 @@
 
 namespace Binarization
 {
+	/// <summary>
+	/// Portable Pixel Map: Portable Arbitrary Map (P7) 32 bit RGBA
+	/// This class will allow you to read and write .pam files natively, without a 3rd party library.
+	/// </summary>
 	class PPM
 	{
 	public:
