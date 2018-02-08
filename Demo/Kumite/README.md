@@ -33,6 +33,13 @@ Nick           42             -0.11          97.6349        93.0599        16.26
 Niblack        187            -0.72          97.2744        91.9411        15.6454        2.38675        0.0252389
 ```
 
+The list above hightlights both the power and weakness of Performance Measure Ranking.
+Ranking provides a very simple solution for judging performance without creating an explicit measure bias.
+The problem is that an implicit bias is there and can be easily demonstrated.
+For example, takes Sauvola's Window Size = 26 and K = 0.11.
+It is a better performer than what was ranked #1 overall for Sauvola and comes close to defeating Wolf.
+
+
 ### Goals
 * Provide a HTML/JS file that can read in the CSVs and help graphically visualize the data.
 * Refactor the binarization methods to take in a precalculated Integral Image to reduce runtime by over 50%.
