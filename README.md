@@ -29,6 +29,11 @@ Instead of being relegated to MATLAB, or obfuscated by mathematics in a research
 A key objective in designing this framework was to make it modular and as easy to use as possible, without sacrificing speed and without depending heavily on 3rd party frameworks.
 This library is also heavily unit tested to help ensure quality, and to quickly spot problems after experimenting with the codebase.
 
+<p align="center">
+	<img src="/README/2JohnC1V3.png" width="50%" height="50%"/>
+	<img src="/README/2JohnC1V3-GroundTruth.png" width="50%" height="50%"/>
+</p>
+
 ### Example
 This short example shows you how easy it is to use ΔBF to process an image.
 
@@ -81,12 +86,12 @@ While it is easy to write a tool like [PerformanceMetrics](https://github.com/br
 it is also possible to analyze the performance of every K-Value and Window Size permutation, for every algorithm, using a tool like [Kumite](https://github.com/brandonmpetty/Doxa/tree/master/Demo/Kumite).
 This can help you judge the true quality of the binarization algorithm.
 
-| Algorithm | Window | K     | Accuracy | F-Measure | PSNR    | DRDM    | Time      |
-| --------- |:------:|:-----:|:--------:|:---------:|:-------:|:-------:|:---------:|
-| Wolf      | 20     | 0.19  | 97.6747  | 93.2996   | 16.3352 | 1.96513 | 0.0399408 |
-| Sauvola   | 40     | 0.15  | 97.6654  | 93.1474   | 16.3179 | 1.93476 | 0.0254095 |
-| Nick      | 42     | -0.11 | 97.6349  | 93.0599   | 16.2615 | 1.96143 | 0.0240333 |
-| Niblack   | 187    | -0.72 | 97.2744  | 91.9411   | 15.6454 | 2.38675 | 0.0252389 |
+| Algorithm | Window | K     | Accuracy | F-Measure | PSNR    | DRDM    | Time      | Image     |
+| --------- |:------:|:-----:|:--------:|:---------:|:-------:|:-------:|:---------:|:---------:|
+| Wolf      | 20     | 0.19  | [97.6747](/Demo/Kumite/Samples/Wolf-Accuracy.csv)    | [93.2996](/Demo/Kumite/Samples/Wolf-FMeasure.csv)    | [16.3352](/Demo/Kumite/Samples/Wolf-PSNR.csv)    | [1.96513](/Demo/Kumite/Samples/Wolf-DRDM.csv)    | [0.0399408](/Demo/Kumite/Samples/Wolf-Time.csv)    | [View](/README/2JohnC1V3-Wolf.png)    |
+| Sauvola   | 40     | 0.15  | [97.6654](/Demo/Kumite/Samples/Sauvola-Accuracy.csv) | [93.1474](/Demo/Kumite/Samples/Sauvola-FMeasure.csv) | [16.3179](/Demo/Kumite/Samples/Sauvola-PSNR.csv) | [1.93476](/Demo/Kumite/Samples/Sauvola-DRDM.csv) | [0.0254095](/Demo/Kumite/Samples/Sauvola-Time.csv) | [View](/README/2JohnC1V3-Sauvola.png) |
+| Nick      | 42     | -0.11 | [97.6349](/Demo/Kumite/Samples/Nick-Accuracy.csv)    | [93.0599](/Demo/Kumite/Samples/Nick-FMeasure.csv)    | [16.2615](/Demo/Kumite/Samples/Nick-PSNR.csv)    | [1.96143](/Demo/Kumite/Samples/Nick-DRDM.csv)    | [0.0240333](/Demo/Kumite/Samples/Nick-Time.csv)    | [View](/README/2JohnC1V3-Nick.png)    |
+| Niblack   | 187    | -0.72 | [97.2744](/Demo/Kumite/Samples/Niblack-Accuracy.csv) | [91.9411](/Demo/Kumite/Samples/Niblack-FMeasure.csv) | [15.6454](/Demo/Kumite/Samples/Niblack-PSNR.csv) | [2.38675](/Demo/Kumite/Samples/Niblack-DRDM.csv) | [0.0252389](/Demo/Kumite/Samples/Niblack-Time.csv) | [View](/README/2JohnC1V3-Niblack.png) |
 
 It should be noted that the Ground Truth used to generate these numbers is, like virtually all Ground Truths, subjective and a work in progress.
 A Photoshop PSD file is attached that can be used to make corrections to the Ground Truth as needed.
