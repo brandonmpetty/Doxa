@@ -1,4 +1,10 @@
 # Δoxa Binarization Framework
+
+<p align="center">
+	<img src="/README/2JohnC1V3.png" width="45%" height="45%"/>
+	<img src="/README/2JohnC1V3-GroundTruth.png" width="45%" height="45%"/>
+</p>
+
 ## Introduction
 ΔBF is an image binarization framework written in C++ which focuses exclusively on local adaptive thresholding algorithms.
 In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
@@ -28,11 +34,6 @@ What sets this binarization library apart is that it is intended to be used by t
 Instead of being relegated to MATLAB, or obfuscated by mathematics in a research paper, a lot of effort has gone into exposing these binarization techniques in an open and transparent way.
 A key objective in designing this framework was to make it modular and as easy to use as possible, without sacrificing speed and without depending heavily on 3rd party frameworks.
 This library is also heavily unit tested to help ensure quality, and to quickly spot problems after experimenting with the codebase.
-
-<p align="center">
-	<img src="/README/2JohnC1V3.png" width="50%" height="50%"/>
-	<img src="/README/2JohnC1V3-GroundTruth.png" width="50%" height="50%"/>
-</p>
 
 ### Example
 This short example shows you how easy it is to use ΔBF to process an image.
@@ -77,13 +78,13 @@ Algorithms::Niblack<Shafait>(image, image);  // Due to Shafait, there are no con
 qImage.save("binary-image.png");
 ```
 
-Other examples can be found in the Demo folder, like the [BinaryImageConverter](https://github.com/brandonmpetty/Doxa/tree/master/Demo/BinaryImageConverter) tool.
+Other examples can be found in the Demo folder, like the [BinaryImageConverter](/Demo/BinaryImageConverter) tool.
 
 ### Performance Analysis
 
 Another thing that sets ΔBF apart is its focus on binarization performance.
-While it is easy to write a tool like [PerformanceMetrics](https://github.com/brandonmpetty/Doxa/tree/master/Demo/PerformanceMetrics) which can analyze a single image, 
-it is also possible to analyze the performance of every K-Value and Window Size permutation, for every algorithm, using a tool like [Kumite](https://github.com/brandonmpetty/Doxa/tree/master/Demo/Kumite).
+While it is easy to write a tool like [PerformanceMetrics](/Demo/PerformanceMetrics) which can analyze a single image, 
+it is also possible to analyze the performance of every K-Value and Window Size permutation, for every algorithm, using a tool like [Kumite](/Demo/Kumite).
 This can help you judge the true quality of the binarization algorithm.
 
 | Algorithm | Window | K     | Accuracy | F-Measure | PSNR    | DRDM    | Time      | Image     |
