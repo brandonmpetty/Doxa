@@ -11,50 +11,99 @@ namespace Binarization
 {
 	struct Image
 	{
+		// Default CTOR
 		Image() {}
 
+		// CTOR
 		Image(int width, int height, Pixel32* bits = nullptr)
-			: width(width), height(height), size(width*height)
+			: width(width), 
+			height(height), 
+			size(width*height)
 		{
 			data = new Pixel32[size];
 
-			if (bits != nullptr)  std::memcpy(data, bits, size * sizeof(Pixel32));
+			if (bits != nullptr)  
+				std::memcpy(data, bits, size * sizeof(Pixel32));
 		}
 
-		static Image Reference(int width, int height, Pixel32* bits)
-		{
-			Image referenceImage;
-			referenceImage.width = width;
-			referenceImage.height = height;
-			referenceImage.size = width * height;
-			referenceImage.data = bits;
-			referenceImage.managedExternally = true;
-
-			return referenceImage;
-		}
-
+		// DTOR
 		// Note: https://en.wikipedia.org/wiki/Copy_elision
-		~Image() { if (!managedExternally) delete[] data; }
+		~Image() 
+		{ 
+			if (!managedExternally) 
+				delete[] data;
+		}
 
-		Image(const Image& image, bool forceDeepCopy = false)
+		// Copy Constructor
+		Image(const Image& image)
 			: width(image.width), 
 			height(image.height), 
 			depth(image.depth), 
 			maxVal(image.maxVal), 
 			tupleType(image.tupleType), 
-			size(image.size), 
+			size(image.size)
+		{
+			data = new Pixel32[size];
+			std::memcpy(data, image.data, size * sizeof(Pixel32));
+		}
+
+		// Move Constructor
+		Image(Image&& image)
+			: width(image.width),
+			height(image.height),
+			depth(image.depth),
+			maxVal(image.maxVal),
+			tupleType(image.tupleType),
+			size(image.size),
+			data(image.data),
 			managedExternally(image.managedExternally)
 		{
-			if (managedExternally && !forceDeepCopy) // Shallow Copy
+			image.managedExternally = true; // Now managed by the copy
+		}
+
+		// Copy Assignment Operator - This will always deep copy, even a reference.
+		Image& operator=(const Image& that)
+		{
+			if (this != &that)
 			{
-				data = image.data;
-			}
-			else // Deep Copy
-			{
-				data = new Pixel32[size];
-				std::memcpy(data, image.data, size * sizeof(Pixel32));
+				if (size != that.size)
+				{
+					delete[] data;
+
+					// Reset in case of a thrown exception allocating memory
+					size = 0;
+					data = nullptr;
+
+					// Reallocate
+					data = new Pixel32[that.size];
+					size = that.size;
+				}
+
+				width = that.width;
+				height = that.height;
 				managedExternally = false;
+
+				std::memcpy(data, that.data, size * sizeof(Pixel32));
 			}
+
+			return *this;
+		}
+
+		Image Reference()
+		{
+			return Reference(width, height, data);
+		}
+
+		static Image Reference(int width, int height, Pixel32* data)
+		{
+			Image referenceImage;
+			referenceImage.width = width;
+			referenceImage.height = height;
+			referenceImage.size = width * height;
+			referenceImage.data = data;
+			referenceImage.managedExternally = true;
+
+			return referenceImage;
 		}
 
 		// External Memory Management

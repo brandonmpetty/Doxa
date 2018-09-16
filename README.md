@@ -40,8 +40,7 @@ This short example shows you how easy it is to use ΔBF to process an image.
 
 ```cpp
 // Read a color image
-Image image;
-PPM::Read(R"(C:\MyImage.pam)", image);
+Image image = PPM::Read(R"(C:\MyImage.pam)", image);
 
 // Convert it to gray scale
 Preprocessor::ToGreyScale(image);

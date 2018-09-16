@@ -68,12 +68,12 @@ namespace Binarization
 			// Adding a relatively high number here so as to not miss out on a potential K value.
 			const double kStopCorrection = kStop + 0.001;
 
+			Image image(grayScaleImage.width, grayScaleImage.height);
+
 			for (int ws = windowSizeStart; ws <= windowSizeStop; ++ws)
 			{
 				for (double k = kStart; k <= kStopCorrection; k += 0.01)
 				{
-					Image image(grayScaleImage.width, grayScaleImage.height);
-
 					Score score;
 					score.windowSize = ws;
 					score.k = k;

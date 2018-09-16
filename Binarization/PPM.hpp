@@ -18,17 +18,19 @@ namespace Binarization
 	class PPM
 	{
 	public:
-		static void Read(const std::string& fileLocation, Image& image)
-		{
-			if (image.data != nullptr) delete image.data;
 
+		static Image Read(const std::string& fileLocation)
+		{
 			std::ifstream file;
 			file.open(fileLocation.c_str(), std::ios::binary);
 
+			Image image;
 			file >> image;
 
 			file.clear();
 			file.close();
+
+			return image;
 		}
 
 		static void Write(const Image& image, const std::string& fileLocation)

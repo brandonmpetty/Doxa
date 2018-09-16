@@ -25,8 +25,7 @@ namespace Binarization::UnitTests
 
 		void Compare(const Image& experement, std::string filePath)
 		{
-			Image control;
-			PPM::Read(filePath, control);
+			Image control = PPM::Read(filePath);
 
 			Compare(control, experement);
 		}
@@ -48,7 +47,7 @@ namespace Binarization::UnitTests
 
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.pam";
-			PPM::Read(filePath, image);
+			image = PPM::Read(filePath);
 
 			// Convert to Gray Scale
 			// Note: Not a legitimate PAM image, so do not save this image.
