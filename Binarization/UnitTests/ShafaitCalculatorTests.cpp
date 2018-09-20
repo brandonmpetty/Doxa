@@ -10,14 +10,15 @@ namespace Binarization::UnitTests
 	{
 	public:
 
-		// Exposes protected methods for Unit Testing
+		// Exposes protected members for Unit Testing
 		template<typename Calculator>
 		class ShafaitTestharness : public Calculator
 		{
 		public:
-			ShafaitTestharness(Image& image) : Calculator(image) {}
+			ShafaitTestharness() : Calculator() {}
 			using Calculator::integral_image;
 			using Calculator::integral_sqimg;
+			using Calculator::CalculateDiffs;
 		};
 
 
@@ -31,22 +32,22 @@ namespace Binarization::UnitTests
 			};
 			Image image(3, 3, bits);
 
-			ShafaitTestharness<Shafait> shafait(image);
+			ShafaitTestharness<Shafait> shafait;
 
-			Shafait::IntegralImage integralImage = {
+			Binarization::IntegralImage integralImage = {
 				18,  66, 144,
 				56, 124, 235,
 				60, 140, 265
 			};
 
-			Shafait::IntegralImage integralSquareImage = {
+			Binarization::IntegralImage integralSquareImage = {
 				 324, 2628,  8712,
 				1768, 4472, 11645,
 				1784, 4632, 12001
 			};
 
 			// Test
-			shafait.Initialize();
+			shafait.Initialize(image);
 
 			// Assert
 			Assert::IsTrue(shafait.integral_image == integralImage);
@@ -63,8 +64,8 @@ namespace Binarization::UnitTests
 			};
 			Image image(3, 3, bits);
 
-			Shafait shafait(image);
-			shafait.Initialize();
+			ShafaitTestharness<Shafait> shafait;
+			shafait.Initialize(image);
 
 			double mean = 0.0;
 			double stddev = 0.0;
@@ -96,12 +97,12 @@ namespace Binarization::UnitTests
 			};
 			Image image(3, 3, bits);
 
-			ShafaitTestharness<Shafait> shafait(image);
-			ShafaitTestharness<Shafait_LowMem> shafaitLowMem(image);
+			ShafaitTestharness<Shafait> shafait;
+			ShafaitTestharness<Shafait_LowMem> shafaitLowMem;
 
 			// Test
-			shafait.Initialize();
-			shafaitLowMem.Initialize();
+			shafait.Initialize(image);
+			shafaitLowMem.Initialize(image);
 
 			// Assert
 			Assert::IsTrue(shafait.integral_image == shafaitLowMem.integral_image);

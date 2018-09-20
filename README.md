@@ -46,8 +46,7 @@ Image image = PPM::Read(R"(C:\MyImage.pam)", image);
 Preprocessor::ToGreyScale(image);
 
 // Use a binarization algorithm to convert it into black and white
-Image imageSauvola(image.width, image.height);
-Algorithms::Sauvola<Shafait>(imageSauvola, image, 26, 0.11);
+Image imageSauvola = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
 
 // Save the processed image
 PPM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
@@ -71,7 +70,7 @@ QImage qImage(imagePath);
 // Operations on the ΔBF Image will directly change the QImage when set as a reference.
 Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel32*)qImage.bits());
 Preprocessor::ToGreyScale(image);
-Algorithms::Niblack<Shafait>(image, image);  // Due to Shafait, there are no conflicts writing to the same image
+Niblack::UpdateImageToBinary<Shafait>(image);  // Due to Shafait, there are no conflicts writing to the same image
 
 // Save the updated QImage to the file system, using Qt
 qImage.save("binary-image.png");

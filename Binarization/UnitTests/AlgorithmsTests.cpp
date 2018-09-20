@@ -57,11 +57,8 @@ namespace Binarization::UnitTests
 		TEST_METHOD(AlgorithmsSauvolaTest)
 		{
 			// Run Sauvola algorithms with different calculators
-			Image imageSauvolaShafait(image.width, image.height);
-			Algorithms::Sauvola<Shafait>(imageSauvolaShafait, image, 26, 0.11);
-
-			Image imageSauvolaShafaitLowMem(image.width, image.height);
-			Algorithms::Sauvola<Shafait_LowMem>(imageSauvolaShafaitLowMem, image, 26, 0.11);
+			Image imageSauvolaShafait = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
+			Image imageSauvolaShafaitLowMem = Sauvola::ToBinaryImage<Shafait_LowMem>(image, 26, 0.11);
 
 			// Are both equal
 			Compare(imageSauvolaShafait, imageSauvolaShafaitLowMem);
@@ -72,27 +69,21 @@ namespace Binarization::UnitTests
 
 		TEST_METHOD(AlgorithmsNiblackTest)
 		{
-			Image imageNiblackShafait(image.width, image.height);
-
-			Algorithms::Niblack<Shafait>(imageNiblackShafait, image, 124, -0.65);
+			Image imageNiblackShafait = Niblack::ToBinaryImage<Shafait>(image, 124, -0.65);
 
 			Compare(imageNiblackShafait, projFolder + "2JohnC1V3-Niblack.pam");
 		}
 
 		TEST_METHOD(AlgorithmsWolfTest)
 		{
-			Image imageWolfShafait(image.width, image.height);
-
-			Algorithms::Wolf<Shafait>(imageWolfShafait, image, 20, 0.19);
+			Image imageWolfShafait = Wolf::ToBinaryImage<Shafait>(image, 20, 0.19);
 
 			Compare(imageWolfShafait, projFolder + "2JohnC1V3-Wolf.pam");
 		}
 
 		TEST_METHOD(AlgorithmsNICKTest)
 		{
-			Image imageNICKShafait(image.width, image.height);
-
-			Algorithms::Nick<Shafait>(imageNICKShafait, image, 42, -0.11);
+			Image imageNICKShafait = Nick::ToBinaryImage<Shafait>(image, 42, -0.11);
 
 			Compare(imageNICKShafait, projFolder + "2JohnC1V3-NICK.pam");
 		}

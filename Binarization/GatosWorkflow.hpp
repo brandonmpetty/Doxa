@@ -29,13 +29,16 @@ namespace Binarization
 		template<typename Calculator>
 		void Run(Image& binaryImageOut, const Image& grayScaleImageIn, const int glyphSize = 60, const int windowSize = 75, const double k = 0.2) const
 		{
+			Calculator calculator;
+
 			// Step 1 - Pre-processing: Run greyscale through Wiener Filter
 			Image filteredImage(grayScaleImageIn);
 			WienerFilter<Calculator>(filteredImage, grayScaleImageIn, 3);
 
 			// Step 2 - Rough estimation of foreground regions: Apply Sauvola binarization
 			// TODO - Allow this algorithm to be swapped with any in the library
-			Algorithms::Sauvola<Calculator>(binaryImageOut, filteredImage, windowSize, k);
+			calculator.Initialize(filteredImage);
+			Sauvola::ToBinary(binaryImageOut, filteredImage, calculator, windowSize, k);
 
 			// Step 3 - Background surface estimation
 			Image backgroundImage(filteredImage);
@@ -99,8 +102,8 @@ namespace Binarization
 		template<typename Calculator>
 		void WienerFilter(Image& outputImage, const Image& inputImage, const int windowSize = 3) const
 		{
-			Calculator calculator(inputImage);
-			calculator.Initialize();
+			Calculator calculator;
+			calculator.Initialize(inputImage);
 
 			const int pixelCount = windowSize * windowSize;
 

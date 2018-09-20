@@ -42,7 +42,7 @@ It is a better performer than what was ranked #1 overall for Sauvola and comes c
 
 ### Goals
 * Provide a HTML/JS file that can read in the CSVs and help graphically visualize the data.
-* Refactor the binarization methods to take in a precalculated Integral Image to reduce runtime by over 50%.
+* ~~Refactor the binarization methods to take in a precalculated Integral Image to reduce runtime by over 50%.~~
 
 ## License
 CC0 - Brandon M. Petty, 2018

@@ -11,23 +11,23 @@
 
 namespace Binarization
 {
-	/// <summary>
-	/// This class provides an efficient way of calculating mean, variance, and standard deviation for an image.
-	/// It uses an Integral Image technique which works perfectly with windowed areas.
-	/// </summary>
-	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
-	class Shafait
+	typedef std::vector<int64_t> IntegralImage;
+
+	class ShafaitCalculator
 	{
 	public:
-		typedef std::vector<int64_t> IntegralImage;
+		ShafaitCalculator() :
+			integral_image(0), 
+			integral_sqimg(0), 
+			imageWidth(0) 
+		{}
 
-		Shafait(const Image& grayScaleImageIn)
-			: grayScaleImageIn(grayScaleImageIn),
-			integral_image(grayScaleImageIn.size),
-			integral_sqimg(grayScaleImageIn.size) {}
-
-		virtual void Initialize()
+		void Initialize(const Image& grayScaleImageIn)
 		{
+			integral_image.resize(grayScaleImageIn.size);
+			integral_sqimg.resize(grayScaleImageIn.size);
+			imageWidth = grayScaleImageIn.width;
+
 			BuildIntegralImages(integral_image, integral_sqimg, grayScaleImageIn);
 		}
 
@@ -50,18 +50,21 @@ namespace Binarization
 			variance = (sqdiff - diff*diff / area) / (area - 1);
 		}
 
+		virtual void BuildIntegralImages(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImageIn) = 0;
+
+	protected:
 		inline void CalculateDiffs(double& diff, double& sqdiff, const Region& window) const
 		{
-			const int xmax_ymax = (window.bottomRight.y * grayScaleImageIn.width) + window.bottomRight.x;
+			const int xmax_ymax = (window.bottomRight.y * imageWidth) + window.bottomRight.x;
 
 			if (window.upperLeft.x)
 			{
-				const int xmin_ymax = (window.bottomRight.y * grayScaleImageIn.width) + (window.upperLeft.x - 1);
+				const int xmin_ymax = (window.bottomRight.y * imageWidth) + (window.upperLeft.x - 1);
 
 				if (window.upperLeft.y)
 				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + window.bottomRight.x;
-					const int xmin_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + (window.upperLeft.x - 1);
+					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
+					const int xmin_ymin = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
 
 					diff = (integral_image[xmax_ymax] + integral_image[xmin_ymin]) - (integral_image[xmax_ymin] + integral_image[xmin_ymax]);
 					sqdiff = (integral_sqimg[xmax_ymax] + integral_sqimg[xmin_ymin]) - (integral_sqimg[xmax_ymin] + integral_sqimg[xmin_ymax]);
@@ -76,7 +79,7 @@ namespace Binarization
 			{
 				if (window.upperLeft.y)
 				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * grayScaleImageIn.width) + window.bottomRight.x;
+					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
 
 					diff = integral_image[xmax_ymax] - integral_image[xmax_ymin];
 					sqdiff = integral_sqimg[xmax_ymax] - integral_sqimg[xmax_ymin];
@@ -89,8 +92,24 @@ namespace Binarization
 			}
 		}
 
+		IntegralImage integral_image;
+		IntegralImage integral_sqimg;
+		int imageWidth;
+	};
+
+	/// <summary>
+	/// This class provides an efficient way of calculating mean, variance, and standard deviation for an image.
+	/// It uses an Integral Image technique which works perfectly with windowed areas.
+	/// </summary>
+	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
+	class Shafait : public ShafaitCalculator
+	{
+	public:
+		Shafait()
+			: ShafaitCalculator() {}
+
 	protected:
-		inline void BuildIntegralImages(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImageIn)
+		void BuildIntegralImages(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImageIn)
 		{
 			IntegralImage rowSumImage(grayScaleImageIn.size);
 			IntegralImage rowSumSqrImage(grayScaleImageIn.size);
@@ -129,29 +148,19 @@ namespace Binarization
 				}
 			}
 		}
-
-		IntegralImage integral_image;
-		IntegralImage integral_sqimg;
-
-		const Image& grayScaleImageIn;
 	};
 
 	/// <summary>
 	/// This is a slight variation of the algorithm Shafait had inspired which avoids the creation of two temporary Integral Images.
 	/// </summary>
-	class Shafait_LowMem : public Shafait
+	class Shafait_LowMem : public ShafaitCalculator
 	{
 	public:
-		Shafait_LowMem(const Image& grayScaleImageIn)
-			: Shafait(grayScaleImageIn) {}
-
-		void Initialize()
-		{
-			BuildIntegralImagesLowMem(integral_image, integral_sqimg, grayScaleImageIn);
-		}
+		Shafait_LowMem()
+			: ShafaitCalculator() {}
 
 	protected:
-		inline void BuildIntegralImagesLowMem(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImageIn)
+		void BuildIntegralImages(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImageIn)
 		{
 			int rowIdx;
 			int cellIdx;
