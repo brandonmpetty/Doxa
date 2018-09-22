@@ -13,6 +13,7 @@ In English, this means that it has the ability to turn a color or gray scale ima
 * Niblack - "An Introduction to Digital Image Processing", 1986.
 * Sauvola - "Adaptive document image binarization", 1999.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
+* Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
 
 **Optimizations**
@@ -40,7 +41,7 @@ This short example shows you how easy it is to use ΔBF to process an image.
 
 ```cpp
 // Read a color image
-Image image = PPM::Read(R"(C:\MyImage.pam)", image);
+Image image = PPM::Read(R"(C:\MyImage.pam)");
 
 // Convert it to gray scale
 Preprocessor::ToGreyScale(image);

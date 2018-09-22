@@ -44,9 +44,6 @@ namespace Binarization::UnitTests
 			projFolder.erase(projFolder.size() - 2); // Erase first quote and period, which is used to excape the trailing slash
 		}
 
-		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowTest)
-			TEST_IGNORE()
-		END_TEST_METHOD_ATTRIBUTE()
 		TEST_METHOD(GatosWorkflowTest)
 		{
 			// Load Color Image
@@ -61,7 +58,7 @@ namespace Binarization::UnitTests
 
 			// Run workflow
 			GatosWorkflow gatos;
-			gatos.Run<Shafait>(binaryImage, image);
+			gatos.ToBinary<Shafait>(binaryImage, image, 60, 40, 0.15);
 
 			// TODO: Update this test to assert correctness
 			Assert::IsNotNull(binaryImage.data);
