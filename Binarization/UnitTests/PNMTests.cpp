@@ -26,7 +26,9 @@ namespace Binarization::UnitTests
 			using PNM::ReadPNM;
 
 			// Writes
+			using PNM::WriteP4;
 			using PNM::WriteP5;
+			using PNM::WriteP6;
 			using PNM::WriteP7;
 		};
 
@@ -126,24 +128,40 @@ namespace Binarization::UnitTests
 			Assert::ExpectException<const char*>([&]() { pnm.ReadPNM(stream, image); });
 		}
 
+		TEST_METHOD(WriteAndReadP4Test)
+		{
+			PNMTestharness pnm;
+			TestWriteAndReadBinary([&](std::ostream &outputStream, const Image &image) {
+				pnm.WriteP4(outputStream, image);
+			});
+		}
+
 		TEST_METHOD(WriteAndReadP5Test)
 		{
 			PNMTestharness pnm;
-			WriteAndRead([&](std::ostream &outputStream, const Image &image) {
+			TestWriteAndReadGrayScale([&](std::ostream &outputStream, const Image &image) {
 				pnm.WriteP5(outputStream, image);
+			});
+		}
+
+		TEST_METHOD(WriteAndReadP6Test)
+		{
+			PNMTestharness pnm;
+			TestWriteAndReadGrayScale([&](std::ostream &outputStream, const Image &image) {
+				pnm.WriteP6(outputStream, image);
 			});
 		}
 
 		TEST_METHOD(WriteAndReadP7Test)
 		{
 			PNMTestharness pnm;
-			WriteAndRead([&](std::ostream &outputStream, const Image &image) {
+			TestWriteAndReadGrayScale([&](std::ostream &outputStream, const Image &image) {
 				pnm.WriteP7(outputStream, image);
 			});
 		}
 
 	protected:
-		void WriteAndRead(std::function<void(std::ostream &outputStream, const Image &image)> writeFunc)
+		void TestWriteAndReadGrayScale(std::function<void(std::ostream &outputStream, const Image &image)> writeFunc)
 		{
 			// Setup
 			Image input(3, 2);
@@ -154,6 +172,33 @@ namespace Binarization::UnitTests
 			input.data[3] = 55;
 			input.data[4] = 125;
 			input.data[5] = 200;
+
+			// Execute - Write
+			std::ostringstream stream;
+			writeFunc(stream, input);
+
+			// Execute - Read
+			PNMTestharness pnm;
+			Image output;
+			pnm.ReadPNM(std::istringstream(stream.str()), output);
+
+			// Assert
+			Assert::AreEqual(3, output.width);
+			Assert::AreEqual(2, output.height);
+			Assert::AreEqual(0, std::memcmp(input.data, output.data, sizeof(Pixel8) * input.size));
+		}
+
+		void TestWriteAndReadBinary(std::function<void(std::ostream &outputStream, const Image &image)> writeFunc)
+		{
+			// Setup
+			Image input(3, 2);
+
+			input.data[0] = 255;
+			input.data[1] = 0;
+			input.data[2] = 255;
+			input.data[3] = 0;
+			input.data[4] = 255;
+			input.data[5] = 255;
 
 			// Execute - Write
 			std::ostringstream stream;

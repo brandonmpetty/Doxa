@@ -3,6 +3,7 @@
 #ifndef PNM_HPP
 #define PNM_HPP
 
+#include <bitset>
 #include <string>
 #include <fstream>
 #include <filesystem>
@@ -19,10 +20,11 @@ namespace Binarization
 	/// 
 	/// This class will allow you to read and write PNM formatted files natively, without a 3rd party library.
 	/// 
-	/// Reads: Portable Bitmap (PBM P4), 8bit Portable Graymap (PGM P5), Portable Pixmap (PPM P6), Portable Arbitrary-Map (PAM P7)
-	/// Writes: Portable Bitmap (PBM P4), 8bit Portable Graymap (PGM P5), Portable Pixmap (PPM P6), Portable Arbitrary-Map (PAM P7)
-	/// 
-	/// Note: PAM supports reading 8 bit Grayscale, 24 bit RGB, and 32 bit RGBA
+	/// File Format Support:
+	///		Portable Bitmap (PBM P4)
+	///		8bit Portable Graymap (PGM P5)
+	///		Portable Pixmap (PPM P6)
+	///		Portable Arbitrary-Map (PAM P7) - Supports reading 8 bit Grayscale, 24 bit RGB, and 32 bit RGBA
 	/// 
 	/// We do not support ASCII formats (P1, P2, or P3) nor 16bit Grayscale.
 	/// </summary>
@@ -59,7 +61,7 @@ namespace Binarization
 			PNM pnm;
 			if (ext == ".pbm")
 			{
-				//pnm.WriteP4(file, image);
+				pnm.WriteP4(file, image);
 			}
 			else if (ext == ".pgm")
 			{
@@ -67,7 +69,7 @@ namespace Binarization
 			}
 			else if (ext == ".ppm")
 			{
-				//pnm.WriteP6(file, image);
+				pnm.WriteP6(file, image);
 			}
 			else if (ext == ".pam")
 			{
@@ -89,26 +91,26 @@ namespace Binarization
 			// Get all but the last bytes worth of data
 			for (idx = 0; idx + 8 < image.size; idx+=8)
 			{
-				Pixel8 byte = inputStream.get();
+				const std::bitset<8> byte(inputStream.get());
 
-				image.data[idx]   = (byte >> 7) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+1] = (byte >> 6) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+2] = (byte >> 5) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+3] = (byte >> 4) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+4] = (byte >> 3) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+5] = (byte >> 2) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+6] = (byte >> 1) & 0x1 ? Palette::Black : Palette::White;
-				image.data[idx+7] = (byte >> 0) & 0x1 ? Palette::Black : Palette::White;
+				image.data[idx]   = byte.test(7) ? Palette::Black : Palette::White;
+				image.data[idx+1] = byte.test(6) ? Palette::Black : Palette::White;
+				image.data[idx+2] = byte.test(5) ? Palette::Black : Palette::White;
+				image.data[idx+3] = byte.test(4) ? Palette::Black : Palette::White;
+				image.data[idx+4] = byte.test(3) ? Palette::Black : Palette::White;
+				image.data[idx+5] = byte.test(2) ? Palette::Black : Palette::White;
+				image.data[idx+6] = byte.test(1) ? Palette::Black : Palette::White;
+				image.data[idx+7] = byte.test(0) ? Palette::Black : Palette::White;
 			}
 
 			// Process the last byte, ignoring any padded bits
 			if (idx < image.size)
 			{
-				Pixel8 byte = inputStream.get();
+				const std::bitset<8> byte(inputStream.get());
 
 				for (int idx2 = 0; idx + idx2 < image.size; ++idx2)
 				{
-					image.data[idx + idx2] = (byte >> 7 - idx2) & 0x1 ? Palette::Black : Palette::White;
+					image.data[idx + idx2] = byte.test(7 - idx2) ? Palette::Black : Palette::White;
 				}
 			}
 		}
@@ -247,6 +249,41 @@ namespace Binarization
 			throw "Unsupported Format";
 		}
 
+		void WriteP4(std::ostream &outputStream, const Image &image)
+		{
+			int idx;
+
+			outputStream
+				<< "P4" << std::endl
+				<< image.width << " " << image.height << std::endl;
+			
+			std::bitset<8> byte;
+			for (idx = 0; idx + 8 < image.size; idx += 8)
+			{
+				byte.set(7, image.data[idx] == Palette::Black);
+				byte.set(6, image.data[idx + 1] == Palette::Black);
+				byte.set(5, image.data[idx + 2] == Palette::Black);
+				byte.set(4, image.data[idx + 3] == Palette::Black);
+				byte.set(3, image.data[idx + 4] == Palette::Black);
+				byte.set(2, image.data[idx + 5] == Palette::Black);
+				byte.set(1, image.data[idx + 6] == Palette::Black);
+				byte.set(0, image.data[idx + 7] == Palette::Black);
+
+				outputStream << static_cast<Pixel8>(byte.to_ulong());
+			}
+
+			// Process the last byte, ignoring any padded bits
+			if (idx < image.size)
+			{
+				for (int idx2 = 0; idx + idx2 < image.size; ++idx2)
+				{
+					byte.set(7 - idx2, image.data[idx + idx2] == Palette::Black);
+				}
+
+				outputStream << static_cast<Pixel8>(byte.to_ulong());
+			}
+		}
+
 		void WriteP5(std::ostream &outputStream, const Image &image)
 		{
 			outputStream
@@ -256,6 +293,20 @@ namespace Binarization
 
 			const size_t size = image.size * sizeof(Pixel8);
 			outputStream.write(reinterpret_cast<char *>(image.data), size);
+		}
+
+		void WriteP6(std::ostream& outputStream, const Image& image)
+		{
+			outputStream
+				<< "P6" << std::endl
+				<< image.width << " " << image.height << std::endl
+				<< image.maxVal << std::endl;
+
+			for (int idx = 0; idx < image.size; ++idx)
+			{
+				const Pixel8 pixel = image.data[idx];
+				outputStream << pixel << pixel << pixel;
+			}
 		}
 
 		void WriteP7(std::ostream &outputStream, const Image &image)
