@@ -25,7 +25,7 @@ namespace Binarization::UnitTests
 		TEST_METHOD(ShafaitCalculatorCompareImagesTest)
 		{
 			// Setup
-			Pixel32 bits[] = {
+			Pixel8 bits[] = {
 				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
 				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
 				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)
@@ -57,7 +57,7 @@ namespace Binarization::UnitTests
 		TEST_METHOD(ShafaitCalculatorCalculate)
 		{
 			// Setup
-			Pixel32 bits[] = {
+			Pixel8 bits[] = {
 				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
 				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
 				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)
@@ -90,7 +90,7 @@ namespace Binarization::UnitTests
 		TEST_METHOD(ShafaitCalculatorOriginalVsLowMemTest)
 		{
 			// Setup
-			Pixel32 bits[] = {
+			Pixel8 bits[] = {
 				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
 				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
 				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)

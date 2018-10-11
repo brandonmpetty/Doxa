@@ -17,6 +17,9 @@ namespace Binarization
 
 	namespace TupleTypes
 	{
+		static const std::string BLACK_WHITE = "BLACKANDWHITE";
+		static const std::string GRAYSCALE = "GRAYSCALE";
+		static const std::string RGB = "RGB";
 		static const std::string RGBA = "RGB_ALPHA";
 	}
 }

@@ -14,7 +14,7 @@ namespace Binarization::UnitTests
 		{
 			// (3, 4) = Black is changed to White
 			// One 8x8 Block with a 5x5 Window
-			Pixel32 dataGT[] = {
+			Pixel8 dataGT[] = {
 				Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::Black, Palette::White, Palette::White,
 				Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
 				Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
@@ -26,7 +26,7 @@ namespace Binarization::UnitTests
 			};
 			Image groundTruthImage(8, 8, dataGT);
 
-			Pixel32 dataExp[] = {
+			Pixel8 dataExp[] = {
 				Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::Black, Palette::White, Palette::White,
 				Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
 				Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,

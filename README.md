@@ -24,10 +24,12 @@ In English, this means that it has the ability to turn a color or gray scale ima
 * Overall Accuracy
 * F-Measure
 * Peak Signal-To-Noise Ratio (PSNR)
+* Negative Rate Metric (NRM)
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
-* Portable Pixel Map: RGBA PAM
+* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), *PAM (P7)
+* Portable Arbitrary-Map: 24-bit, 32-bit RGBA, and partial 8-bit
 
 ## Overview
 The goal of this library is to provide the building blocks one might use to advance the state of handwritten manuscript binarization.
@@ -40,11 +42,8 @@ This library is also heavily unit tested to help ensure quality, and to quickly 
 This short example shows you how easy it is to use ΔBF to process an image.
 
 ```cpp
-// Read a color image
+// Read a 32-bit color image and automatically convert to 8-bit gray scale
 Image image = PPM::Read(R"(C:\MyImage.pam)");
-
-// Convert it to gray scale
-Preprocessor::ToGreyScale(image);
 
 // Use a binarization algorithm to convert it into black and white
 Image imageSauvola = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
@@ -63,14 +62,16 @@ QString imagePath =
 		this,
 		tr("Open File"),
 		"",
-		tr("JPEG (*.jpg *.jpeg);;PNG (*.png)")); // Must be 32b RGBA
+		tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
 
 // Load the image into a Qt QImage
 QImage qImage(imagePath);
 
+// Use Qt to convert to 8-bit grayscale
+qImage.convertToFormat(QImage::Format_Grayscale8);
+
 // Operations on the ΔBF Image will directly change the QImage when set as a reference.
-Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel32*)qImage.bits());
-Preprocessor::ToGreyScale(image);
+Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel8*)qImage.bits());
 Niblack::UpdateImageToBinary<Shafait>(image);  // Due to Shafait, there are no conflicts writing to the same image
 
 // Save the updated QImage to the file system, using Qt
@@ -99,8 +100,8 @@ A Photoshop PSD file is attached that can be used to make corrections to the Gro
 ### Goals
 * Refactor to incorporate tiling in order to reduce memory utilization
 * ~~Provide the Distance Reciprocal Distortion  (DRD) metric~~
-* Improve and expand the PPM image format support
-* Internally process 8 bit images to reduce memory consumption
+* ~~Improve and expand the PPM image format support~~
+* ~~Internally process 8 bit images to reduce memory consumption~~
 
 ## License
 CC0 - Brandon M. Petty, 2017

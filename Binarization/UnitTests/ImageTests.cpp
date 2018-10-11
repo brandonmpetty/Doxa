@@ -17,12 +17,12 @@ namespace Binarization::UnitTests
 			image = Image(3, 2);
 
 			// Set pixel values for image
-			image.data[0] = 0xff0000;
-			image.data[1] = 0x00ff00;
-			image.data[2] = 0x0000ff;
-			image.data[3] = 0x00ffff;
-			image.data[4] = 0xff00ff;
-			image.data[5] = 0xffff00;
+			image.data[0] = 0xF0;
+			image.data[1] = 0xF1;
+			image.data[2] = 0xF2;
+			image.data[3] = 0xF3;
+			image.data[4] = 0xF4;
+			image.data[5] = 0xF5;
 		}
 
 		TEST_METHOD(ImagePixelTest)
@@ -36,7 +36,7 @@ namespace Binarization::UnitTests
 			Assert::AreEqual(image.Pixel(2, 1), image.data[5]);
 
 			// Out of bounds pixel
-			Assert::AreEqual(image.Pixel(0, 3, 0xf0f0f0), (Pixel32)0xf0f0f0);
+			Assert::AreEqual(image.Pixel(0, 3, 0xf0f0f0), (Pixel8)0xf0f0f0);
 		}
 
 		TEST_METHOD(ImageCopyCTORTest)
@@ -80,9 +80,9 @@ namespace Binarization::UnitTests
 				Assert::AreEqual(reference.data, image.data);
 
 				// Set pixel value from coordinate.
-				image.Pixel(1, 1) = 0xf0f0f0;
-				Assert::AreEqual(image.Pixel(1, 1), (Pixel32)0xf0f0f0);
-				Assert::AreEqual(copy.Pixel(1, 1), (Pixel32)0xff00ff); // Copy should not change.
+				image.Pixel(1, 1) = 0xFA;
+				Assert::AreEqual(image.Pixel(1, 1), (Pixel8)0xFA);
+				Assert::AreEqual(copy.Pixel(1, 1), (Pixel8)0xF4); // Copy should not change.
 				Assert::AreEqual(reference.Pixel(1, 1), image.Pixel(1, 1)); // Reference should change
 
 				// Copy a memory managed Image but no longer manage the memory
@@ -91,12 +91,12 @@ namespace Binarization::UnitTests
 				Assert::AreNotEqual(image.data, deepReference.data);
 
 				// Reference should not change
-				deepReference.Pixel(1, 1) = 0xffffff;
-				Assert::AreEqual(reference.Pixel(1, 1), (Pixel32)0xf0f0f0);
+				deepReference.Pixel(1, 1) = 0xFF;
+				Assert::AreEqual(reference.Pixel(1, 1), (Pixel8)0xFA);
 			}
 
 			// Reference should not free our image storage
-			Assert::AreEqual(image.Pixel(1, 1), (Pixel32)0xf0f0f0);
+			Assert::AreEqual(image.Pixel(1, 1), (Pixel8)0xFA);
 		}
 
 		TEST_METHOD(ImageReferenceTest)
@@ -117,10 +117,10 @@ namespace Binarization::UnitTests
 			copy = reference;
 			Assert::IsFalse(copy.managedExternally);
 
-			// copy should now be a deep copy of image
+			// Copy should now be a deep copy of image
 			Assert::AreEqual(image.width, copy.width);
 			Assert::AreNotEqual(image.data, copy.data);
-			Assert::AreEqual(copy.Pixel(1, 1), (Pixel32)0xff00ff);
+			Assert::AreEqual(copy.Pixel(1, 1), (Pixel8)0xF4);
 		}
 	};
 }

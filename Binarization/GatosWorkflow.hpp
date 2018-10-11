@@ -5,7 +5,6 @@
 
 #include "Types.hpp"
 #include "Algorithms.hpp"
-#include "Preprocessor.hpp"
 #include "Palette.hpp"
 #include "Region.hpp"
 
@@ -152,9 +151,8 @@ namespace Binarization
 					for (int ix = window.upperLeft.x; ix < window.bottomRight.x; ++ix)
 					{
 						for (int iy = window.upperLeft.y; iy < window.bottomRight.y; ++iy)
-						{
-							// This is usually mathematically described as:
-							// Numerator += B(x, y) * (1 − S(x, y))							// Denominator += (1 − S(x, y))							// This assumes that your binary image's black value is 1, and white 0.							// Blindly following this mathematical formula also impacts performance!
+						{							// This is usually mathematically described as:							// Numerator += B(x, y) * (1 − S(x, y))							// Denominator += (1 − S(x, y))							// This assumes that your binary image's black value is 1, and white 0.
+							// Blindly following this mathematical formula also impacts performance!
 							if (binaryImage.Pixel(ix, iy) == Palette::White)
 							{
 								numerator += filteredImage.Pixel(ix, iy);

@@ -1,7 +1,7 @@
 #include "CppUnitTest.h"
 #include "../Image.hpp"
 #include "../GatosWorkflow.hpp"
-#include "../PPM.hpp"
+#include "../PNM.hpp"
 #include "../ShafaitCalculator.hpp"
 
 // Used for expanding macro based directives
@@ -48,11 +48,7 @@ namespace Binarization::UnitTests
 		{
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.pam";
-			Image image = PPM::Read(filePath);
-
-			// Convert to Gray Scale
-			// Note: Not a legitimate PAM image, so do not save this image.
-			Preprocessor::ToGreyScale(image);
+			const Image image = PNM::Read(filePath);
 
 			Image binaryImage(image.width, image.height);
 
@@ -64,7 +60,7 @@ namespace Binarization::UnitTests
 			Assert::IsNotNull(binaryImage.data);
 
 			// Analyze the results outside of the test
-			//PPM::Write(binaryImage, projFolder + "2JohnCV13-Gatos.pam");
+			//PNM::Write(binaryImage, projFolder + "2JohnCV13-Gatos.pam");
 		}
 
 		BEGIN_TEST_METHOD_ATTRIBUTE(GatosWorkflowWienerFilterTest)

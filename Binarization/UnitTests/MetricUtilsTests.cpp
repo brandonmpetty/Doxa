@@ -3,8 +3,7 @@
 #include "CppUnitTest.h"
 #include "../Algorithms.hpp"
 #include "../ShafaitCalculator.hpp"
-#include "../PPM.hpp"
-#include "../Preprocessor.hpp"
+#include "../PNM.hpp"
 #include "../Performance.hpp"
 #include "../MetricUtils.hpp"
 
@@ -146,12 +145,12 @@ namespace Binarization::UnitTests
 
 		TEST_METHOD(MetricUtilsDeathBy1000PaperCuts)
 		{
-			Pixel32 dataGT[] = {
+			Pixel8 dataGT[] = {
 				Palette::White,  Palette::Black
 			};
 			Image groundTruthImage(1, 2, dataGT);
 
-			Pixel32 dataExp[] = {
+			Pixel8 dataExp[] = {
 				Palette::White,  Palette::Black
 			};
 			Image experimentImage(1, 2, dataExp);

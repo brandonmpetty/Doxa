@@ -85,8 +85,7 @@
     <ClInclude Include="MetricUtils.hpp" />
     <ClInclude Include="Palette.hpp" />
     <ClInclude Include="Performance.hpp" />
-    <ClInclude Include="PPM.hpp" />
-    <ClInclude Include="Preprocessor.hpp" />
+    <ClInclude Include="PNM.hpp" />
     <ClInclude Include="Region.hpp" />
     <ClInclude Include="ShafaitCalculator.hpp" />
     <ClInclude Include="Types.hpp" />

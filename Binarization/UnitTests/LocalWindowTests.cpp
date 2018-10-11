@@ -15,7 +15,7 @@ namespace Binarization::UnitTests
 		{
 			// Build dummy image for a 3x3 window
 			// This array will be updated by our iterator
-			Pixel32 data[] =
+			Pixel8 data[] =
 				{  1,  2,  3,  4,  5,  6,
 				   7,  8,  9, 10, 11, 12,
 				  13, 14, 15, 16, 17, 18,
@@ -38,7 +38,7 @@ namespace Binarization::UnitTests
 			});
 
 			// Compare to our known output
-			const Pixel32 expected[] =
+			const Pixel8 expected[] =
 				{  18,  30,  36,  42,  48,  34,
 				   45,  72,  81,  90,  99,  69,
 				   81, 126, 135, 144, 153, 105,

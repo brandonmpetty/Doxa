@@ -35,12 +35,12 @@ namespace Binarization
 		}
 
 		// Gray Scale Helpers
-		static inline constexpr int Gray(int r, int g, int b)
+		static inline constexpr Pixel8 Gray(int r, int g, int b)
 		{
 			return (r * 11 + g * 16 + b * 5) / 32;
 		}
 
-		static inline constexpr int Gray(Pixel32 rgba)
+		static inline constexpr Pixel8 Gray(Pixel32 rgba)
 		{
 			return Gray(Red(rgba), Green(rgba), Blue(rgba));
 		}
@@ -51,10 +51,8 @@ namespace Binarization
 		}
 
 		// Black and White
-		static const Pixel32 Black = 4278190080; //RGB(0, 0, 0);
-		static const Pixel32 White = 4294967295; //RGB(255, 255, 255);
-		static const Pixel32 BlackGrayScale = 0;
-		static const Pixel32 WhiteGrayScale = 255;
+		static const Pixel8 Black = 0;
+		static const Pixel8 White = 255;
 	};
 }
 

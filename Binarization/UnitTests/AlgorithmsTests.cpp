@@ -1,8 +1,7 @@
 #include "CppUnitTest.h"
 #include "../Algorithms.hpp"
 #include "../ShafaitCalculator.hpp"
-#include "../PPM.hpp"
-#include "../Preprocessor.hpp"
+#include "../PNM.hpp"
 
 // Used for expanding macro based directives
 #define STR(x) #x
@@ -19,13 +18,13 @@ namespace Binarization::UnitTests
 		{
 			Assert::AreEqual(imageA.size, imageB.size);
 
-			const int result = std::memcmp(imageA.data, imageB.data, sizeof(Pixel32) * imageA.size);
+			const int result = std::memcmp(imageA.data, imageB.data, sizeof(Pixel8) * imageA.size);
 			Assert::AreEqual(0, result);
 		}
 
 		void Compare(const Image& experement, std::string filePath)
 		{
-			Image control = PPM::Read(filePath);
+			Image control = PNM::Read(filePath);
 
 			Compare(control, experement);
 		}
@@ -47,11 +46,7 @@ namespace Binarization::UnitTests
 
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.pam";
-			image = PPM::Read(filePath);
-
-			// Convert to Gray Scale
-			// Note: Not a legitimate PAM image, so do not save this image.
-			Preprocessor::ToGreyScale(image);
+			image = PNM::Read(filePath);
 		}
 
 		TEST_METHOD(AlgorithmsSauvolaTest)
@@ -84,6 +79,8 @@ namespace Binarization::UnitTests
 		TEST_METHOD(AlgorithmsNICKTest)
 		{
 			Image imageNICKShafait = Nick::ToBinaryImage<Shafait>(image, 42, -0.11);
+
+			PNM::Write(imageNICKShafait, projFolder + "2JohnC1V3-NICK-1.pgm");
 
 			Compare(imageNICKShafait, projFolder + "2JohnC1V3-NICK.pam");
 		}
