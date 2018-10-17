@@ -81,8 +81,8 @@ namespace Binarization
 
 		static double CalculateNRM(const Classifications& classifications)
 		{
-			const double nrfn = classifications.falseNegative / (classifications.falseNegative + classifications.truePositive);
-			const double nrfp = classifications.falsePositive / (classifications.falsePositive + classifications.trueNegative);
+			const double nrfn = (double)classifications.falseNegative / (classifications.falseNegative + classifications.truePositive);
+			const double nrfp = (double)classifications.falsePositive / (classifications.falsePositive + classifications.trueNegative);
 
 			// Calculate Negative Rate Metric
 			return (nrfn + nrfp) / 2;

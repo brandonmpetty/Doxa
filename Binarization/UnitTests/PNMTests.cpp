@@ -35,7 +35,7 @@ namespace Binarization::UnitTests
 		TEST_METHOD(Read1BitBinaryTest)
 		{
 			// Setup - 1-bit Binary Data
-			const char buffer[] = { 0xAA, 0x80 }; // 1010 1010 1000 0000 Where 1 = 0 Black
+			const char buffer[] = { 0xA0, 0x40, 0xA0 }; // 10100000 01000000 10100000
 			std::istringstream stream(buffer);
 
 			// Execute - Will convert to 8-bit Gray Scale

@@ -86,31 +86,20 @@ namespace Binarization
 
 		void Read1BitBinary(std::istream& inputStream, Image& image)
 		{
-			int idx;
+			const int paddedWidth = image.width + 8 - (image.width % 8);
 
-			// Get all but the last bytes worth of data
-			for (idx = 0; idx + 8 < image.size; idx+=8)
+			for (int y = 0; y < image.height; ++y)
 			{
-				const std::bitset<8> byte(inputStream.get());
-
-				image.data[idx]   = byte.test(7) ? Palette::Black : Palette::White;
-				image.data[idx+1] = byte.test(6) ? Palette::Black : Palette::White;
-				image.data[idx+2] = byte.test(5) ? Palette::Black : Palette::White;
-				image.data[idx+3] = byte.test(4) ? Palette::Black : Palette::White;
-				image.data[idx+4] = byte.test(3) ? Palette::Black : Palette::White;
-				image.data[idx+5] = byte.test(2) ? Palette::Black : Palette::White;
-				image.data[idx+6] = byte.test(1) ? Palette::Black : Palette::White;
-				image.data[idx+7] = byte.test(0) ? Palette::Black : Palette::White;
-			}
-
-			// Process the last byte, ignoring any padded bits
-			if (idx < image.size)
-			{
-				const std::bitset<8> byte(inputStream.get());
-
-				for (int idx2 = 0; idx + idx2 < image.size; ++idx2)
+				for (int x = 0; x < paddedWidth; x+=8)
 				{
-					image.data[idx + idx2] = byte.test(7 - idx2) ? Palette::Black : Palette::White;
+					// Each row is always padded to a full byte
+					const std::bitset<8> byte(inputStream.get());
+					const int position = (y * image.width) + x;
+
+					for (int offset = 0; offset < 8 && x + offset < image.width; ++offset)
+					{
+						image.data[position + offset] = byte.test(7 - offset) ? Palette::Black : Palette::White;
+					}
 				}
 			}
 		}
@@ -257,30 +246,23 @@ namespace Binarization
 				<< "P4" << std::endl
 				<< image.width << " " << image.height << std::endl;
 			
-			std::bitset<8> byte;
-			for (idx = 0; idx + 8 < image.size; idx += 8)
-			{
-				byte.set(7, image.data[idx] == Palette::Black);
-				byte.set(6, image.data[idx + 1] == Palette::Black);
-				byte.set(5, image.data[idx + 2] == Palette::Black);
-				byte.set(4, image.data[idx + 3] == Palette::Black);
-				byte.set(3, image.data[idx + 4] == Palette::Black);
-				byte.set(2, image.data[idx + 5] == Palette::Black);
-				byte.set(1, image.data[idx + 6] == Palette::Black);
-				byte.set(0, image.data[idx + 7] == Palette::Black);
+			const int paddedWidth = image.width + 8 - (image.width % 8);
 
-				outputStream << static_cast<Pixel8>(byte.to_ulong());
-			}
-
-			// Process the last byte, ignoring any padded bits
-			if (idx < image.size)
+			for (int y = 0; y < image.height; ++y)
 			{
-				for (int idx2 = 0; idx + idx2 < image.size; ++idx2)
+				for (int x = 0; x < paddedWidth; x += 8)
 				{
-					byte.set(7 - idx2, image.data[idx + idx2] == Palette::Black);
-				}
+					// Each row is always padded to a full byte
+					std::bitset<8> byte;
+					const int position = (y * image.width) + x;
 
-				outputStream << static_cast<Pixel8>(byte.to_ulong());
+					for (int offset = 0; offset < 8 && x + offset < image.width; ++offset)
+					{
+						byte.set(7 - offset, image.data[position + offset] == Palette::Black);
+					}
+
+					outputStream << static_cast<Pixel8>(byte.to_ulong());
+				}
 			}
 		}
 

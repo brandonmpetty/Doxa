@@ -47,7 +47,7 @@ namespace Binarization::UnitTests
 		TEST_METHOD(GatosWorkflowTest)
 		{
 			// Load Color Image
-			const std::string filePath = projFolder + "2JohnC1V3.pam";
+			const std::string filePath = projFolder + "2JohnC1V3.ppm";
 			const Image image = PNM::Read(filePath);
 
 			Image binaryImage(image.width, image.height);
