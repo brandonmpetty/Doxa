@@ -6,10 +6,11 @@ PerformanceMetrics is a demo application showing how to use the [Δoxa Binarizat
 * Overall Accuracy
 * F-Measure
 * Peak Signal-To-Noise Ratio (PSNR)
+* Negative Rate Metric (NRM)
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
-* Portable Pixel Map: RGBA PAM
+* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), PAM (P7)
 
 ## Overview
 The goal of this application is to show how easily one can create a fairly powerful application using ΔBF.

@@ -14,7 +14,11 @@ namespace Binarization::UnitTests
 		{
 			const Pixel32 rgb = Palette::RGB(10, 21, 32);
 			const Pixel32 rgba = Palette::RGBA(10, 21, 32, 43);
-			const int gray = Palette::Gray(rgba);
+			const Pixel32 gray = Palette::RGB(124, 124, 124);
+
+			// Verify Endian
+			Assert::AreEqual((Pixel32)0xFF20150A, rgb); // 0A = 10, 15 = 21, 20 = 32
+			Assert::AreEqual((Pixel32)0x2B20150A, rgba); // 2B = 43
 
 			// Compaire that the colors are equivolent
 			Assert::AreEqual(Palette::Red(rgb), Palette::Red(rgba));
@@ -33,16 +37,7 @@ namespace Binarization::UnitTests
 
 			// Gray Values
 			Assert::IsFalse(Palette::IsGray(rgba));
-			Assert::IsTrue(gray <= 255);
+			Assert::IsTrue(Palette::IsGray(gray));
 		}
-
-		TEST_METHOD(PaletteGrayTest)
-		{
-			for (int r = 0; r <= 255; ++r)
-				for (int g = 0; g <= 255; ++g)
-					for (int b = 0; b <= 255; ++b)
-						Assert::IsTrue(Palette::Gray(r, g, b) <= 255);
-		}
-
 	};
 }

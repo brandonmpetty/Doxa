@@ -1,7 +1,7 @@
 ﻿// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
-#ifndef PIXEL_HPP
-#define PIXEL_HPP
+#ifndef PALETTE_HPP
+#define PALETTE_HPP
 
 #include <cmath>
 #include "Types.hpp"
@@ -9,24 +9,29 @@
 
 namespace Binarization
 {
+	/// <summary>
+	/// Palette provides many pixel manipulation routines for getting and setting colors.
+	/// Note that it is tuned only for Little Endian systems.
+	/// On Big Endian systems, make sure to avoid any methods taking a Pixel32.
+	/// </summary>
 	class Palette
 	{
 	public:
-		// ARGB 32b Pixel Decoding
-		static inline constexpr int Alpha(Pixel32 rgba) { return rgba >> 24; }
-		static inline constexpr int Red(Pixel32 rgba) { return ((rgba >> 16) & 0xff); }
+		// RGBA 32b Pixel Decoding
+		static inline constexpr int Red(Pixel32 rgba) { return (rgba & 0xff); }
 		static inline constexpr int Green(Pixel32 rgba) { return ((rgba >> 8) & 0xff); }
-		static inline constexpr int Blue(Pixel32 rgba) { return (rgba & 0xff); }
+		static inline constexpr int Blue(Pixel32 rgba) { return ((rgba >> 16) & 0xff); }
+		static inline constexpr int Alpha(Pixel32 rgba) { return rgba >> 24; }
 
-		// ARGB to Pixel
+		// RGBA to Pixel
 		static inline constexpr Pixel32 RGB(int r, int g, int b)
 		{
-			return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+			return (0xffu << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
 		}
 
 		static inline constexpr Pixel32 RGBA(int r, int g, int b, int a)
 		{
-			return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+			return ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
 		}
 
 		static inline constexpr Pixel32 UpdateAlpha(Pixel32 rgba, int a)
@@ -57,4 +62,4 @@ namespace Binarization
 }
 
 
-#endif // PIXEL_HPP
+#endif // PALETTE_HPP

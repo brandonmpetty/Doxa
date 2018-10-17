@@ -28,8 +28,7 @@ In English, this means that it has the ability to turn a color or gray scale ima
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
-* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), *PAM (P7)
-* Portable Arbitrary-Map: 24-bit, 32-bit RGBA, and partial 8-bit
+* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), PAM (P7)
 
 ## Overview
 The goal of this library is to provide the building blocks one might use to advance the state of handwritten manuscript binarization.
@@ -68,7 +67,7 @@ QString imagePath =
 QImage qImage(imagePath);
 
 // Use Qt to convert to 8-bit grayscale
-qImage.convertToFormat(QImage::Format_Grayscale8);
+qImage = qImage.convertToFormat(QImage::Format_Grayscale8);
 
 // Operations on the ΔBF Image will directly change the QImage when set as a reference.
 Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel8*)qImage.bits());
@@ -89,10 +88,10 @@ This can help you judge the true quality of the binarization algorithm.
 
 | Algorithm | Window | K     | Accuracy | F-Measure | PSNR    | DRDM    | Time      | Image     |
 | --------- |:------:|:-----:|:--------:|:---------:|:-------:|:-------:|:---------:|:---------:|
-| Wolf      | 20     | 0.19  | [97.6747](/Demo/Kumite/Samples/Wolf-Accuracy.csv)    | [93.2996](/Demo/Kumite/Samples/Wolf-FMeasure.csv)    | [16.3352](/Demo/Kumite/Samples/Wolf-PSNR.csv)    | [1.96513](/Demo/Kumite/Samples/Wolf-DRDM.csv)    | [0.0399408](/Demo/Kumite/Samples/Wolf-Time.csv)    | [View](/README/2JohnC1V3-Wolf.png)    |
-| Sauvola   | 40     | 0.15  | [97.6654](/Demo/Kumite/Samples/Sauvola-Accuracy.csv) | [93.1474](/Demo/Kumite/Samples/Sauvola-FMeasure.csv) | [16.3179](/Demo/Kumite/Samples/Sauvola-PSNR.csv) | [1.93476](/Demo/Kumite/Samples/Sauvola-DRDM.csv) | [0.0254095](/Demo/Kumite/Samples/Sauvola-Time.csv) | [View](/README/2JohnC1V3-Sauvola.png) |
-| Nick      | 42     | -0.11 | [97.6349](/Demo/Kumite/Samples/Nick-Accuracy.csv)    | [93.0599](/Demo/Kumite/Samples/Nick-FMeasure.csv)    | [16.2615](/Demo/Kumite/Samples/Nick-PSNR.csv)    | [1.96143](/Demo/Kumite/Samples/Nick-DRDM.csv)    | [0.0240333](/Demo/Kumite/Samples/Nick-Time.csv)    | [View](/README/2JohnC1V3-Nick.png)    |
-| Niblack   | 187    | -0.72 | [97.2744](/Demo/Kumite/Samples/Niblack-Accuracy.csv) | [91.9411](/Demo/Kumite/Samples/Niblack-FMeasure.csv) | [15.6454](/Demo/Kumite/Samples/Niblack-PSNR.csv) | [2.38675](/Demo/Kumite/Samples/Niblack-DRDM.csv) | [0.0252389](/Demo/Kumite/Samples/Niblack-Time.csv) | [View](/README/2JohnC1V3-Niblack.png) |
+| Wolf      | 20     | 0.18  | [97.6978](/Demo/Kumite/Samples/Wolf-Accuracy.csv)    | [93.3284](/Demo/Kumite/Samples/Wolf-FMeasure.csv)    | [16.3785](/Demo/Kumite/Samples/Wolf-PSNR.csv)    | [1.94460](/Demo/Kumite/Samples/Wolf-DRDM.csv)    | [0.0302862](/Demo/Kumite/Samples/Wolf-Time.csv)    | [View](/README/2JohnC1V3-Wolf.png)    |
+| Sauvola   | 26     | 0.10  | [97.6712](/Demo/Kumite/Samples/Sauvola-Accuracy.csv) | [93.2038](/Demo/Kumite/Samples/Sauvola-FMeasure.csv) | [16.3286](/Demo/Kumite/Samples/Sauvola-PSNR.csv) | [1.95214](/Demo/Kumite/Samples/Sauvola-DRDM.csv) | [0.0154719](/Demo/Kumite/Samples/Sauvola-Time.csv) | [View](/README/2JohnC1V3-Sauvola.png) |
+| Nick      | 44     | -0.10 | [97.6295](/Demo/Kumite/Samples/Nick-Accuracy.csv)    | [93.0466](/Demo/Kumite/Samples/Nick-FMeasure.csv)    | [16.2515](/Demo/Kumite/Samples/Nick-PSNR.csv)    | [1.96813](/Demo/Kumite/Samples/Nick-DRDM.csv)    | [0.0141377](/Demo/Kumite/Samples/Nick-Time.csv)    | [View](/README/2JohnC1V3-Nick.png)    |
+| Niblack   | 223    | -0.61 | [97.4521](/Demo/Kumite/Samples/Niblack-Accuracy.csv) | [92.5476](/Demo/Kumite/Samples/Niblack-FMeasure.csv) | [15.9382](/Demo/Kumite/Samples/Niblack-PSNR.csv) | [2.13264](/Demo/Kumite/Samples/Niblack-DRDM.csv) | [0.0145479](/Demo/Kumite/Samples/Niblack-Time.csv) | [View](/README/2JohnC1V3-Niblack.png) |
 
 It should be noted that the Ground Truth used to generate these numbers is, like virtually all Ground Truths, subjective and a work in progress.
 A Photoshop PSD file is attached that can be used to make corrections to the Ground Truth as needed.
