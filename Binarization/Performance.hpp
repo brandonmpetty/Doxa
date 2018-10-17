@@ -75,29 +75,26 @@ namespace Binarization
 			// Calculate MSE
 			const double mse = (double)(classifications.falsePositive + classifications.falseNegative) / classifications.Total();
 
-			// Calculate PSNR
+			// Calculate Peak Signal to Noise Ratio
 			return 10 * log10(1 / mse);
 		}
 
+		static double CalculateNRM(const Classifications& classifications)
+		{
+			const double nrfn = (double)classifications.falseNegative / (classifications.falseNegative + classifications.truePositive);
+			const double nrfp = (double)classifications.falsePositive / (classifications.falsePositive + classifications.trueNegative);
+
+			// Calculate Negative Rate Metric
+			return (nrfn + nrfp) / 2;
+		}
+
 		// 
-		// Convenience Methods
-
-		static double CalculateAccuracy(const Image& controlImage, const Image& expirementImage)
+		// Convenience Method
+		template<typename CalcFunc>
+		static double Calculate(const Image& controlImage, const Image& expirementImage, CalcFunc calcFunc)
 		{
 			Classifications classifications;
-			return CompareImages(classifications, controlImage, expirementImage) ? CalculateAccuracy(classifications) : 0.0;
-		}
-
-		static double CalculateFMeasure(const Image& controlImage, const Image& expirementImage)
-		{
-			Classifications classifications;
-			return CompareImages(classifications, controlImage, expirementImage) ? CalculateFMeasure(classifications) : 0.0;
-		}
-
-		static double CalculatePSNR(const Image& controlImage, const Image& expirementImage)
-		{
-			Classifications classifications;
-			return CompareImages(classifications, controlImage, expirementImage) ? CalculatePSNR(classifications) : 0.0;
+			return CompareImages(classifications, controlImage, expirementImage) ? calcFunc(classifications) : 0.0;
 		}
 	};
 }

@@ -15,15 +15,15 @@ namespace Binarization
 		Image() {}
 
 		// CTOR
-		Image(int width, int height, Pixel32* bits = nullptr)
+		Image(int width, int height, Pixel8* bits = nullptr)
 			: width(width), 
 			height(height), 
 			size(width*height)
 		{
-			data = new Pixel32[size];
+			data = new Pixel8[size];
 
 			if (bits != nullptr)  
-				std::memcpy(data, bits, size * sizeof(Pixel32));
+				std::memcpy(data, bits, size);
 		}
 
 		// DTOR
@@ -43,8 +43,8 @@ namespace Binarization
 			tupleType(image.tupleType), 
 			size(image.size)
 		{
-			data = new Pixel32[size];
-			std::memcpy(data, image.data, size * sizeof(Pixel32));
+			data = new Pixel8[size];
+			std::memcpy(data, image.data, size);
 		}
 
 		// Move Constructor
@@ -75,7 +75,7 @@ namespace Binarization
 					data = nullptr;
 
 					// Reallocate
-					data = new Pixel32[that.size];
+					data = new Pixel8[that.size];
 					size = that.size;
 				}
 
@@ -83,7 +83,7 @@ namespace Binarization
 				height = that.height;
 				managedExternally = false;
 
-				std::memcpy(data, that.data, size * sizeof(Pixel32));
+				std::memcpy(data, that.data, size);
 			}
 
 			return *this;
@@ -94,7 +94,7 @@ namespace Binarization
 			return Reference(width, height, data);
 		}
 
-		static Image Reference(int width, int height, Pixel32* data)
+		static Image Reference(int width, int height, Pixel8* data)
 		{
 			Image referenceImage;
 			referenceImage.width = width;
@@ -109,22 +109,22 @@ namespace Binarization
 		// External Memory Management
 		bool managedExternally = false;
 
-		// PPM Values
+		// PNM Values
 		int width = 0;
 		int height = 0;
 		int size = 0;
-		int depth = 4;
+		int depth = 1;
 		int maxVal = 255;
-		std::string tupleType = TupleTypes::RGBA;
+		std::string tupleType = TupleTypes::GRAYSCALE;
 
 		// Compilers are forced to optimize array access, not std::vector access.
 		// This may be slightly faster for data access than vector.
 		// std:vector [] operator implementation: return (*(this->_Myfirst + _Pos));
-		Pixel32* data = nullptr;
+		Pixel8* data = nullptr;
 
-		inline Pixel32& Pixel(int x, int y) { return data[(y * width) + x]; }
-		inline Pixel32  Pixel(int x, int y) const { return data[(y * width) + x]; }
-		inline Pixel32  Pixel(int x, int y, Pixel32 default) const { return (x < 0 || x >= width || y < 0 || y >= height) ? default: Pixel(x, y); }
+		inline Pixel8& Pixel(int x, int y) { return data[(y * width) + x]; }
+		inline Pixel8  Pixel(int x, int y) const { return data[(y * width) + x]; }
+		inline Pixel8  Pixel(int x, int y, Pixel8 default) const { return (x < 0 || x >= width || y < 0 || y >= height) ? default: Pixel(x, y); }
 	};
 }
 

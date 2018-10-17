@@ -1,8 +1,7 @@
 #include "CppUnitTest.h"
 #include "../Algorithms.hpp"
 #include "../ShafaitCalculator.hpp"
-#include "../PPM.hpp"
-#include "../Preprocessor.hpp"
+#include "../PNM.hpp"
 
 // Used for expanding macro based directives
 #define STR(x) #x
@@ -19,13 +18,13 @@ namespace Binarization::UnitTests
 		{
 			Assert::AreEqual(imageA.size, imageB.size);
 
-			const int result = std::memcmp(imageA.data, imageB.data, sizeof(Pixel32) * imageA.size);
+			const int result = std::memcmp(imageA.data, imageB.data, sizeof(Pixel8) * imageA.size);
 			Assert::AreEqual(0, result);
 		}
 
 		void Compare(const Image& experement, std::string filePath)
 		{
-			Image control = PPM::Read(filePath);
+			Image control = PNM::Read(filePath);
 
 			Compare(control, experement);
 		}
@@ -46,46 +45,42 @@ namespace Binarization::UnitTests
 			projFolder.erase(projFolder.size() - 2); // Erase first quote and period, which is used to excape the trailing slash
 
 			// Load Color Image
-			const std::string filePath = projFolder + "2JohnC1V3.pam";
-			image = PPM::Read(filePath);
-
-			// Convert to Gray Scale
-			// Note: Not a legitimate PAM image, so do not save this image.
-			Preprocessor::ToGreyScale(image);
+			const std::string filePath = projFolder + "2JohnC1V3.ppm";
+			image = PNM::Read(filePath);
 		}
 
 		TEST_METHOD(AlgorithmsSauvolaTest)
 		{
 			// Run Sauvola algorithms with different calculators
-			Image imageSauvolaShafait = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
-			Image imageSauvolaShafaitLowMem = Sauvola::ToBinaryImage<Shafait_LowMem>(image, 26, 0.11);
+			Image imageSauvolaShafait = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.10);
+			Image imageSauvolaShafaitLowMem = Sauvola::ToBinaryImage<Shafait_LowMem>(image, 26, 0.10);
 
 			// Are both equal
 			Compare(imageSauvolaShafait, imageSauvolaShafaitLowMem);
 
 			// Do they match our example
-			Compare(imageSauvolaShafaitLowMem, projFolder + "2JohnC1V3-Sauvola.pam");
+			Compare(imageSauvolaShafaitLowMem, projFolder + "2JohnC1V3-Sauvola.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsNiblackTest)
 		{
-			Image imageNiblackShafait = Niblack::ToBinaryImage<Shafait>(image, 124, -0.65);
+			Image imageNiblackShafait = Niblack::ToBinaryImage<Shafait>(image, 223, -0.61);
 
-			Compare(imageNiblackShafait, projFolder + "2JohnC1V3-Niblack.pam");
+			Compare(imageNiblackShafait, projFolder + "2JohnC1V3-Niblack.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsWolfTest)
 		{
-			Image imageWolfShafait = Wolf::ToBinaryImage<Shafait>(image, 20, 0.19);
+			Image imageWolfShafait = Wolf::ToBinaryImage<Shafait>(image, 20, 0.18);
 
-			Compare(imageWolfShafait, projFolder + "2JohnC1V3-Wolf.pam");
+			Compare(imageWolfShafait, projFolder + "2JohnC1V3-Wolf.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsNICKTest)
 		{
-			Image imageNICKShafait = Nick::ToBinaryImage<Shafait>(image, 42, -0.11);
+			Image imageNICKShafait = Nick::ToBinaryImage<Shafait>(image, 44, -0.10);
 
-			Compare(imageNICKShafait, projFolder + "2JohnC1V3-NICK.pam");
+			Compare(imageNICKShafait, projFolder + "2JohnC1V3-NICK.pbm");
 		}
 	};
 

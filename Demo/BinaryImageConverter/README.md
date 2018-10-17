@@ -6,10 +6,11 @@ BinaryImageConverter is a demo application showing how to use the [Δoxa Binariz
 * Niblack - "An Introduction to Digital Image Processing", 1986.
 * Sauvola - "Adaptive document image binarization", 1999.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
+* Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
 
 **Native Image Support**
-* Portable Pixel Map: RGBA PAM
+* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), PAM (P7)
 
 ## Overview
 The goal of this application is to show how easily one can create binary images using ΔBF.

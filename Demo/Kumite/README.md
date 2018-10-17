@@ -10,7 +10,7 @@ It differs from the PerformanceMetrics application in that it will test every pe
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
-* Portable Pixel Map: RGBA PAM
+* Portable Any-Map: PBM (P4), 8-bit PGM (P5), PPM (P6), PAM (P7)
 
 ## Overview
 Kumite is an over the top, Bloodsport themed, application.
@@ -27,17 +27,15 @@ This is an example of what you can expect when running this application.
 ```
 C:\>Kumite.exe --source "<dir>\UnitTests\Resources\2JohnC1V3.pam" --groundtruth "<dir>\UnitTests\Resources\2JohnC1V3-GroundTruth.pam" --output "<dir>\Demo\Kumite\Samples"
 Algorithm      Window         K              Accuracy       F-Measure      PSNR           DRDM           Time
-Wolf           20             0.19           97.6747        93.2996        16.3352        1.96513        0.0399408
-Sauvola        40             0.15           97.6654        93.1474        16.3179        1.93476        0.0254095
-Nick           42             -0.11          97.6349        93.0599        16.2615        1.96143        0.0240333
-Niblack        187            -0.72          97.2744        91.9411        15.6454        2.38675        0.0252389
+Wolf           20             0.18           97.6978        93.3284        16.3785        1.94460        0.0302862
+Sauvola        26             0.10           97.6712        93.2038        16.3286        1.95214        0.0154719
+Nick           44             -0.10          97.6295        93.0466        16.2515        1.96813        0.0141377
+Niblack        223            -0.61          97.4521        92.5476        15.9382        2.13264        0.0145479
 ```
 
 The list above hightlights both the power and weakness of Performance Measure Ranking.
 Ranking provides a very simple solution for judging performance without creating an explicit measure bias.
 The problem is that an implicit bias is there and can be easily demonstrated.
-For example, takes Sauvola's Window Size = 26 and K = 0.11.
-It is a better performer than what was ranked #1 overall for Sauvola and comes close to defeating Wolf.
 
 
 ### Goals
