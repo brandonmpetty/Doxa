@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef ALGORITHMS_HPP
 #define ALGORITHMS_HPP
@@ -23,7 +23,7 @@ namespace Binarization
 			Calculator calculator;
 			calculator.Initialize(image);
 
-			BinaryAlgorithm.ToBinary(image, image, calculator, windowSize, k);
+			BinaryAlgorithm::ToBinary(image, image, calculator, windowSize, k);
 		}
 
 		template<typename Calculator>

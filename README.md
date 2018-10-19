@@ -42,13 +42,13 @@ This short example shows you how easy it is to use ΔBF to process an image.
 
 ```cpp
 // Read a 32-bit color image and automatically convert to 8-bit gray scale
-Image image = PPM::Read(R"(C:\MyImage.pam)");
+Image image = PNM::Read(R"(C:\MyImage.pam)");
 
 // Use a binarization algorithm to convert it into black and white
 Image imageSauvola = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
 
 // Save the processed image
-PPM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
+PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 ```
 <br/>
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party frameworks like Qt.

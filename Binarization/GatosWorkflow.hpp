@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef GATOSWORKFLOW_HPP
 #define GATOSWORKFLOW_HPP
@@ -148,10 +148,14 @@ namespace Binarization
 					unsigned int denominator = 0;
 
 					// Build a window around our black pixel and traverse it
-					for (int ix = window.upperLeft.x; ix < window.bottomRight.x; ++ix)
+					for (int iy = window.upperLeft.y; iy < window.bottomRight.y; ++iy)
 					{
-						for (int iy = window.upperLeft.y; iy < window.bottomRight.y; ++iy)
-						{							// This is usually mathematically described as:							// Numerator += B(x, y) * (1 − S(x, y))							// Denominator += (1 − S(x, y))							// This assumes that your binary image's black value is 1, and white 0.
+						for (int ix = window.upperLeft.x; ix < window.bottomRight.x; ++ix)
+						{
+							// This is usually mathematically described as:
+							//     Numerator += B(x, y) * (1 − S(x, y))
+							//     Denominator += (1 − S(x, y))
+							// This assumes that your binary image's black value is 1, and white 0.
 							// Blindly following this mathematical formula also impacts performance!
 							if (binaryImage.Pixel(ix, iy) == Palette::White)
 							{

@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef PNM_HPP
 #define PNM_HPP
@@ -240,8 +240,6 @@ namespace Binarization
 
 		void WriteP4(std::ostream &outputStream, const Image &image)
 		{
-			int idx;
-
 			outputStream
 				<< "P4" << std::endl
 				<< image.width << " " << image.height << std::endl;

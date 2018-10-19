@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef LOCALWINDOW_HPP
 #define LOCALWINDOW_HPP
@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "Image.hpp"
 #include "Palette.hpp"
+#include "Region.hpp"
 
 
 namespace Binarization

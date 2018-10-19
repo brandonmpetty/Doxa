@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef PALETTE_HPP
 #define PALETTE_HPP

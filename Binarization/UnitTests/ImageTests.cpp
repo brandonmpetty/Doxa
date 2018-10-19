@@ -36,7 +36,7 @@ namespace Binarization::UnitTests
 			Assert::AreEqual(image.Pixel(2, 1), image.data[5]);
 
 			// Out of bounds pixel
-			Assert::AreEqual(image.Pixel(0, 3, 0xf0f0f0), (Pixel8)0xf0f0f0);
+			Assert::AreEqual(image.Pixel(0, 3, 0xF6), (Pixel8)0xF6);
 		}
 
 		TEST_METHOD(ImageCopyCTORTest)

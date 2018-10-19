@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
@@ -124,7 +124,7 @@ namespace Binarization
 
 		inline Pixel8& Pixel(int x, int y) { return data[(y * width) + x]; }
 		inline Pixel8  Pixel(int x, int y) const { return data[(y * width) + x]; }
-		inline Pixel8  Pixel(int x, int y, Pixel8 default) const { return (x < 0 || x >= width || y < 0 || y >= height) ? default: Pixel(x, y); }
+		inline Pixel8  Pixel(int x, int y, Pixel8 defaultValue) const { return (x < 0 || x >= width || y < 0 || y >= height) ? defaultValue : Pixel(x, y); }
 	};
 }
 

@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef METRICUTILS_HPP
 #define METRICUTILS_HPP
@@ -108,8 +108,8 @@ namespace Binarization
 
 			scores[0].score += rank;
 
-			const int size = scores.size();
-			for (int index = 1; index < size; ++index)
+			const size_t size = scores.size();
+			for (size_t index = 1; index < size; ++index)
 			{
 				// Allow for ties
 				if (predicate(scores[index - 1], scores[index]))

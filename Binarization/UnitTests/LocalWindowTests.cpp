@@ -30,11 +30,11 @@ namespace Binarization::UnitTests
 
 				int sum = 0;
 
-				for (int x = window.upperLeft.x; x <= window.bottomRight.x; ++x)
-					for (int y = window.upperLeft.y; y <= window.bottomRight.y; ++y)
+				for (int y = window.upperLeft.y; y <= window.bottomRight.y; ++y)
+					for (int x = window.upperLeft.x; x <= window.bottomRight.x; ++x)
 						sum += image.Pixel(x, y);
 
-				data[position] = sum;
+				data[position] = (std::min)(sum, 255);
 			});
 
 			// Compare to our known output
@@ -43,7 +43,7 @@ namespace Binarization::UnitTests
 				   45,  72,  81,  90,  99,  69,
 				   81, 126, 135, 144, 153, 105,
 				  117, 180, 189, 198, 207, 141,
-				  153, 234, 243, 252, 261, 177,
+				  153, 234, 243, 252, 255, 177,
 				  114, 174, 180, 186, 192, 130  };
 
 			Assert::IsTrue(std::equal(std::begin(data), std::end(data), std::begin(expected)));

@@ -1,4 +1,4 @@
-﻿// Δoxa Binarization Framework
+// Δoxa Binarization Framework
 // License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
 #ifndef SHAFAITCALCULATOR_HPP
 #define SHAFAITCALCULATOR_HPP
