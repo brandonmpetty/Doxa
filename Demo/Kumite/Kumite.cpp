@@ -328,7 +328,7 @@ void DisplayPerformance(const MetricUtils::Scores& scores)
 		<< setw(15) << "Time"
 		<< endl;
 
-	for each (auto score in scores)
+	for (auto score : scores)
 	{
 		cout << left 
 			<< setw(15) << score.ID 
