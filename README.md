@@ -1,11 +1,13 @@
 # Δoxa Binarization Framework
+<span style="color:red">
 ### WARNING: 
-Apologies for the excessive code churn.  Doxa 2 was built to try to further abstract, and extend, our binarization clases.  The concept of Parameters has been introduced, Calculators have been refined and broken up, and 5 new algorithms have been added.  To help me merge this branch back in as quick as possible, I could use some help.
+Apologies for the excessive code churn.  Doxa 2 was built to try to further abstract, and extend, our binarization classes.  The concept of Parameters has been introduced, Calculators have been refined and broken up, and 5 new algorithms have been added.  To help me merge this branch back in as quick as possible, I could use some help.
 * Gatos has hit a regression in my attempt to simplify it and improve performance
 * Su is looking like it could be, by far, the best algorithm on the list but it needs significant fixes
 * WAN is close, but not working
 * A vHGW based Calculator for calculating the Min / Max of a local window, quickly, could really help some algorithms
-
+</span>
+<br/>
 
 <p align="center">
 	<img src="/README/2JohnC1V3.png" width="45%" height="45%"/>
