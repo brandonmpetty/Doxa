@@ -4,6 +4,7 @@
 #include "../Niblack.hpp"
 #include "../Sauvola.hpp"
 #include "../Wolf.hpp"
+#include "../Gatos.hpp"
 #include "../Nick.hpp"
 #include "../TRSing.hpp"
 #include "../Wan.hpp"
@@ -22,6 +23,7 @@ namespace Doxa::UnitTests
 {
 	TEST_CLASS(BinarizationTests)
 	{
+		// Utilities
 		void Compare(const Image& imageA, const Image& imageB)
 		{
 			Assert::AreEqual(imageA.size, imageB.size);
@@ -99,8 +101,6 @@ namespace Doxa::UnitTests
 
 			Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
-			PNM::Write(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
-
 			Compare(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
 		}
 
@@ -109,8 +109,6 @@ namespace Doxa::UnitTests
 			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
 
 			Image imageTRSing = TRSing::ToBinaryImage(image, parameters);
-
-			PNM::Write(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
 
 			Compare(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
 		}
@@ -121,8 +119,6 @@ namespace Doxa::UnitTests
 
 			Image imageWAN = Wan::ToBinaryImage(image, parameters);
 
-			PNM::Write(imageWAN, projFolder + "2JohnC1V3-WAN.pbm");
-
 			Compare(imageWAN, projFolder + "2JohnC1V3-WAN.pbm");
 		}
 
@@ -130,9 +126,7 @@ namespace Doxa::UnitTests
 		{
 			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
 
-			Image imageGatos = Wan::ToBinaryImage(image, parameters);
-
-			PNM::Write(imageGatos, projFolder + "2JohnC1V3-Gatos.pbm");
+			Image imageGatos = Gatos::ToBinaryImage(image, parameters);
 
 			Compare(imageGatos, projFolder + "2JohnC1V3-Gatos.pbm");
 		}
@@ -149,8 +143,6 @@ namespace Doxa::UnitTests
 		TEST_METHOD(AlgorithmsOtsuTest)
 		{
 			Image imageOtsu = Otsu::ToBinaryImage(image, Parameters());
-
-			PNM::Write(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 
 			Compare(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}

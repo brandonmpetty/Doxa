@@ -36,7 +36,7 @@ namespace Doxa
 				CalculateMeanStdDev(mean, stddev, window);
 				CalculateMax(max, window);
 
-				return (((double)max - mean) / 2) * (1 + k * ((stddev / 128) - 1));
+				return (((double)max + mean) / 2) * (1 + k * ((stddev / 128) - 1));
 			});
 		}
 	};
