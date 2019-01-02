@@ -12,7 +12,7 @@
 #include "../../Doxa/Nick.hpp"
 #include "../../Doxa/Gatos.hpp"
 #include "../../Doxa/Su.hpp"
-#include "../../Doxa/TRSing.hpp"
+#include "../../Doxa/TRSingh.hpp"
 #include "../../Doxa/Wan.hpp"
 
 using namespace std;
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	bool nick = false;
 	bool gatos = false;
 	bool su = false;
-	bool trsing = false;
+	bool trsingh = false;
 	bool wan = false;
 
 	std::string source;
@@ -65,8 +65,8 @@ int main(int argc, char* argv[])
 			gatos = true;
 		else if (arg.compare("-su") == 0)
 			su = true;
-		else if (arg.compare("-trsing") == 0)
-			trsing = true;
+		else if (arg.compare("-trsingh") == 0)
+			trsingh = true;
 		else if (arg.compare("-wan") == 0)
 			wan = true;
 		else if (arg.compare("--source") == 0)
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (source == "") return Help(0);
-	if (!otsu && !bernsen && !niblack && !sauvola && !wolf && !nick && !gatos && !su && !trsing && !wan) 
+	if (!otsu && !bernsen && !niblack && !sauvola && !wolf && !nick && !gatos && !su && !trsingh && !wan) 
 		return Help(0);
 
 	try
@@ -161,11 +161,11 @@ int main(int argc, char* argv[])
 			PNM::Write(binaryImage, output + "-Su.pbm");
 		}
 
-		if (trsing)
+		if (trsingh)
 		{
 			parameters.Set("k", k == 0.0 ? 0.2 : k);
-			Image binaryImage = TRSing::ToBinaryImage(image, parameters);
-			PNM::Write(binaryImage, output + "-TRSing.pbm");
+			Image binaryImage = TRSingh::ToBinaryImage(image, parameters);
+			PNM::Write(binaryImage, output + "-TRSingh.pbm");
 		}
 
 		if (wan)
@@ -199,7 +199,7 @@ int Help(const int returnValue)
 		<< endl
 		<< "Usage: BinaryImageConverter.exe --source <image location> [-<algorithm>] [--w <window size>] [--k <k value>]" << endl
 		<< endl
-		<< "Algorithms: otsu, bernsen, niblack, sauvola, wolf, nick, gatos, su, trsing, wan" << endl
+		<< "Algorithms: otsu, bernsen, niblack, sauvola, wolf, nick, gatos, su, trsingh, wan" << endl
 		<< endl
 		<< "Multiple algorithms can be specified at once.  Defaults: w = 75, k = 0.2 (Nick's k = -0.2), g = 60" << endl
 		<< "Example: BinaryImageConverter.exe --source c:\\image.pam -wolf -sauvola --w 23 --k 0.15" << endl

@@ -100,7 +100,7 @@
     <ClInclude Include="Sauvola.hpp" />
     <ClInclude Include="MeanVarianceCalculator.hpp" />
     <ClInclude Include="Su.hpp" />
-    <ClInclude Include="TRSing.hpp" />
+    <ClInclude Include="TRSingh.hpp" />
     <ClInclude Include="Types.hpp" />
     <ClInclude Include="Wan.hpp" />
     <ClInclude Include="Wolf.hpp" />

@@ -18,7 +18,7 @@ In English, this means that it has the ability to turn a color or gray scale ima
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
-* T.R. Sing - "A New local Adaptive Thresholding Technique in Binarization", 2011.
+* T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
 
 **Optimizations**

@@ -11,10 +11,10 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The T.R. Sing Algorithm: T. Romen Singh, Sudipta Roy, O. Imocha Singh, Tejmani Sinam, Kh. Manglem Singh
+	/// The T.R. Singh Algorithm: T. Romen Singh, Sudipta Roy, O. Imocha Singh, Tejmani Sinam, Kh. Manglem Singh
 	/// </summary>
 	/// <remarks>"A New local Adaptive Thresholding Technique in Binarization", 2011.</remarks>
-	class TRSing : public Algorithm<TRSing>, public MeanCalculator
+	class TRSingh : public Algorithm<TRSingh>, public MeanCalculator
 	{
 	public:
 		void Initialize(const Image& grayScaleImageIn)

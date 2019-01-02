@@ -6,7 +6,7 @@
 #include "../Wolf.hpp"
 #include "../Gatos.hpp"
 #include "../Nick.hpp"
-#include "../TRSing.hpp"
+#include "../TRSingh.hpp"
 #include "../Wan.hpp"
 #include "../Su.hpp"
 #include "../KitchenSinkCalculator.hpp"
@@ -104,11 +104,11 @@ namespace Doxa::UnitTests
 			Compare(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
 		}
 
-		TEST_METHOD(AlgorithmsTRSingTest)
+		TEST_METHOD(AlgorithmsTRSinghTest)
 		{
 			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
 
-			Image imageTRSing = TRSing::ToBinaryImage(image, parameters);
+			Image imageTRSing = TRSingh::ToBinaryImage(image, parameters);
 
 			Compare(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
 		}
