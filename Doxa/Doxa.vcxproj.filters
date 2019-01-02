@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Algorithm.hpp" />
+    <ClInclude Include="Image.hpp" />
+    <ClInclude Include="Parameters.hpp" />
+    <ClInclude Include="LocalWindow.hpp" />
+    <ClInclude Include="Palette.hpp" />
+    <ClInclude Include="PNM.hpp" />
+    <ClInclude Include="Region.hpp" />
+    <ClInclude Include="Types.hpp" />
+    <ClInclude Include="Bernsen.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Gatos.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Niblack.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Nick.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Otsu.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Sauvola.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Su.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="TRSing.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Wan.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="Wolf.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="MeanCalculator.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="MeanVarianceCalculator.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="MinMaxCalculator.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="KitchenSinkCalculator.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="DRDM.hpp">
+      <Filter>Performance</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassifiedPerformance.hpp">
+      <Filter>Performance</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Binarization">
+      <UniqueIdentifier>{0bc8ceb9-2616-4d1b-b477-46df3077c84f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Calculators">
+      <UniqueIdentifier>{384d1bb5-fb6c-457d-8a7b-c237672c20ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Performance">
+      <UniqueIdentifier>{b9e03a3c-b2a1-4e60-b9e4-1d839365b4c7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

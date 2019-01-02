@@ -35,7 +35,7 @@ DRDM:           1.9446
 * Add support for comparing multiple targets against one ground truth image
 
 ## License
-CC0 - Brandon M. Petty, 2017
+CC0 - Brandon M. Petty, 2019
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

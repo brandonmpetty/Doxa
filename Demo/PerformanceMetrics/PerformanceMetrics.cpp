@@ -1,13 +1,13 @@
 // Δoxa Binarization Framework Demo
-// License: CC0 2017, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
 #include <iostream>
-#include "../../Binarization/Image.hpp"
-#include "../../Binarization/PNM.hpp"
-#include "../../Binarization/Performance.hpp"
-#include "../../Binarization/DRDMPerformance.hpp"
+#include "../../Doxa/Image.hpp"
+#include "../../Doxa/PNM.hpp"
+#include "../../Doxa/ClassifiedPerformance.hpp"
+#include "../../Doxa/DRDM.hpp"
 
 using namespace std;
-using namespace Binarization;
+using namespace Doxa;
 
 // Forward Declarations
 int Help(const int returnValue);
@@ -22,7 +22,11 @@ int main(int argc, char* argv[])
 	if (argc != 3) return Help(0);
 
 	struct stat buffer;
-	if ((stat(argv[1], &buffer) != 0) || (stat(argv[2], &buffer) != 0))
+	string groundTruthLocation = fs::absolute(argv[1]).string();
+	string targetLocation = fs::absolute(argv[2]).string();
+
+	// Check file existance
+	if ((stat(groundTruthLocation.c_str(), &buffer) != 0) || (stat(targetLocation.c_str(), &buffer) != 0))
 	{
 		cout << "One or more files do not exist.  Check your arguments and file locations." << endl;
 		return 1;
@@ -30,22 +34,22 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		Image groundTruthImage = PNM::Read(argv[1]);
-		Image targetImage = PNM::Read(argv[2]);
+		Image groundTruthImage = PNM::Read(groundTruthLocation);
+		Image targetImage = PNM::Read(targetLocation);
 
-		Performance::Classifications classifications;
-		bool canCompare = Performance::CompareImages(classifications, groundTruthImage, targetImage);
+		ClassifiedPerformance::Classifications classifications;
+		bool canCompare = ClassifiedPerformance::CompareImages(classifications, groundTruthImage, targetImage);
 		if (!canCompare)
 		{
 			cout << "Files cannot be compared.  Ensure both images have the same height and width." << endl;
 			return 1;
 		}
 
-		double scoreAccuracy = Performance::CalculateAccuracy(classifications);
-		double scoreFM = Performance::CalculateFMeasure(classifications);
-		double scorePSNR = Performance::CalculatePSNR(classifications);
-		double scoreNRM = Performance::CalculateNRM(classifications);
-		double scoreDRDM = DRDMPerformance::CalculateDRDM(groundTruthImage, targetImage);
+		double scoreAccuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
+		double scoreFM = ClassifiedPerformance::CalculateFMeasure(classifications);
+		double scorePSNR = ClassifiedPerformance::CalculatePSNR(classifications);
+		double scoreNRM = ClassifiedPerformance::CalculateNRM(classifications);
+		double scoreDRDM = DRDM::CalculateDRDM(groundTruthImage, targetImage);
 
 		DisplayMetrics(scoreAccuracy, scoreFM, scorePSNR, scoreNRM, scoreDRDM);
 	}
@@ -74,7 +78,7 @@ int Help(const int returnValue)
 		<< "Usage: PerformanceMetrics.exe <Ground Truth> <Target Image>" << endl
 		<< endl
 		<< endl
-		<< "CC0 - Brandon M. Petty, 2017" << endl
+		<< "CC0 - Brandon M. Petty, 2018" << endl
 		<< endl
 		<< "To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide.  This software is distributed without any warranty."
 		<< endl;
