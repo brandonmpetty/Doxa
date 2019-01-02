@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Sauvola Algorithm
+	/// The Sauvola Algorithm: J. Sauvola, M. Pietikäinen
 	/// </summary>
 	/// <remarks>"Adaptive document image binarization", 1999.</remarks>
 	class Sauvola : public Algorithm<Sauvola>, public MeanVarianceCalculator

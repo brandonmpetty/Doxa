@@ -135,8 +135,6 @@ namespace Doxa::UnitTests
 		{
 			Image imageSu = Su::ToBinaryImage(image, Parameters());
 
-			PNM::Write(imageSu, projFolder + "2JohnC1V3-Su.pbm");
-
 			Compare(imageSu, projFolder + "2JohnC1V3-Su.pbm");
 		}
 

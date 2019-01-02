@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The NICK Algorithm
+	/// The NICK Algorithm: Khurram Khurshid, Imran Siddiqi, Claudie Faure, Nicole Vincent
 	/// </summary>
 	/// <remarks>"Comparison of Niblack inspired Binarization methods for ancient documents", 2009.</remarks>
 	class Nick : public Algorithm<Nick>, public MeanVarianceCalculator
@@ -34,7 +34,7 @@ namespace Doxa
 			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
 				CalculateMeanVariance(mean, variance, window);
 
-				return mean + (k * sqrt(variance + (mean*mean)));
+				return mean + (k * sqrt(variance + (mean * mean)));
 			});
 		}
 	};

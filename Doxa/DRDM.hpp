@@ -13,7 +13,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Distance-Reciprocal Distortion Measure (DRDM) Algorithm
+	/// The Distance-Reciprocal Distortion Measure (DRDM) Algorithm: Haiping Lu, Jian Wang, A.C. Kot, Y.Q. Shi
 	/// </summary>
 	/// <remarks>"An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.</remarks>
 	class DRDM

@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The WAN Algorithm
+	/// The WAN Algorithm: Wan Azani Mustafa, Mohamed Mydin M. Abdul Kader
 	/// </summary>
 	/// <remarks>"Binarization of Document Image Using Optimum Threshold Modification", 2018.</remarks>
 	class Wan : public Algorithm<Wan>, public KitchenSinkCalculator

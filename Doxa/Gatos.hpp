@@ -16,8 +16,12 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Gatos binarization workflow.
-	/// This is a 5 step workflow consisting of a Wiener Filter, the Sauvola algorithm, and a background estimation based thresholding algorithm.
+	/// The Gatos binarization workflow: B. Gatos, I. Pratikakis, S.J. Perantonis
+	/// This is a 5 step workflow consisting of:
+	///		Wiener Filter
+	///		Sauvola binarization algorithm
+	///		A background estimation based thresholding algorithm
+	/// 
 	/// The optional Upsampling on the fourth step is not currently performed, nor the Post-processing for the fifth step.
 	/// </summary>
 	/// <remarks>"Adaptive degraded document image binarization", 2005.</remarks>

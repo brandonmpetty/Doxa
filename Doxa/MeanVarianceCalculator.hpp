@@ -9,8 +9,8 @@
 namespace Doxa
 {
 	/// <summary>
+	/// The Shafait Algorithm: Faisal Shafait, Daniel Keysers, Thomas M. Breuel
 	/// An integral image based calculator for calculating Mean, Variance, and Std. Deviation.
-	/// The implementation is heavily inspired by Shait's research paper on the subject.
 	/// </summary>
 	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
 	class MeanVarianceCalculator

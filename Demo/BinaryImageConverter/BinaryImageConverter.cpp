@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 int Help(const int returnValue)
 {
 	cout << endl
-		<< "BinaryImageConverter v1.0" << endl
+		<< "BinaryImageConverter v2.0" << endl
 		<< endl
 		<< "This application will convert a color or greyscale image into a black and white binary image." << endl
 		<< "For now, the source must be a Portable Any-Map files (.pgm, .ppm, .pam)." << endl
@@ -205,10 +205,11 @@ int Help(const int returnValue)
 		<< "Example: BinaryImageConverter.exe --source c:\\image.pam -wolf -sauvola --w 23 --k 0.15" << endl
 		<< "Output:  c:\\image-Wolf.pam, c:\\image-Sauvola.pam" << endl
 		<< endl
-		<< "Note: Gatos is only partially implemented and can take in an optional glyph size, [--g <glyph size>]."
+		<< "Note: Gatos is only partially implemented and can take in an optional glyph size, [--g <glyph size>]." << endl
+		<< "Note: Su will use window size, which should be set to the stroke width.  Default: 10" << endl
 		<< endl
 		<< endl
-		<< "CC0 - Brandon M. Petty, 2018" << endl
+		<< "CC0 - Brandon M. Petty, 2019" << endl
 		<< endl
 		<< "To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide.  This software is distributed without any warranty."
 		<< endl;

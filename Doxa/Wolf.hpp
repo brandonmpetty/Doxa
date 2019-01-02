@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Wolf Algorithm
+	/// The Wolf Algorithm: Christian Wolf, Jean-Michel Jolion
 	/// </summary>
 	/// <remarks>"Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.</remarks>
 	class Wolf : public Algorithm<Wolf>, public MeanVarianceCalculator

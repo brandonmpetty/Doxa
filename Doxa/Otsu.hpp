@@ -12,10 +12,11 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Otsu Algorithm
+	/// The Otsu Algorithm: Nobuyuki Otsu
 	/// 
-	/// This implementation was actually inspired from:
+	/// This implementation was actually inspired by:
 	/// "A C++ Implementation of Otsu’s Image Segmentation Method", 2016.
+	/// Thank you, Juan Pablo Balarini & Sergio Nesmachnow
 	/// </summary>
 	/// <remarks>"A threshold selection method from gray-level histograms", 1979.</remarks>
 	class Otsu : public GlobalThreshold<Otsu>

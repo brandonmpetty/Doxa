@@ -1,12 +1,5 @@
 # Δoxa Binarization Framework
 
-### WARNING: 
-**Apologies for the excessive code churn.  Doxa 2 was built to try to further abstract, and extend, our binarization classes.  The concept of Parameters has been introduced, Calculators have been refined and broken up, and 5 new algorithms have been added.  To help me merge this branch back in as quick as possible, I could use some help.**
-
-* Su is looking like it could be, by far, the best algorithm on the list but it needs significant fixes
-* A vHGW based Calculator for calculating the Min / Max of a local window, quickly, could really help some algorithms
-<br/>
-
 <p align="center">
 	<img src="/README/2JohnC1V3.png" width="45%" height="45%"/>
 	<img src="/README/2JohnC1V3-GroundTruth.png" width="45%" height="45%"/>
@@ -56,7 +49,7 @@ This short example shows you how easy it is to use ΔBF to process an image.
 Image image = PNM::Read(R"(C:\MyImage.pam)");
 
 // Use a binarization algorithm to convert it into black and white
-Image imageSauvola = Sauvola::ToBinaryImage<Shafait>(image, 26, 0.11);
+Image imageSauvola = Sauvola::ToBinaryImage(image, 26, 0.11);
 
 // Save the processed image
 PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
@@ -82,7 +75,7 @@ qImage = qImage.convertToFormat(QImage::Format_Grayscale8);
 
 // Operations on the ΔBF Image will directly change the QImage when set as a reference.
 Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel8*)qImage.bits());
-Niblack::UpdateImageToBinary<Shafait>(image);  // Due to Shafait, there are no conflicts writing to the same image
+Niblack::UpdateToBinary(image);
 
 // Save the updated QImage to the file system, using Qt
 qImage.save("binary-image.png");
@@ -97,14 +90,13 @@ The [PerformanceMetrics](/Demo/PerformanceMetrics) demo highlights how easy it i
 The Kumite demo, which would analyze every K value and Window Size permutation, has been move out of this project and will have its own repo in the future.
 
 
-### Goals
-* Refactor to incorporate tiling in order to reduce memory utilization
-* ~~Provide the Distance Reciprocal Distortion  (DRD) metric~~
-* ~~Improve and expand the PPM image format support~~
-* ~~Internally process 8 bit images to reduce memory consumption~~
+### Help Required
+* Verification of algorithm correctness (especially the Wiener filter used in Gatos)
+* Implement vHGW to significantly improve all algorithms using local min and max
+* Implement, in a very clean way, Howe's binarization algorithm
 
 ## License
-CC0 - Brandon M. Petty, 2018
+CC0 - Brandon M. Petty, 2019
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Niblack Algorithm
+	/// The Niblack Algorithm: Wayne Niblack
 	/// </summary>
 	/// <remarks>"An Introduction to Digital Image Processing", 1986.</remarks>
 	class Niblack : public Algorithm<Niblack>, public MeanVarianceCalculator

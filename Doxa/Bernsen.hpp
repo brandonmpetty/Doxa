@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The Bernsen Algorithm
+	/// The Bernsen Algorithm: John Bernsen
 	/// </summary>
 	/// <remarks>"Dynamic thresholding of gray-level images", 1986.</remarks>
 	class Bernsen : public Algorithm<Bernsen>, public MinMaxCalculator
