@@ -5,7 +5,7 @@
 
 #include "Image.hpp"
 #include "Parameters.hpp"
-
+#include "Palette.hpp"
 
 namespace Doxa
 {
@@ -89,12 +89,12 @@ namespace Doxa
 		/// </summary>
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
 		{
-			const Pixel8 threshold = Threshold(Algorithm::grayScaleImageIn, parameters);
+			const Pixel8 threshold = Threshold(Algorithm<BinaryAlgorithm>::grayScaleImageIn, parameters);
 
-			for (int idx = 0; idx < Algorithm::grayScaleImageIn.size; ++idx)
+			for (int idx = 0; idx < Algorithm<BinaryAlgorithm>::grayScaleImageIn.size; ++idx)
 			{
 				binaryImageOut.data[idx] =
-					Algorithm::grayScaleImageIn.data[idx] <= threshold ?
+					Algorithm<BinaryAlgorithm>::grayScaleImageIn.data[idx] <= threshold ?
 					Palette::Black : Palette::White;
 			}
 		}
