@@ -13,7 +13,7 @@
 
 namespace Doxa
 {
-	namespace fs = std::experimental::filesystem;
+	namespace fs = std::filesystem;
 
 	/// <summary>
 	/// Portable Any-Map (PNM)

@@ -1,9 +1,4 @@
-#include <functional>
-#include "CppUnitTest.h"
-#include "../PNM.hpp"
-#include "../Image.hpp"
-
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+#include "TestUtilities.hpp"
 
 
 namespace Doxa::UnitTests
@@ -50,7 +45,7 @@ namespace Doxa::UnitTests
 				Palette::Black, Palette::White, Palette::Black 
 			};
 
-			Assert::AreEqual(0, std::memcmp(image.data, expected, sizeof(Pixel8) * image.size));
+			TestUtilities::AssertImageData(image, expected);
 		}
 
 		TEST_METHOD(PNMRead8BitBinaryTest)
@@ -69,7 +64,7 @@ namespace Doxa::UnitTests
 			pnm.Read8BitBinary(stream, image);
 
 			// Assert
-			Assert::AreEqual(0, std::memcmp(image.data, buffer, sizeof(Pixel8) * image.size));
+			TestUtilities::AssertImageData(image, (Pixel8*)buffer);
 		}
 
 		TEST_METHOD(PNMRead24BitBinaryTest)
@@ -92,7 +87,7 @@ namespace Doxa::UnitTests
 				Palette::Gray(0xFF, 0xFF, 0xFF), Palette::Gray(0x78, 0x78, 0x78), Palette::Gray(0x01, 0x01, 0x01)
 			};
 
-			Assert::AreEqual(0, std::memcmp(image.data, expected, sizeof(Pixel8) * image.size));
+			TestUtilities::AssertImageData(image, expected);
 		}
 
 		TEST_METHOD(PNMRead32BitBinaryTest)
@@ -115,7 +110,7 @@ namespace Doxa::UnitTests
 				Palette::Gray(0xFF, 0xFF, 0xFF), Palette::Gray(0x78, 0x78, 0x78), Palette::Gray(0x01, 0x01, 0x01)
 			};
 
-			Assert::AreEqual(0, std::memcmp(image.data, expected, sizeof(Pixel8) * image.size));
+			TestUtilities::AssertImageData(image, expected);
 		}
 
 		TEST_METHOD(PNMReadPNMBadFormatTest)
@@ -185,7 +180,7 @@ namespace Doxa::UnitTests
 			// Assert
 			Assert::AreEqual(3, output.width);
 			Assert::AreEqual(2, output.height);
-			Assert::AreEqual(0, std::memcmp(input.data, output.data, sizeof(Pixel8) * input.size));
+			TestUtilities::AssertImages(input, output);
 		}
 
 		void TestWriteAndReadBinary(std::function<void(std::ostream &outputStream, const Image &image)> writeFunc)
@@ -212,7 +207,7 @@ namespace Doxa::UnitTests
 			// Assert
 			Assert::AreEqual(3, output.width);
 			Assert::AreEqual(2, output.height);
-			Assert::AreEqual(0, std::memcmp(input.data, output.data, sizeof(Pixel8) * input.size));
+			TestUtilities::AssertImages(input, output);
 		}
 	};
 }

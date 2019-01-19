@@ -23,6 +23,7 @@ In English, this means that it has the ability to turn a color or gray scale ima
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
+* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished.
 
 **Performance Metrics**
 * Overall Accuracy
@@ -49,7 +50,8 @@ This short example shows you how easy it is to use ΔBF to process an image.
 Image image = PNM::Read(R"(C:\MyImage.pam)");
 
 // Use a binarization algorithm to convert it into black and white
-Image imageSauvola = Sauvola::ToBinaryImage(image, 26, 0.11);
+const Parameters parameters({ {"window", 26}, {"k", 0.10} });
+Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 
 // Save the processed image
 PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
@@ -75,7 +77,7 @@ qImage = qImage.convertToFormat(QImage::Format_Grayscale8);
 
 // Operations on the ΔBF Image will directly change the QImage when set as a reference.
 Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel8*)qImage.bits());
-Niblack::UpdateToBinary(image);
+Niblack::UpdateToBinary(image, Parameters());
 
 // Save the updated QImage to the file system, using Qt
 qImage.save("binary-image.png");
@@ -90,9 +92,8 @@ The [PerformanceMetrics](/Demo/PerformanceMetrics) demo highlights how easy it i
 The Kumite demo, which would analyze every K value and Window Size permutation, has been move out of this project and will have its own repo in the future.
 
 
-### Help Required
+### Help Requested
 * Verification of algorithm correctness (especially the Wiener filter used in Gatos)
-* Implement vHGW to significantly improve all algorithms using local min and max
 * Implement, in a very clean way, Howe's binarization algorithm
 
 ## License

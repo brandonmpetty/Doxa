@@ -1,8 +1,6 @@
-#include "CppUnitTest.h"
+#include "TestUtilities.hpp"
 #include "../Algorithm.hpp"
 #include "../Palette.hpp"
-
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
 namespace Doxa::UnitTests
@@ -44,7 +42,7 @@ namespace Doxa::UnitTests
 			algorithm.ToBinary(binaryImageOut, Parameters());
 
 			// Assert correctness
-			Assert::AreEqual(0, std::memcmp(binaryImageOut.data, expected, sizeof(Pixel8) * binaryImageOut.size));
+			TestUtilities::AssertImageData(binaryImageOut, expected);
 		}
 
 		TEST_METHOD(AlgorithmToBinaryImageTest)
@@ -56,7 +54,7 @@ namespace Doxa::UnitTests
 			Image binaryImageOut = BinarizationTestharness::ToBinaryImage(grayScaleImageIn, Parameters());
 
 			// Assert correctness
-			Assert::AreEqual(0, std::memcmp(binaryImageOut.data, expected, sizeof(Pixel8) * binaryImageOut.size));
+			TestUtilities::AssertImageData(binaryImageOut, expected);
 		}
 
 		TEST_METHOD(AlgorithmUpdateToBinaryTest)
@@ -68,7 +66,7 @@ namespace Doxa::UnitTests
 			BinarizationTestharness::UpdateToBinary(image, Parameters());
 
 			// Assert correctness
-			Assert::AreEqual(0, std::memcmp(image.data, expected, sizeof(Pixel8) * image.size));
+			TestUtilities::AssertImageData(image, expected);
 		}
 	};
 }

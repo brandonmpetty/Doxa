@@ -86,6 +86,7 @@
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="KitchenSinkCalculator.hpp" />
+    <ClInclude Include="Morphology.hpp" />
     <ClInclude Include="Parameters.hpp" />
     <ClInclude Include="MeanCalculator.hpp" />
     <ClInclude Include="MinMaxCalculator.hpp" />

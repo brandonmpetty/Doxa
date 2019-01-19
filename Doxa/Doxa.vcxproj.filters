@@ -57,6 +57,9 @@
     <ClInclude Include="TRSingh.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
+    <ClInclude Include="Morphology.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">
@@ -67,6 +70,9 @@
     </Filter>
     <Filter Include="Performance">
       <UniqueIdentifier>{b9e03a3c-b2a1-4e60-b9e4-1d839365b4c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Processors">
+      <UniqueIdentifier>{b0b7cff2-2bdd-4a27-a159-1b1e65bb992a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -99,12 +99,16 @@
     <ClCompile Include="BinarizationTests.cpp" />
     <ClCompile Include="ImageTests.cpp" />
     <ClCompile Include="LocalWindowTests.cpp" />
+    <ClCompile Include="MorphologyTests.cpp" />
     <ClCompile Include="PaletteTests.cpp" />
     <ClCompile Include="ParametersTests.cpp" />
     <ClCompile Include="PerformanceTests.cpp" />
     <ClCompile Include="PNMTests.cpp" />
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="CalculatorTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestUtilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

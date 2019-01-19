@@ -1,4 +1,4 @@
-#include "CppUnitTest.h"
+#include "TestUtilities.hpp"
 #include "../Otsu.hpp"
 #include "../Bernsen.hpp"
 #include "../Niblack.hpp"
@@ -12,33 +12,11 @@
 #include "../KitchenSinkCalculator.hpp"
 #include "../PNM.hpp"
 
-// Used for expanding macro based directives
-#define STR(x) #x
-#define EXPAND(x) STR(x)
-
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 
 namespace Doxa::UnitTests
 {
 	TEST_CLASS(BinarizationTests)
 	{
-		// Utilities
-		void Compare(const Image& imageA, const Image& imageB)
-		{
-			Assert::AreEqual(imageA.size, imageB.size);
-
-			const int result = std::memcmp(imageA.data, imageB.data, sizeof(Pixel8) * imageA.size);
-			Assert::AreEqual(0, result);
-		}
-
-		void Compare(const Image& experement, std::string filePath)
-		{
-			Image control = PNM::Read(filePath);
-
-			Compare(control, experement);
-		}
-
 		// Initialized Objects
 		static Image image;
 		static std::string projFolder;
@@ -65,7 +43,7 @@ namespace Doxa::UnitTests
 
 			Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 
-			Compare(imageSauvola, projFolder + "2JohnC1V3-Sauvola.pbm");
+			TestUtilities::AssertImageFile(imageSauvola, projFolder + "2JohnC1V3-Sauvola.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsNiblackTest)
@@ -74,7 +52,7 @@ namespace Doxa::UnitTests
 
 			Image imageNiblack = Niblack::ToBinaryImage(image, parameters);
 
-			Compare(imageNiblack, projFolder + "2JohnC1V3-Niblack.pbm");
+			TestUtilities::AssertImageFile(imageNiblack, projFolder + "2JohnC1V3-Niblack.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsWolfTest)
@@ -83,7 +61,7 @@ namespace Doxa::UnitTests
 
 			Image imageWolf = Wolf::ToBinaryImage(image, parameters);
 
-			Compare(imageWolf, projFolder + "2JohnC1V3-Wolf.pbm");
+			TestUtilities::AssertImageFile(imageWolf, projFolder + "2JohnC1V3-Wolf.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsNICKTest)
@@ -92,7 +70,7 @@ namespace Doxa::UnitTests
 
 			Image imageNICK = Nick::ToBinaryImage(image, parameters);
 
-			Compare(imageNICK, projFolder + "2JohnC1V3-NICK.pbm");
+			TestUtilities::AssertImageFile(imageNICK, projFolder + "2JohnC1V3-NICK.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsBernsenTest)
@@ -101,7 +79,7 @@ namespace Doxa::UnitTests
 
 			Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
-			Compare(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
+			TestUtilities::AssertImageFile(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsTRSinghTest)
@@ -110,7 +88,7 @@ namespace Doxa::UnitTests
 
 			Image imageTRSing = TRSingh::ToBinaryImage(image, parameters);
 
-			Compare(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
+			TestUtilities::AssertImageFile(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsWANTest)
@@ -119,7 +97,7 @@ namespace Doxa::UnitTests
 
 			Image imageWAN = Wan::ToBinaryImage(image, parameters);
 
-			Compare(imageWAN, projFolder + "2JohnC1V3-WAN.pbm");
+			TestUtilities::AssertImageFile(imageWAN, projFolder + "2JohnC1V3-WAN.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsGatosTest)
@@ -128,21 +106,21 @@ namespace Doxa::UnitTests
 
 			Image imageGatos = Gatos::ToBinaryImage(image, parameters);
 
-			Compare(imageGatos, projFolder + "2JohnC1V3-Gatos.pbm");
+			TestUtilities::AssertImageFile(imageGatos, projFolder + "2JohnC1V3-Gatos.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsSuTest)
 		{
 			Image imageSu = Su::ToBinaryImage(image, Parameters());
 
-			Compare(imageSu, projFolder + "2JohnC1V3-Su.pbm");
+			TestUtilities::AssertImageFile(imageSu, projFolder + "2JohnC1V3-Su.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsOtsuTest)
 		{
 			Image imageOtsu = Otsu::ToBinaryImage(image, Parameters());
 
-			Compare(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
+			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}
 	};
 
