@@ -42,12 +42,6 @@
     <ClInclude Include="MeanVarianceCalculator.hpp">
       <Filter>Calculators</Filter>
     </ClInclude>
-    <ClInclude Include="MinMaxCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
-    <ClInclude Include="KitchenSinkCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
     <ClInclude Include="DRDM.hpp">
       <Filter>Performance</Filter>
     </ClInclude>

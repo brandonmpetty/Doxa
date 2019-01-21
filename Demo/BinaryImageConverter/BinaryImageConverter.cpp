@@ -3,7 +3,6 @@
 #include <iostream>
 #include "../../Doxa/Image.hpp"
 #include "../../Doxa/PNM.hpp"
-#include "../../Doxa/KitchenSinkCalculator.hpp"
 #include "../../Doxa/Otsu.hpp"
 #include "../../Doxa/Bernsen.hpp"
 #include "../../Doxa/Niblack.hpp"

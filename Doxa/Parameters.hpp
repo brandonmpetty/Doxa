@@ -17,6 +17,8 @@ namespace Doxa
 	/// <summary>
 	/// Parameters can be passed into any algorithm, much like a key value pair.
 	/// The Key is the name of the parameter, while the Value can be any Integer or Double.
+	/// 
+	/// Note: All window values should be ODD.  We are currently not enforcing this.
 	/// </summary>
 	class Parameters
 	{

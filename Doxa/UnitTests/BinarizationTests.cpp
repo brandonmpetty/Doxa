@@ -1,4 +1,5 @@
 #include "TestUtilities.hpp"
+#include "../PNM.hpp"
 #include "../Otsu.hpp"
 #include "../Bernsen.hpp"
 #include "../Niblack.hpp"
@@ -9,8 +10,6 @@
 #include "../TRSingh.hpp"
 #include "../Wan.hpp"
 #include "../Su.hpp"
-#include "../KitchenSinkCalculator.hpp"
-#include "../PNM.hpp"
 
 
 namespace Doxa::UnitTests

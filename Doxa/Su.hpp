@@ -7,7 +7,7 @@
 #include "Otsu.hpp"
 #include "Palette.hpp"
 #include "Region.hpp"
-#include "MinMaxCalculator.hpp"
+#include "Morphology.hpp"
 
 ////////////////////////////////////////////////////////////////////////
 // This code is highly experimental and has not been unit tested yet! //
@@ -54,16 +54,21 @@ namespace Doxa
 	protected:
 		Image GenerateContrastImage(const Image& grayScaleImage) const
 		{
-			Image contrastImageOut(grayScaleImage.width, grayScaleImage.height);
+			const int windowSize = 3;
 
 			Pixel8 min, max;
-			MinMaxCalculator minMaxCalculator;
-			minMaxCalculator.Initialize(grayScaleImage);
 
-			const int windowSize = 3;
+			Image minImage(grayScaleImage.width, grayScaleImage.height);
+			Image maxImage(grayScaleImage.width, grayScaleImage.height);
+			Image contrastImageOut(grayScaleImage.width, grayScaleImage.height);
+
+			Morphology::Erode(minImage, grayScaleImage, windowSize);
+			Morphology::Dilate(maxImage, grayScaleImage, windowSize);
+
 			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& position) {
 
-				minMaxCalculator.CalculateMinMax(min, max, window);
+				min = minImage.data[position];
+				max = maxImage.data[position];
 
 				const double contrastMultiplier = (double)(max - min) / (max + min + 0.0001);
 

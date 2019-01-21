@@ -85,11 +85,9 @@
     <ClInclude Include="DRDM.hpp" />
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Image.hpp" />
-    <ClInclude Include="KitchenSinkCalculator.hpp" />
     <ClInclude Include="Morphology.hpp" />
     <ClInclude Include="Parameters.hpp" />
     <ClInclude Include="MeanCalculator.hpp" />
-    <ClInclude Include="MinMaxCalculator.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="Niblack.hpp" />
     <ClInclude Include="Nick.hpp" />

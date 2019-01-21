@@ -132,10 +132,9 @@ namespace Doxa::UnitTests
 			// Read image
 			Image grayScaleImage = PNM::Read(filePath);
 			Image wanMorphedBinary(grayScaleImage.width, grayScaleImage.height);
-			Image wanBinary(grayScaleImage.width, grayScaleImage.height);
 
 			// Window Size 13 is the tipping for my CPU.
-			const Parameters parameters({ { "window", 25 },{ "k", 0.2 } });
+			const Parameters parameters({ { "window", 15 },{ "k", 0.2 } });
 
 			// Time both algorithms
 			double wanMorphedSpeed = TestUtilities::Time([&]() {
@@ -144,18 +143,7 @@ namespace Doxa::UnitTests
 				wan.ToBinary(wanMorphedBinary, parameters);
 			});
 
-			double wanSpeed = TestUtilities::Time([&]() {
-				Wan wan;
-				wan.Initialize(grayScaleImage);
-				wan.ToBinary(wanBinary, parameters);
-			});
-
-			// Assert correctness
-			TestUtilities::AssertImages(wanMorphedBinary, wanBinary);
-
 			Logger::WriteMessage(("WanMorphedSpeed: " + std::to_string(wanMorphedSpeed)).c_str());
-			Logger::WriteMessage(("WanSpeed: " + std::to_string(wanSpeed)).c_str());
-			Assert::IsTrue(wanMorphedSpeed < wanSpeed);
 		}
 	};
 }
