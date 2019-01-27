@@ -17,26 +17,28 @@ namespace Doxa
 		/// Open is simply Erode followed by Dilate.
 		/// This can help reduce background noise.
 		/// </summary>
-		static void Open(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Open(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
-			Erode(morphedImage, grayScaleImage, windowSize);
-			Dilate(morphedImage, morphedImage, windowSize);
+			Image erodedImage(grayScaleImage.width, grayScaleImage.height);
+			Erode(erodedImage, grayScaleImage, windowSize);
+			Dilate(morphedImage, erodedImage, windowSize);
 		}
 
 		/// <summary>
 		/// Close is simply Dilate followed by Erode.
 		/// This can help fill holes in the forground.
 		/// </summary>
-		static void Close(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Close(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
-			Dilate(morphedImage, grayScaleImage, windowSize);
-			Erode(morphedImage, morphedImage, windowSize);
+			Image dilatedImage(grayScaleImage.width, grayScaleImage.height);
+			Dilate(dilatedImage, grayScaleImage, windowSize);
+			Erode(morphedImage, dilatedImage, windowSize);
 		}
 
 		/// <summary>
 		/// Iterates through the gray scale image, recording the minimum value within the window.
 		/// </summary>
-		static void Erode(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Erode(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
 			// For small window sizes, manually analyzing the window is faster.
 			if (windowSize < 17)
@@ -54,7 +56,7 @@ namespace Doxa
 		/// <summary>
 		/// Iterates through the grayscale image, recording the maximum value within the window.
 		/// </summary>
-		static void Dilate(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Dilate(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
 			// For small window sizes, manually analyzing the window is faster.
 			if (windowSize < 17)

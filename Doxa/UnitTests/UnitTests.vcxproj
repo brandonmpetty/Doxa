@@ -98,6 +98,7 @@
     <ClCompile Include="AlgorithmTests.cpp" />
     <ClCompile Include="BinarizationTests.cpp" />
     <ClCompile Include="ImageTests.cpp" />
+    <ClCompile Include="ISauvolaTests.cpp" />
     <ClCompile Include="LocalWindowTests.cpp" />
     <ClCompile Include="MorphologyTests.cpp" />
     <ClCompile Include="PaletteTests.cpp" />

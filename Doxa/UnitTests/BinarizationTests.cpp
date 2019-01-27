@@ -10,6 +10,7 @@
 #include "../TRSingh.hpp"
 #include "../Wan.hpp"
 #include "../Su.hpp"
+#include "../ISauvola.hpp"
 
 
 namespace Doxa::UnitTests
@@ -113,6 +114,15 @@ namespace Doxa::UnitTests
 			Image imageSu = Su::ToBinaryImage(image, Parameters());
 
 			TestUtilities::AssertImageFile(imageSu, projFolder + "2JohnC1V3-Su.pbm");
+		}
+
+		TEST_METHOD(AlgorithmsISauvola)
+		{
+			const Parameters parameters({ {"window", 15}, {"k", 0.01} });
+
+			Image imageISauvola = ISauvola::ToBinaryImage(image, Parameters());
+
+			PNM::Write(imageISauvola, projFolder + "2JohnC1V3-ISauvola.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsOtsuTest)

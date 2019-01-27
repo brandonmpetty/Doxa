@@ -54,6 +54,15 @@
     <ClInclude Include="Morphology.hpp">
       <Filter>Processors</Filter>
     </ClInclude>
+    <ClInclude Include="ContrastImage.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="WeinerFilter.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="ISauvola.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">

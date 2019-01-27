@@ -8,6 +8,7 @@
 #include "Palette.hpp"
 #include "Region.hpp"
 #include "Morphology.hpp"
+#include "ContrastImage.hpp"
 
 ////////////////////////////////////////////////////////////////////////
 // This code is highly experimental and has not been unit tested yet! //
@@ -36,7 +37,8 @@ namespace Doxa
 			int minN = parameters.Get("minN", windowSize); // Roughly basd on size of window
 
 			// Step 1 - Contrast Image Construction
-			Image contrastImage = GenerateContrastImage(Algorithm::grayScaleImageIn);
+			Image contrastImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
+			ContrastImage::GenerateContrastImage(contrastImage, Algorithm::grayScaleImageIn);
 
 			// Optional Parameter Auto Detection
 			if (windowSize == 0)
@@ -52,34 +54,6 @@ namespace Doxa
 		}
 
 	protected:
-		Image GenerateContrastImage(const Image& grayScaleImage) const
-		{
-			const int windowSize = 3;
-
-			Pixel8 min, max;
-
-			Image minImage(grayScaleImage.width, grayScaleImage.height);
-			Image maxImage(grayScaleImage.width, grayScaleImage.height);
-			Image contrastImageOut(grayScaleImage.width, grayScaleImage.height);
-
-			Morphology::Erode(minImage, grayScaleImage, windowSize);
-			Morphology::Dilate(maxImage, grayScaleImage, windowSize);
-
-			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& position) {
-
-				min = minImage.data[position];
-				max = maxImage.data[position];
-
-				const double contrastMultiplier = (double)(max - min) / (max + min + 0.0001);
-
-				// Note: The paper leaves out the fact that the Contrast Image actually has to be normalized.
-				// To normalize it back into an 8bit gray scale image, simply multiply by 255.
-				contrastImageOut.data[position] = 255 * contrastMultiplier;
-			});
-
-			return contrastImageOut;
-		}
-
 		void AutoDetectParameters(int& windowSize, int& minN, const Image& contrastImage)
 		{
 			// TODO: Implement parameter auto-detection based on stroke width in the Contrast Image

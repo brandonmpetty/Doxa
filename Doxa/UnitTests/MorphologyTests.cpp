@@ -7,39 +7,6 @@ namespace Doxa::UnitTests
 {
 	TEST_CLASS(MorphologyTests)
 	{
-		/// <summary>
-		/// A modified version of WAN that uses Dilate instead of CalculateMax.
-		/// Both should produce an identical image.
-		/// </summary>
-		class WanMorphed : public Algorithm<Wan>, public MeanVarianceCalculator
-		{
-		public:
-			void Initialize(const Image& grayScaleImageIn)
-			{
-				Algorithm::Initialize(grayScaleImageIn);
-				MeanVarianceCalculator::Initialize(grayScaleImageIn);
-			}
-
-			void ToBinary(Image& binaryImageOut, const Parameters& parameters)
-			{
-				double mean, stddev;
-
-				// Read parameters, utilizing defaults
-				const int windowSize = parameters.Get("window", 75);
-				const double k = parameters.Get("k", 0.2);
-
-				// Use Dilate to generate a Max Image
-				Image maxImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
-				Morphology::Dilate(maxImage, Algorithm::grayScaleImageIn, windowSize);
-
-				LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
-					CalculateMeanStdDev(mean, stddev, window);
-
-					return (((double)maxImage.data[position] + mean) / 2) * (1 + k * ((stddev / 128) - 1));
-				});
-			}
-		};
-
 	public:
 
 		TEST_METHOD(MorphologyErodeTest)
@@ -120,6 +87,7 @@ namespace Doxa::UnitTests
 			TestUtilities::AssertImageData(dilatedImage, maxArray);
 		}
 
+		// TODO: Update this test to force calls to Morph(...), IterativelyDilate(...), etc using a test harness.
 		TEST_METHOD(MorphologySpeedTest)
 		{
 			// Find sample image
@@ -131,19 +99,30 @@ namespace Doxa::UnitTests
 
 			// Read image
 			Image grayScaleImage = PNM::Read(filePath);
-			Image wanMorphedBinary(grayScaleImage.width, grayScaleImage.height);
+			Image wanBinary(grayScaleImage.width, grayScaleImage.height);
 
-			// Window Size 13 is the tipping for my CPU.
-			const Parameters parameters({ { "window", 15 },{ "k", 0.2 } });
+			// Window Size 17 is the tipping for my CPU.  This will trigger the Morph algorithm to be applied.
+			Parameters parameters({ { "window", 17 },{ "k", 0.2 } });
 
-			// Time both algorithms
+			// Time algorithms
 			double wanMorphedSpeed = TestUtilities::Time([&]() {
-				WanMorphed wan;
+				Wan wan;
 				wan.Initialize(grayScaleImage);
-				wan.ToBinary(wanMorphedBinary, parameters);
+				wan.ToBinary(wanBinary, parameters);
 			});
 
-			Logger::WriteMessage(("WanMorphedSpeed: " + std::to_string(wanMorphedSpeed)).c_str());
+			// This window size will trigger a manual window analysis to be ran.
+			// This is faster for small window sizes, but very costly for large windows.
+			parameters.Set("window", 15);
+			double wanSpeed = TestUtilities::Time([&]() {
+				Wan wan;
+				wan.Initialize(grayScaleImage);
+				wan.ToBinary(wanBinary, parameters);
+			});
+
+			Logger::WriteMessage(("Morphed Wan Speed (W=17): " + std::to_string(wanMorphedSpeed)).c_str());
+			Logger::WriteMessage(("Manual Wan Speed (W=15): " + std::to_string(wanSpeed)).c_str());
+			Assert::IsTrue(wanSpeed < wanMorphedSpeed);
 		}
 	};
 }
