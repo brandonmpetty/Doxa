@@ -11,7 +11,7 @@
 namespace Doxa
 {
 	/// <summary>
-	/// The NICK Algorithm: Khurram Khurshid, Imran Siddiqi, Claudie Faure, Nicole Vincent
+	/// The NICK Algorithm: Khurram Khurshid, Imran Siddiqi, Claudie Faure, Nicole Vincent
 	/// </summary>
 	/// <remarks>"Comparison of Niblack inspired Binarization methods for ancient documents", 2009.</remarks>
 	class Nick : public Algorithm<Nick>, public MeanVarianceCalculator

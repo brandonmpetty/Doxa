@@ -30,7 +30,7 @@ namespace Doxa
 			// Step 2 - Sauvola’s Binarization Step
 			Image sauvolaImage = Sauvola::ToBinaryImage(Algorithm::grayScaleImageIn, parameters);
 
-			// Step 3 - equential Combination
+			// Step 3 - Sequential Combination
 			Combine(binaryImageOut, highContrastImage, sauvolaImage);
 		}
 

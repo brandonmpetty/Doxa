@@ -1,7 +1,7 @@
 // Δoxa Binarization Framework
 // License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
-#ifndef TRSING_HPP
-#define TRSING_HPP
+#ifndef TRSINGH_HPP
+#define TRSINGH_HPP
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
@@ -42,4 +42,4 @@ namespace Doxa
 }
 
 
-#endif //TRSING_HPP
+#endif //TRSINGH_HPP

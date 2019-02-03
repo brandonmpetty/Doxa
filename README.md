@@ -51,7 +51,7 @@ This short example shows you how easy it is to use ΔBF to process an image.
 Image image = PNM::Read(R"(C:\MyImage.pam)");
 
 // Use a binarization algorithm to convert it into black and white
-const Parameters parameters({ {"window", 26}, {"k", 0.10} });
+const Parameters parameters({ {"window", 25}, {"k", 0.10} });
 Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 
 // Save the processed image
@@ -90,7 +90,7 @@ Other examples can be found in the Demo folder, like the [BinaryImageConverter](
 
 Another thing that sets ΔBF apart is its focus on binarization performance.
 The [PerformanceMetrics](/Demo/PerformanceMetrics) demo highlights how easy it is to get detailed metrics given a sample output and a ground-truth.
-The Kumite demo, which would analyze every K value and Window Size permutation, has been move out of this project and will have its own repo in the future.
+The Kumite demo, which would analyze every K value and Window Size permutation, has been moved out of this project and will have its own repo in the future.
 
 
 ### Help Requested
