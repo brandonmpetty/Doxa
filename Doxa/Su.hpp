@@ -57,7 +57,7 @@ namespace Doxa
 		void AutoDetectParameters(int& windowSize, int& minN, const Image& contrastImage)
 		{
 			// TODO: Implement parameter auto-detection based on stroke width in the Contrast Image
-			windowSize = 8;
+			windowSize = 9;
 			minN = windowSize;
 		}
 
@@ -87,11 +87,11 @@ namespace Doxa
 
 		void Threshold(Image& binaryImageOut, const Image& contrastImageIn, const Image& grayScaleImageIn, int windowSize, int minN) const
 		{
-			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
+			int Ne;
+			double meanE, stdE;
 
-				int Ne;
-				double meanE, stdE;
-
+			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position)
+			{
 				SuCalculations(Ne, meanE, stdE, contrastImageIn, grayScaleImageIn, window);
 
 				binaryImageOut.data[position] =

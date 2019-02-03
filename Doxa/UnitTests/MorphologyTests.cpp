@@ -8,6 +8,28 @@ namespace Doxa::UnitTests
 	TEST_CLASS(MorphologyTests)
 	{
 	public:
+		class MorphologyTestHarness : public Morphology
+		{
+		public:
+			MorphologyTestHarness() : Morphology() {}
+			using Morphology::Morph;
+			using Morphology::IterativelyErode;
+			using Morphology::IterativelyDilate;
+		};
+
+		// Initialized Objects
+		static Image image;
+		static std::string projFolder;
+
+		TEST_CLASS_INITIALIZE(Initialize)
+		{
+			projFolder = TestUtilities::ProjectFolder();
+
+			// Load Color Image
+			const std::string filePath = projFolder + "2JohnC1V3.ppm";
+			image = PNM::Read(filePath);
+		}
+
 
 		TEST_METHOD(MorphologyErodeTest)
 		{
@@ -124,5 +146,43 @@ namespace Doxa::UnitTests
 			Logger::WriteMessage(("Manual Wan Speed (W=15): " + std::to_string(wanSpeed)).c_str());
 			Assert::IsTrue(wanSpeed < wanMorphedSpeed);
 		}
+
+		TEST_METHOD(MorphologyErodeComparisonTest)
+		{
+			const int windowSize = 25;
+			Image morphedImage(image.width, image.height);
+			Image iterativelyMorphedImage(image.width, image.height);
+
+			// Manually find the min within each window
+			MorphologyTestHarness::IterativelyErode(iterativelyMorphedImage, image, windowSize);
+
+			// Utilize a Max Image to speed up the morphology transformation
+			MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
+				return *set.begin(); // Min Value
+			});
+
+			TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
+		}
+
+		TEST_METHOD(MorphologyDilateComparisonTest)
+		{
+			const int windowSize = 25;
+			Image morphedImage(image.width, image.height);
+			Image iterativelyMorphedImage(image.width, image.height);
+
+			// Manually find the max within each window
+			MorphologyTestHarness::IterativelyDilate(iterativelyMorphedImage, image, windowSize);
+
+			// Utilize a Max Image to speed up the morphology transformation
+			MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
+				return *std::prev(set.end()); // Max Value
+			});
+
+			TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
+		}
 	};
+
+	// Static objects
+	Image MorphologyTests::image;
+	std::string MorphologyTests::projFolder;
 }

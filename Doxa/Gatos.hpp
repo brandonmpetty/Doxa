@@ -44,7 +44,7 @@ namespace Doxa
 
 			// Step 3 - Background surface estimation
 			Image backgroundImage(filteredImage);
-			ExtractBackground(backgroundImage, filteredImage, binaryImageOut, glyphSize * 2);
+			ExtractBackground(backgroundImage, filteredImage, binaryImageOut, (glyphSize * 2) + 1);
 
 			// Step 4 - Final thresholding
 			double d, b;

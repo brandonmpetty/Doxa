@@ -16,6 +16,18 @@ namespace Doxa::UnitTests
 	class TestUtilities
 	{
 	public:
+		static std::string ProjectFolder()
+		{
+			// Obtain the project folder
+			// Note: Tests are to be ran in VS.  If this is not the case, change how this is being set.
+			//       This was done to avoid baking in the images into the .exe, or copying them on build.
+			std::string projFolder = EXPAND(UNITTESTPRJ);
+			projFolder.erase(0, 1); // Erase first quote
+			projFolder.erase(projFolder.size() - 2); // Erase first quote and period, which is used to excape the trailing slash
+
+			return projFolder;
+		}
+
 		static double Time(std::function<void()> predicate)
 		{
 			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
