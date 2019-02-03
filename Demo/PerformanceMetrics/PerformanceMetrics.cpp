@@ -21,12 +21,11 @@ int main(int argc, char* argv[])
 {
 	if (argc != 3) return Help(0);
 
-	struct stat buffer;
 	string groundTruthLocation = fs::absolute(argv[1]).string();
 	string targetLocation = fs::absolute(argv[2]).string();
 
 	// Check file existance
-	if ((stat(groundTruthLocation.c_str(), &buffer) != 0) || (stat(targetLocation.c_str(), &buffer) != 0))
+	if (!fs::exists(groundTruthLocation) || !fs::exists(targetLocation))
 	{
 		cout << "One or more files do not exist.  Check your arguments and file locations." << endl;
 		return 1;
