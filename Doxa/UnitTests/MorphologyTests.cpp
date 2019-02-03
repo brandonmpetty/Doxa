@@ -7,40 +7,29 @@ namespace Doxa::UnitTests
 {
 	TEST_CLASS(MorphologyTests)
 	{
-		/// <summary>
-		/// A modified version of WAN that uses Dilate instead of CalculateMax.
-		/// Both should produce an identical image.
-		/// </summary>
-		class WanMorphed : public Algorithm<Wan>, public MeanVarianceCalculator
+	public:
+		class MorphologyTestHarness : public Morphology
 		{
 		public:
-			void Initialize(const Image& grayScaleImageIn)
-			{
-				Algorithm::Initialize(grayScaleImageIn);
-				MeanVarianceCalculator::Initialize(grayScaleImageIn);
-			}
-
-			void ToBinary(Image& binaryImageOut, const Parameters& parameters)
-			{
-				double mean, stddev;
-
-				// Read parameters, utilizing defaults
-				const int windowSize = parameters.Get("window", 75);
-				const double k = parameters.Get("k", 0.2);
-
-				// Use Dilate to generate a Max Image
-				Image maxImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
-				Morphology::Dilate(maxImage, Algorithm::grayScaleImageIn, windowSize);
-
-				LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
-					CalculateMeanStdDev(mean, stddev, window);
-
-					return (((double)maxImage.data[position] + mean) / 2) * (1 + k * ((stddev / 128) - 1));
-				});
-			}
+			MorphologyTestHarness() : Morphology() {}
+			using Morphology::Morph;
+			using Morphology::IterativelyErode;
+			using Morphology::IterativelyDilate;
 		};
 
-	public:
+		// Initialized Objects
+		static Image image;
+		static std::string projFolder;
+
+		TEST_CLASS_INITIALIZE(Initialize)
+		{
+			projFolder = TestUtilities::ProjectFolder();
+
+			// Load Color Image
+			const std::string filePath = projFolder + "2JohnC1V3.ppm";
+			image = PNM::Read(filePath);
+		}
+
 
 		TEST_METHOD(MorphologyErodeTest)
 		{
@@ -120,6 +109,7 @@ namespace Doxa::UnitTests
 			TestUtilities::AssertImageData(dilatedImage, maxArray);
 		}
 
+		// TODO: Update this test to force calls to Morph(...), IterativelyDilate(...), etc using a test harness.
 		TEST_METHOD(MorphologySpeedTest)
 		{
 			// Find sample image
@@ -131,31 +121,68 @@ namespace Doxa::UnitTests
 
 			// Read image
 			Image grayScaleImage = PNM::Read(filePath);
-			Image wanMorphedBinary(grayScaleImage.width, grayScaleImage.height);
 			Image wanBinary(grayScaleImage.width, grayScaleImage.height);
 
-			// Window Size 13 is the tipping for my CPU.
-			const Parameters parameters({ { "window", 25 },{ "k", 0.2 } });
+			// Window Size 17 is the tipping for my CPU.  This will trigger the Morph algorithm to be applied.
+			Parameters parameters({ { "window", 17 },{ "k", 0.2 } });
 
-			// Time both algorithms
+			// Time algorithms
 			double wanMorphedSpeed = TestUtilities::Time([&]() {
-				WanMorphed wan;
+				Wan wan;
 				wan.Initialize(grayScaleImage);
-				wan.ToBinary(wanMorphedBinary, parameters);
+				wan.ToBinary(wanBinary, parameters);
 			});
 
+			// This window size will trigger a manual window analysis to be ran.
+			// This is faster for small window sizes, but very costly for large windows.
+			parameters.Set("window", 15);
 			double wanSpeed = TestUtilities::Time([&]() {
 				Wan wan;
 				wan.Initialize(grayScaleImage);
 				wan.ToBinary(wanBinary, parameters);
 			});
 
-			// Assert correctness
-			TestUtilities::AssertImages(wanMorphedBinary, wanBinary);
+			Logger::WriteMessage(("Morphed Wan Speed (W=17): " + std::to_string(wanMorphedSpeed)).c_str());
+			Logger::WriteMessage(("Manual Wan Speed (W=15): " + std::to_string(wanSpeed)).c_str());
+			Assert::IsTrue(wanSpeed < wanMorphedSpeed);
+		}
 
-			Logger::WriteMessage(("WanMorphedSpeed: " + std::to_string(wanMorphedSpeed)).c_str());
-			Logger::WriteMessage(("WanSpeed: " + std::to_string(wanSpeed)).c_str());
-			Assert::IsTrue(wanMorphedSpeed < wanSpeed);
+		TEST_METHOD(MorphologyErodeComparisonTest)
+		{
+			const int windowSize = 25;
+			Image morphedImage(image.width, image.height);
+			Image iterativelyMorphedImage(image.width, image.height);
+
+			// Manually find the min within each window
+			MorphologyTestHarness::IterativelyErode(iterativelyMorphedImage, image, windowSize);
+
+			// Utilize a Max Image to speed up the morphology transformation
+			MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
+				return *set.begin(); // Min Value
+			});
+
+			TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
+		}
+
+		TEST_METHOD(MorphologyDilateComparisonTest)
+		{
+			const int windowSize = 25;
+			Image morphedImage(image.width, image.height);
+			Image iterativelyMorphedImage(image.width, image.height);
+
+			// Manually find the max within each window
+			MorphologyTestHarness::IterativelyDilate(iterativelyMorphedImage, image, windowSize);
+
+			// Utilize a Max Image to speed up the morphology transformation
+			MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
+				return *std::prev(set.end()); // Max Value
+			});
+
+			TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
 		}
 	};
+
+	// Static objects
+	Image MorphologyTests::image;
+	std::string MorphologyTests::projFolder;
 }

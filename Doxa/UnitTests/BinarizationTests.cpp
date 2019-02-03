@@ -1,4 +1,5 @@
 #include "TestUtilities.hpp"
+#include "../PNM.hpp"
 #include "../Otsu.hpp"
 #include "../Bernsen.hpp"
 #include "../Niblack.hpp"
@@ -9,8 +10,7 @@
 #include "../TRSingh.hpp"
 #include "../Wan.hpp"
 #include "../Su.hpp"
-#include "../KitchenSinkCalculator.hpp"
-#include "../PNM.hpp"
+#include "../ISauvola.hpp"
 
 
 namespace Doxa::UnitTests
@@ -25,12 +25,7 @@ namespace Doxa::UnitTests
 
 		TEST_CLASS_INITIALIZE(Initialize)
 		{
-			// Obtain the project folder
-			// Note: Tests are to be ran in VS.  If this is not the case, change how this is being set.
-			//       This was done to avoid baking in the images into the .exe, or copying them on build.
-			projFolder = EXPAND(UNITTESTPRJ);
-			projFolder.erase(0, 1); // Erase first quote
-			projFolder.erase(projFolder.size() - 2); // Erase first quote and period, which is used to excape the trailing slash
+			projFolder = TestUtilities::ProjectFolder();
 
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.ppm";
@@ -39,7 +34,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsSauvolaTest)
 		{
-			const Parameters parameters({ {"window", 26}, {"k", 0.10} });
+			const Parameters parameters({ {"window", 27}, {"k", 0.10} });
 
 			Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 
@@ -48,7 +43,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsNiblackTest)
 		{
-			const Parameters parameters({ { "window", 223 },{ "k", -0.61 } });
+			const Parameters parameters({ { "window", 223 }, { "k", -0.61 } });
 
 			Image imageNiblack = Niblack::ToBinaryImage(image, parameters);
 
@@ -57,7 +52,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsWolfTest)
 		{
-			const Parameters parameters({ { "window", 20 },{ "k", 0.18 } });
+			const Parameters parameters({ { "window", 21 }, { "k", 0.18 } });
 
 			Image imageWolf = Wolf::ToBinaryImage(image, parameters);
 
@@ -66,7 +61,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsNICKTest)
 		{
-			const Parameters parameters({ { "window", 44 },{ "k", -0.10 } });
+			const Parameters parameters({ { "window", 45 }, { "k", -0.10 } });
 
 			Image imageNICK = Nick::ToBinaryImage(image, parameters);
 
@@ -75,7 +70,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsBernsenTest)
 		{
-			const Parameters parameters({ { "window", 60 },{ "threshold", 150 }, {"constrast-limit", 15} });
+			const Parameters parameters({ { "window", 61 }, { "threshold", 150 }, {"constrast-limit", 15} });
 
 			Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
@@ -84,7 +79,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsTRSinghTest)
 		{
-			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
+			const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
 
 			Image imageTRSing = TRSingh::ToBinaryImage(image, parameters);
 
@@ -93,7 +88,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsWANTest)
 		{
-			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
+			const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
 
 			Image imageWAN = Wan::ToBinaryImage(image, parameters);
 
@@ -102,7 +97,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsGatosTest)
 		{
-			const Parameters parameters({ { "window", 75 },{ "k", 0.2 } });
+			const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
 
 			Image imageGatos = Gatos::ToBinaryImage(image, parameters);
 
@@ -114,6 +109,15 @@ namespace Doxa::UnitTests
 			Image imageSu = Su::ToBinaryImage(image, Parameters());
 
 			TestUtilities::AssertImageFile(imageSu, projFolder + "2JohnC1V3-Su.pbm");
+		}
+
+		TEST_METHOD(AlgorithmsISauvola)
+		{
+			const Parameters parameters({ {"window", 15}, {"k", 0.01} });
+
+			Image imageISauvola = ISauvola::ToBinaryImage(image, parameters);
+
+			TestUtilities::AssertImageFile(imageISauvola, projFolder + "2JohnC1V3-ISauvola.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsOtsuTest)

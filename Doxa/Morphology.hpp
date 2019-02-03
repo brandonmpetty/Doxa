@@ -5,6 +5,7 @@
 
 #include <set>
 #include "Image.hpp"
+#include "LocalWindow.hpp"
 
 
 namespace Doxa
@@ -13,23 +14,61 @@ namespace Doxa
 	{
 	public:
 		/// <summary>
+		/// Open is simply Erode followed by Dilate.
+		/// This can help reduce background noise.
+		/// </summary>
+		static void Open(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
+		{
+			Image erodedImage(grayScaleImage.width, grayScaleImage.height);
+			Erode(erodedImage, grayScaleImage, windowSize);
+			Dilate(morphedImage, erodedImage, windowSize);
+		}
+
+		/// <summary>
+		/// Close is simply Dilate followed by Erode.
+		/// This can help fill holes in the forground.
+		/// </summary>
+		static void Close(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
+		{
+			Image dilatedImage(grayScaleImage.width, grayScaleImage.height);
+			Dilate(dilatedImage, grayScaleImage, windowSize);
+			Erode(morphedImage, dilatedImage, windowSize);
+		}
+
+		/// <summary>
 		/// Iterates through the gray scale image, recording the minimum value within the window.
 		/// </summary>
-		static void Erode(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Erode(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
-			Morph(morphedImage, grayScaleImage, windowSize, [](const std::multiset<Pixel8>& set) {
-				return *set.begin(); // Min Value
-			});
+			// For small window sizes, manually analyzing the window is faster.
+			if (windowSize < 17)
+			{
+				IterativelyErode(morphedImage, grayScaleImage, windowSize);
+			}
+			else
+			{
+				Morph(morphedImage, grayScaleImage, windowSize, [](const std::multiset<Pixel8>& set) {
+					return *set.begin(); // Min Value
+				});
+			}
 		}
 
 		/// <summary>
 		/// Iterates through the grayscale image, recording the maximum value within the window.
 		/// </summary>
-		static void Dilate(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		static void Dilate(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{
-			Morph(morphedImage, grayScaleImage, windowSize, [](const std::multiset<Pixel8>& set) {
-				return *std::prev(set.end()); // Max Value
-			});
+			// For small window sizes, manually analyzing the window is faster.
+			if (windowSize < 17)
+			{
+				IterativelyDilate(morphedImage, grayScaleImage, windowSize);
+			}
+			else
+			{
+				Morph(morphedImage, grayScaleImage, windowSize, [](const std::multiset<Pixel8>& set) {
+					return *std::prev(set.end()); // Max Value
+				});
+			}
 		}
 
 	protected:
@@ -54,14 +93,21 @@ namespace Doxa
 		/// 3. Using the temp image, repeat steps 1 and 2 except now you will be going down column by column using a 1-D
 		///    vertical window to capture min / max values for your final morphed image.
 		/// 
+		/// The algorithm's performance hinges on its ability to find the min/max of a given window.  By using an ordered
+		/// set, when sliding the window over by one pixel, we simply need to add the next pixel to the set and remove
+		/// the single pixel no longer in the window from the set.  Because the set is ordered, the first item in the
+		/// set is the min value, and the last item is the max value.  In the end, it comes down to how fast you can add
+		/// and remove items from an ordered set.
+		/// 
 		/// Anecdotal Evidence:
 		/// Base on an AMD Phenom II 1090T Processor running Windows 10, compiled with MSBuild using /O2 /Ot
 		/// The follow are: Window Size, Speed of Wan's algorithm using Morph, Speed of Wan simply searching each window.
-		/// 3   | 0.094361 | 0.033374		* Using the Morph implementation is slower for small windows
-		/// 13  | 0.124091 | 0.128683		* This is the window size which breaks in favor of Morph
-		/// 25  | 0.130065 | 0.336071		* 2.5x faster
-		/// 75  | 0.140839 | 2.400000		* 17x faster
-		/// 125 | 0.140653 | 6.180494		* 44x faster
+		/// 3   | 0.091808 | 0.028856		* Using the Morph implementation is slower for small windows
+		/// 17  | 0.127909 | 0.134349		* This is the window size which breaks in favor of Morph
+		/// 25  | 0.130928 | 0.238442		* 1.8x faster
+		/// 75  | 0.143578 | 1.652775		* 11.5x faster
+		/// 125 | 0.146470 | 4.218453		* 28.8x faster
+		/// 255 | 0.149844 | 15.32876		* 102.3x faster
 		/// </summary>
 		/// <remarks>If this is a known algorithm, please provide a source and I will attribute it here.</remarks>
 		template<typename MorphRoutine>
@@ -174,6 +220,46 @@ namespace Doxa
 					morphedImage.Pixel(x, y) = routine(set);
 				}
 			}
+		}
+
+		static inline void IterativelyErode(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		{
+			// Iterate entire image creating a window around each pixel
+			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& target)
+			{
+				int min = 255;
+
+				// Iterate each window, finding the max value
+				LocalWindow::Iterate(grayScaleImage.width, window, [&](const int& position) {
+					const int value = grayScaleImage.data[position];
+					if (value < min)
+					{
+						min = value;
+					}
+				});
+
+				morphedImage.data[target] = min;
+			});
+		}
+
+		static inline void IterativelyDilate(Image& morphedImage, const Image& grayScaleImage, const int& windowSize)
+		{
+			// Iterate entire image creating a window around each pixel
+			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& target)
+			{
+				int max = 0;
+
+				// Iterate each window, finding the max value
+				LocalWindow::Iterate(grayScaleImage.width, window, [&](const int& position) {
+					const int value = grayScaleImage.data[position];
+					if (value > max)
+					{
+						max = value;
+					}
+				});
+
+				morphedImage.data[target] = max;
+			});
 		}
 	};
 }

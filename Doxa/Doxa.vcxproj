@@ -82,14 +82,14 @@
   <ItemGroup>
     <ClInclude Include="Algorithm.hpp" />
     <ClInclude Include="Bernsen.hpp" />
+    <ClInclude Include="ContrastImage.hpp" />
     <ClInclude Include="DRDM.hpp" />
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Image.hpp" />
-    <ClInclude Include="KitchenSinkCalculator.hpp" />
+    <ClInclude Include="ISauvola.hpp" />
     <ClInclude Include="Morphology.hpp" />
     <ClInclude Include="Parameters.hpp" />
     <ClInclude Include="MeanCalculator.hpp" />
-    <ClInclude Include="MinMaxCalculator.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="Niblack.hpp" />
     <ClInclude Include="Nick.hpp" />
@@ -104,6 +104,7 @@
     <ClInclude Include="TRSingh.hpp" />
     <ClInclude Include="Types.hpp" />
     <ClInclude Include="Wan.hpp" />
+    <ClInclude Include="WeinerFilter.hpp" />
     <ClInclude Include="Wolf.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

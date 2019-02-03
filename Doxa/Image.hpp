@@ -120,6 +120,11 @@ namespace Doxa
 			return referenceImage;
 		}
 
+		void Fill(const Pixel8 pixel)
+		{
+			memset(data, pixel, size * sizeof(Pixel8));
+		}
+
 		// External Memory Management
 		bool managedExternally = false;
 

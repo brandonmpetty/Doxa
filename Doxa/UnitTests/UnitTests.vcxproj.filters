@@ -12,6 +12,8 @@
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="CalculatorTests.cpp" />
     <ClCompile Include="MorphologyTests.cpp" />
+    <ClCompile Include="ISauvolaTests.cpp" />
+    <ClCompile Include="ContrastImageTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utilities">

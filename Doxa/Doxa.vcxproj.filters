@@ -42,12 +42,6 @@
     <ClInclude Include="MeanVarianceCalculator.hpp">
       <Filter>Calculators</Filter>
     </ClInclude>
-    <ClInclude Include="MinMaxCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
-    <ClInclude Include="KitchenSinkCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
     <ClInclude Include="DRDM.hpp">
       <Filter>Performance</Filter>
     </ClInclude>
@@ -59,6 +53,15 @@
     </ClInclude>
     <ClInclude Include="Morphology.hpp">
       <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="ContrastImage.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="WeinerFilter.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="ISauvola.hpp">
+      <Filter>Binarization</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

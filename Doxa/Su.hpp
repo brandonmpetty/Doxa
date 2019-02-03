@@ -7,7 +7,8 @@
 #include "Otsu.hpp"
 #include "Palette.hpp"
 #include "Region.hpp"
-#include "MinMaxCalculator.hpp"
+#include "Morphology.hpp"
+#include "ContrastImage.hpp"
 
 ////////////////////////////////////////////////////////////////////////
 // This code is highly experimental and has not been unit tested yet! //
@@ -36,7 +37,8 @@ namespace Doxa
 			int minN = parameters.Get("minN", windowSize); // Roughly basd on size of window
 
 			// Step 1 - Contrast Image Construction
-			Image contrastImage = GenerateContrastImage(Algorithm::grayScaleImageIn);
+			Image contrastImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
+			ContrastImage::GenerateContrastImage(contrastImage, Algorithm::grayScaleImageIn);
 
 			// Optional Parameter Auto Detection
 			if (windowSize == 0)
@@ -52,33 +54,10 @@ namespace Doxa
 		}
 
 	protected:
-		Image GenerateContrastImage(const Image& grayScaleImage) const
-		{
-			Image contrastImageOut(grayScaleImage.width, grayScaleImage.height);
-
-			Pixel8 min, max;
-			MinMaxCalculator minMaxCalculator;
-			minMaxCalculator.Initialize(grayScaleImage);
-
-			const int windowSize = 3;
-			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& position) {
-
-				minMaxCalculator.CalculateMinMax(min, max, window);
-
-				const double contrastMultiplier = (double)(max - min) / (max + min + 0.0001);
-
-				// Note: The paper leaves out the fact that the Contrast Image actually has to be normalized.
-				// To normalize it back into an 8bit gray scale image, simply multiply by 255.
-				contrastImageOut.data[position] = 255 * contrastMultiplier;
-			});
-
-			return contrastImageOut;
-		}
-
 		void AutoDetectParameters(int& windowSize, int& minN, const Image& contrastImage)
 		{
 			// TODO: Implement parameter auto-detection based on stroke width in the Contrast Image
-			windowSize = 8;
+			windowSize = 9;
 			minN = windowSize;
 		}
 
@@ -108,11 +87,11 @@ namespace Doxa
 
 		void Threshold(Image& binaryImageOut, const Image& contrastImageIn, const Image& grayScaleImageIn, int windowSize, int minN) const
 		{
-			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
+			int Ne;
+			double meanE, stdE;
 
-				int Ne;
-				double meanE, stdE;
-
+			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position)
+			{
 				SuCalculations(Ne, meanE, stdE, contrastImageIn, grayScaleImageIn, window);
 
 				binaryImageOut.data[position] =
