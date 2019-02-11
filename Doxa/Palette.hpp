@@ -39,6 +39,22 @@ namespace Doxa
 			return (rgba & 0x00ffffff) | (a << 24);
 		}
 
+		/// <summary>
+		/// Using the RGB color space, calculate the difference between two colors.
+		/// The results should be very similar to equations using the more common L*u*v* color space.
+		/// </summary>
+		/// <remarks>https://www.compuphase.com/cmetric.htm</remarks>
+		/// <returns></returns>
+		static inline int ColorDistance(Pixel32 left, Pixel32 right)
+		{
+			const int rmean = (Red(left) + Red(right)) / 2;
+			const int r = Red(left) - Red(right);
+			const int g = Green(left) - Green(right);
+			const int b = Blue(left) - Blue(right);
+
+			return std::sqrt( ((2 + rmean/256) * r*r) + (4 * g*g) + ((2 + (255 - rmean)/256) * b*b) );
+		}
+
 		// Gray Scale Helpers
 		static inline constexpr Pixel8 Gray(int r, int g, int b)
 		{

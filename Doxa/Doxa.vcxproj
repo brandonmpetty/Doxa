@@ -83,7 +83,9 @@
     <ClInclude Include="Algorithm.hpp" />
     <ClInclude Include="Bernsen.hpp" />
     <ClInclude Include="ContrastImage.hpp" />
+    <ClInclude Include="Convolution.hpp" />
     <ClInclude Include="DRDM.hpp" />
+    <ClInclude Include="EdgeDetector.hpp" />
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="ISauvola.hpp" />

@@ -63,6 +63,12 @@
     <ClInclude Include="ISauvola.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
+    <ClInclude Include="Convolution.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="EdgeDetector.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">
