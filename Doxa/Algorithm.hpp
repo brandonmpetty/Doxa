@@ -10,11 +10,37 @@
 namespace Doxa
 {
 	/// <summary>
+	/// Algorithm Interface - Useful if you want to dynamically instantiate an algorithm.
+	/// </summary>
+	class IAlgorithm
+	{
+	public:
+		virtual ~IAlgorithm() { /* Virtual DTOR */ };
+
+		/// <summary>
+		/// Sets the Gray Scale image that will later be used to generate a binary image.
+		/// This allows the derived class to also initialize the image with any one time calculations.
+		/// </summary>
+		/// <param name="grayScaleImageIn">An Image object containing gray scale content</param>
+		virtual void Initialize(const Image& grayScaleImageIn) = 0;
+
+		/// <summary>
+		/// Takes the initialized Gray Scale image and returns back a Binary image by reference.
+		/// The Binary image memory should already be allocated before being passed by reference.
+		/// This method was designed to be called repeatedly with different parameters.
+		/// </summary>
+		/// <param name="binaryImageOut">An Image object with preallocated memory which will store the output</param>
+		/// <param name="parameters">Any parameters the algorithm may need</param>
+		virtual void ToBinary(Image& binaryImageOut, const Parameters& parameters) = 0;
+	};
+
+
+	/// <summary>
 	/// This is a base class for all of our binarization algorithms.
 	/// It uses the Curiously Recurring Template Pattern for compile time inheritance.
 	/// </summary>
 	template<typename BinaryAlgorithm>
-	class Algorithm
+	class Algorithm : public IAlgorithm
 	{
 	public:
 		/// <summary>
@@ -26,15 +52,6 @@ namespace Doxa
 		{
 			this->grayScaleImageIn = grayScaleImageIn.Reference();
 		}
-
-		/// <summary>
-		/// Takes the initialized Gray Scale image and returns back a Binary image by reference.
-		/// The Binary image memory should already be allocated before being passed by reference.
-		/// This method was designed to be called repeatedly with different parameters.
-		/// </summary>
-		/// <param name="binaryImageOut">An Image object with preallocated memory which will store the output</param>
-		/// <param name="parameters">Any parameters the algorithm may need</param>
-		virtual void ToBinary(Image& binaryImageOut, const Parameters& parameters) = 0;
 
 		/// <summary>
 		/// A conveniance method for taking in a Gray Scale image /w params and returning a Binary image.
