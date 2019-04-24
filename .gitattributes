@@ -1,0 +1,7 @@
+## Prevent Git from affecting line endings
+
+
+## GRAPHICS
+*.psd  binary
+*.ppm  binary
+*.pbm  binary

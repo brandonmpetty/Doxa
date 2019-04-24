@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<title>Δoxa Binarization Framework - WebAssembly Demo</title>
+
+		<!--
+		https://www.w3schools.com/howto/howto_js_image_comparison.asp
+		Copyright 1999-2019 by Refsnes Data
+		https://www.w3schools.com/about/about_copyright.asp
+		"Copying examples and code snippets for non-profit teaching and research."
+		The code has been slightly altered for my needs. - Brandon Petty
+		-->
+		<link rel="stylesheet" type="text/css" href="w3schoolImgCompare.css">
+		<script type="text/javascript" src="w3schoolImgCompare.js"></script>
+	</head>
+	<body>
+	<center>
+	<h1>WebAssembly Demo - Local Adaptive Binarization</h1>
+	This is an <b>experimental</b> project that exposes the ΔBF, written in C++, to JavaScript via WebAssembly.<br/>
+	<a href="https://github.com/brandonmpetty/Doxa">https://github.com/brandonmpetty/Doxa</a><br/>
+	<br/><br/>
+	
+	<div style="display: table;">
+		<div style="padding-bottom: 10px; text-align: left;">
+			<label for="algorithm">Algorithm:</label>
+			<select id="algorithm" onchange="selectAlgorithm(this.value)">
+			</select>
+			
+			<label for="windowSize">Window Size:</label>
+			<input type="number" id="windowSize" name="windowSize" min="1" max="500" value="75" step="2" style="width: 4em">
+			
+			<label for="kValue">K Value:</label>
+			<input type="number" id="kValue" name="kValue" min="-5.00" max="5.00" value="0.20" step="0.01" style="width: 5em">
+			
+			<button onclick="canvasToBinary()">To Binary</button>
+		</div>
+		<div class="img-comp-container">
+			<div class="img-comp-img">
+				<canvas id="binaryCanvas">
+					Sorry. Your browser does not support HTML5 canvas element.
+				</canvas>
+			</div>
+			<div class="img-comp-img img-comp-overlay">
+				<canvas id="sourceCanvas">
+					Sorry. Your browser does not support HTML5 canvas element.
+				</canvas>
+			</div>
+		</div>
+		<div style="padding-top: 10px; text-align: left;">
+			Author(s): <span id="authors"></span><br/>
+			Citation: <span id="citation" /></span>
+		</div>
+	</div>
+	</center>
+	
+	<script type="text/javascript">
+		var srcImage;
+		var dstImage;
+		
+        function drawImgToCanvas(img, id) {
+            var canvas = document.getElementById(id);
+            var ctx = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.drawImage(img, 0, 0);
+        }
+		
+		function canvasToBinary() {			
+			// Read in the parameters
+			var params = {};
+			var windowSizeEl = document.getElementById("windowSize");
+			if (!windowSizeEl.disabled) {
+				params.window = windowSizeEl.value;
+			}
+			
+			var kValueEl = document.getElementById("kValue");
+			if (!kValueEl.disabled) {
+				params.k = kValueEl.value;
+			}
+
+			// Convert to Binary
+			Doxa.toBinary(dstImage, params);
+			
+			// Draw to Canvas
+			dstImage.draw('binaryCanvas');
+		}
+		
+		function initializeImages() {
+			// Read directly from the canvas
+            var canvas = document.getElementById('sourceCanvas');
+            var ctx = canvas.getContext('2d');
+			var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+			
+			// Create an Image object for our input and output images
+			// Our source image will never change
+			srcImage = srcImage || new Doxa.Image(imageData.width, imageData.height).load(imageData);
+			dstImage = dstImage || new Doxa.Image(imageData.width, imageData.height);
+		}
+		
+		function initializeAlgorithm() {
+			// Read in the selected algorithm
+			var algEnum = document.getElementById('algorithm').value;
+			var algorithm = Doxa.Algorithm[algEnum];
+		
+			// Update Authorship
+			document.getElementById('authors').textContent = algorithm.authors;
+			document.getElementById('citation').textContent = algorithm.title + " : " + algorithm.date;
+			
+			// Convert the image to binary
+			Doxa.initialize(algorithm.enum, srcImage);
+		}
+		
+		function loadAlgorithms() {
+			var options = "";
+			Doxa.Algorithm.forEach(function(alg) {
+				options += "<option value='" + alg.enum + "'>" + alg.name + "</option>";
+			});
+			
+			document.getElementById('algorithm').innerHTML = options;
+		}
+		
+		function selectAlgorithm(value) {
+			// Get algorithm default parameters
+			var params = Doxa.Algorithm[value].params;
+
+			var winEl = document.getElementById('windowSize');
+			winEl.value = params.window || 0;
+			winEl.disabled = winEl.value == 0;
+			
+			var kEl = document.getElementById('kValue');
+			kEl.value = params.k || 0.00;
+			kEl.disabled = kEl.value == 0;
+			
+			// Initialize the algorithm
+			initializeAlgorithm();
+		}
+    </script>
+    <script type="text/javascript" src="doxaWasm.js"></script>
+	<script type="text/javascript" src="doxa.js"></script>
+	<script>
+		Module.onRuntimeInitialized = async _ => {
+			// Create our algorithms selection list
+			loadAlgorithms();
+			
+			// Initialize our image slider
+			var sourceImg = new Image();
+			sourceImg.src = '../Images/2JohnC1V3.png';
+			sourceImg.onload = function() {
+				// Draw image to Canvas
+				drawImgToCanvas(sourceImg, 'sourceCanvas');
+				
+				// Initialize Doxa Image memory for our Color and Binary images
+				initializeImages();
+				
+				// Convert the color image to binary and show on the other Canvas
+				selectAlgorithm(0); // 0 = Otsu
+				canvasToBinary();
+				
+				// Initialize the comparison code
+				initComparisons();
+			};
+		};
+	</script>
+  </body>
+</html>
+
+
