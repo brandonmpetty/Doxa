@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 		std::string output = source.erase(source.find_last_of("."), string::npos);
 
 		// Setup base params
-		Parameters parameters({ { "window", w == 0 ? 75 : w } });
+		Parameters parameters(ParameterMap({ { "window", w == 0 ? 75 : w } }));
 
 		if (otsu)
 		{

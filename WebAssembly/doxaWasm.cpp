@@ -3,6 +3,7 @@
 #include "../Doxa/Palette.hpp"
 #include "../Doxa/Image.hpp"
 #include "../Doxa/Otsu.hpp"
+#include "../Doxa/Bernsen.hpp"
 #include "../Doxa/Niblack.hpp"
 #include "../Doxa/Sauvola.hpp"
 #include "../Doxa/ISauvola.hpp"
@@ -11,7 +12,6 @@
 #include "../Doxa/Wan.hpp"
 #include "../Doxa/Wolf.hpp"
 #include "../Doxa/Su.hpp"
-
 using namespace Doxa;
 
 
@@ -26,14 +26,15 @@ public:
 	enum Binarization
 	{
 		OTSU = 0,
-		NIBLACK = 1,
-		SAUVOLA = 2,
-		WOLF = 3,
-		NICK = 4,
-		SU = 5,
-		TRSINGH = 6,
-		ISAUVOLA = 7,
-		WAN = 8
+		BERNSEN = 1,
+		NIBLACK = 2,
+		SAUVOLA = 3,
+		WOLF = 4,
+		NICK = 5,
+		SU = 6,
+		TRSINGH = 7,
+		ISAUVOLA = 8,
+		WAN = 9
 	};
 	
 	void Initialize(const DoxaWasm::Binarization algorithm, Pixel8* data, const int width, const int height)
@@ -44,6 +45,9 @@ public:
 		{
 			case OTSU:
 				algorithmPtr = new Otsu();
+				break;
+			case BERNSEN:
+				algorithmPtr = new Bernsen();
 				break;
 			case NIBLACK:
 				algorithmPtr = new Niblack();
@@ -79,14 +83,9 @@ public:
 		algorithmPtr->Initialize(image);
 	} // Method: Initialize
 	
-	void ToBinary(Pixel8* data, const int windowSize = 0, const double kValue = 0.00)
+	void ToBinary(Pixel8* data, const Parameters& params)
 	{
 		if (algorithmPtr == nullptr) return;
-		
-		// Setup optional parameters
-		Parameters params;
-		if (windowSize > 0) params.Set("window", windowSize);
-		if (kValue != 0.00) params.Set("k", kValue);
 		
 		Image image = Image::Reference(this->width, this->height, data);
 		algorithmPtr->ToBinary(image, params);
@@ -156,11 +155,10 @@ extern "C"
 	/// This allows one to provide different window-size and k-value parameters efficiently.
 	/// </summary>
 	/// <param name="data">Image storgage for binary output.</param>
-	/// <param name="windowSize">The Width of the image.</param>
-	/// <param name="kValue">The Height of the image.</param>
-	void EMSCRIPTEN_KEEPALIVE ToBinary(Pixel8* data, const int windowSize, const double kValue)
-	{		
-		DoxaWasm::Instance().ToBinary(data, windowSize, kValue);
+	/// <param name="params">A JSON parameter c-string</param>
+	void EMSCRIPTEN_KEEPALIVE ToBinary(Pixel8* data, const char* params)
+	{
+		DoxaWasm::Instance().ToBinary(data, Parameters(params));
 	}
 
 } // Extern C

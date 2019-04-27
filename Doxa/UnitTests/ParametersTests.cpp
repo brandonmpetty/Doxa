@@ -43,6 +43,15 @@ namespace Doxa::UnitTests
 			param.Set("z", 5);
 			Assert::AreEqual(5, param.Get("z", 22));
 		}
+		/*
+		TEST_METHOD(ParametersParser)
+		{
+			Parameters params(R"({"window": 75, "custom": "test", "k": -0.01})");
+
+			Assert::AreEqual(params.Get("window", 0), 75);
+			Assert::AreEqual(params.Get("k", 0.0), -0.01, 0.0001);
+		}
+		*/
 	};
 }
 
