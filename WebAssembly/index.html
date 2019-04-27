@@ -16,6 +16,12 @@
 		-->
 		<link rel="stylesheet" type="text/css" href="w3schoolImgCompare.css">
 		<script type="text/javascript" src="w3schoolImgCompare.js"></script>
+		<style>
+			.algInput {
+				padding-right: 10px;
+				display: none;
+			}
+		</style>
 	</head>
 	<body>
 	<center>
@@ -26,17 +32,32 @@
 	
 	<div style="display: table;">
 		<div style="padding-bottom: 10px; text-align: left;">
-			<label for="algorithm">Algorithm:</label>
-			<select id="algorithm" onchange="selectAlgorithm(this.value)">
-			</select>
+			<label for="algorithm" style="padding-right: 10px;">Algorithm:
+				<select id="algorithm" onchange="selectAlgorithm(this.value); canvasToBinary();">
+				</select>
+			</label>
 			
-			<label for="windowSize">Window Size:</label>
-			<input type="number" id="windowSize" name="windowSize" min="1" max="500" value="75" step="2" style="width: 4em">
+			<label for="windowSize" class="algInput">Window Size:
+				<input type="number" id="window-el" name="windowSize"
+					min="1" max="500" value="75" step="2" style="width: 4em">
+			</label>
 			
-			<label for="kValue">K Value:</label>
-			<input type="number" id="kValue" name="kValue" min="-5.00" max="5.00" value="0.20" step="0.01" style="width: 5em">
+			<label for="kValue" class="algInput">K Value:
+				<input type="number" id="k-el" name="kValue"
+					min="-5.00" max="5.00" value="0.20" step="0.01" style="width: 5em">
+			</label>
 			
-			<button onclick="canvasToBinary()">To Binary</button>
+			<label for="threshold" class="algInput">Threshold:
+				<input type="number" id="threshold-el" name="threshold"
+					min="0" max="255" value="100" step="1" style="width: 4em">
+			</label>
+			
+			<label for="contrastLimit" class="algInput">Contrast Limit:
+				<input type="number" id="contrast-limit-el" name="contrastLimit"
+					min="0" max="255" value="25" step="1" style="width: 4em">
+			</label>
+			
+			<button id="apply" type="button" onclick="canvasToBinary();">Apply</button>
 		</div>
 		<div class="img-comp-container">
 			<div class="img-comp-img">
@@ -60,6 +81,7 @@
 	<script type="text/javascript">
 		var srcImage;
 		var dstImage;
+		var currentAlgorithm;
 		
         function drawImgToCanvas(img, id) {
             var canvas = document.getElementById(id);
@@ -71,21 +93,15 @@
             ctx.drawImage(img, 0, 0);
         }
 		
-		function canvasToBinary() {			
-			// Read in the parameters
-			var params = {};
-			var windowSizeEl = document.getElementById("windowSize");
-			if (!windowSizeEl.disabled) {
-				params.window = windowSizeEl.value;
+		function canvasToBinary() {
+			// Update params
+			for (var key in currentAlgorithm.params) {
+				var el = document.getElementById(key+'-el');
+				currentAlgorithm.params[key] = Number(el.value);
 			}
-			
-			var kValueEl = document.getElementById("kValue");
-			if (!kValueEl.disabled) {
-				params.k = kValueEl.value;
-			}
-
+		
 			// Convert to Binary
-			Doxa.toBinary(dstImage, params);
+			Doxa.toBinary(dstImage, currentAlgorithm.params);
 			
 			// Draw to Canvas
 			dstImage.draw('binaryCanvas');
@@ -103,17 +119,32 @@
 			dstImage = dstImage || new Doxa.Image(imageData.width, imageData.height);
 		}
 		
-		function initializeAlgorithm() {
-			// Read in the selected algorithm
-			var algEnum = document.getElementById('algorithm').value;
-			var algorithm = Doxa.Algorithm[algEnum];
-		
+		function initializeAlgorithm() {		
 			// Update Authorship
-			document.getElementById('authors').textContent = algorithm.authors;
-			document.getElementById('citation').textContent = algorithm.title + " : " + algorithm.date;
+			document.getElementById('authors').textContent = currentAlgorithm.authors;
+			document.getElementById('citation').textContent = currentAlgorithm.title + " : " + currentAlgorithm.date;
 			
 			// Convert the image to binary
-			Doxa.initialize(algorithm.enum, srcImage);
+			Doxa.initialize(currentAlgorithm.enum, srcImage);
+		}
+		
+		function initializeInputs() {
+			// Hide Apply button if there are no keys, else show it
+			document.getElementById('apply').style.display = 
+				Object.keys(currentAlgorithm.params).length === 0 ? 'none' : 'inline-block';
+		
+			// Hide all input elements
+			var divsToHide = document.getElementsByClassName("algInput");
+			for(var i = 0; i < divsToHide.length; ++i){
+				divsToHide[i].style.display = 'none';
+			}
+			
+			// Set all algorithm defaults based on algorithm parameters
+			for (var key in currentAlgorithm.params) {
+				var el = document.getElementById(key+'-el');
+				el.value = currentAlgorithm.params[key];
+				el.parentElement.style.display = 'inline-block';
+			}
 		}
 		
 		function loadAlgorithms() {
@@ -126,18 +157,10 @@
 		}
 		
 		function selectAlgorithm(value) {
-			// Get algorithm default parameters
-			var params = Doxa.Algorithm[value].params;
-
-			var winEl = document.getElementById('windowSize');
-			winEl.value = params.window || 0;
-			winEl.disabled = winEl.value == 0;
+			// The order of this call does matter since we are dealing with a global.
+			currentAlgorithm = Doxa.Algorithm[value];
 			
-			var kEl = document.getElementById('kValue');
-			kEl.value = params.k || 0.00;
-			kEl.disabled = kEl.value == 0;
-			
-			// Initialize the algorithm
+			initializeInputs();
 			initializeAlgorithm();
 		}
     </script>
