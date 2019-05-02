@@ -54,13 +54,15 @@
 		this.height = height;
 		this.size = width * height;
 		this.heapPtr = Wasm._malloc(this.size);
-		this.data = new Uint8ClampedArray(Wasm.HEAPU8.buffer, this.heapPtr, this.size);
 		
 		// Loads this Image object with an 8bit representation of an ImageData object
 		this.load = function(imageData) {
-			to8BitImage(this.data, imageData);
+			var data = new Uint8ClampedArray(Wasm.HEAPU8.buffer, this.heapPtr, this.size);
+			to8BitImage(data, imageData);
+			
 			return this;
 		};
+		
 		// Draws this Image directly to an HTML5 Canvas
 		this.draw = function(canvasId) {
 			var canvas = document.getElementById(canvasId);
@@ -70,10 +72,12 @@
             var ctx = canvas.getContext('2d');
 			var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 						
-			from8BitImage(imageData, this.data);
+			var data = new Uint8ClampedArray(Wasm.HEAPU8.buffer, this.heapPtr, this.size);
+			from8BitImage(imageData, data);
 			
 			ctx.putImageData(imageData, 0, 0);
 		};
+		
 		// Frees the memory allocated by this object.
 		this.free = function() {
 			if (this.heapPtr != null) Wasm._free(this.heapPtr); 
@@ -81,7 +85,7 @@
 	};
 
 	Doxa.initialize = function(algorithm, image) {			
-		Wasm._Initialize(algorithm, image.data.byteOffset, image.width, image.height);
+		Wasm._Initialize(algorithm, image.heapPtr, image.width, image.height);
 	};
 	
 	Doxa.toBinary = function(image, parameters) {
@@ -91,7 +95,7 @@
 		Wasm.writeAsciiToMemory(paramString, paramPtr);
 		
 		// Convert to binary
-		Wasm._ToBinary(image.data.byteOffset, paramPtr);
+		Wasm._ToBinary(image.heapPtr, paramPtr);
 		
 		// Free param memory
 		Module._free(paramPtr);
