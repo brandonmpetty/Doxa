@@ -7,9 +7,12 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <functional>
 #include <cassert>
 #include "Image.hpp"
 #include "Palette.hpp"
+#include "Parameters.hpp"
+#include "Grayscale.hpp"
 
 namespace Doxa
 {
@@ -19,6 +22,10 @@ namespace Doxa
 	/// Portable Any-Map (PNM)
 	/// 
 	/// This class will allow you to read and write PNM formatted files natively, without a 3rd party library.
+	/// 
+	/// Reading a 24 or 32 bit image will automatically convert it into grayscale.
+	/// It should be assume that external PNM images are gamma compressed.
+	/// See the Grayscale class for more information.
 	/// 
 	/// File Format Support:
 	///		Portable Bitmap (PBM P4)
@@ -32,14 +39,39 @@ namespace Doxa
 	{
 	public:
 
-		static Image Read(const std::string& fileLocation)
+		/// <summary>
+		/// Values associated with the Parameter: grayscale
+		/// The meaning of what these algorithms will produce is entirely up to the input image.
+		/// You should not apply Lightness on a Gamma Corrected color image, for example.
+		/// </summary>
+		enum GrayscaleConversion
+		{
+			Qt,
+			Mean,
+			BT601,
+			BT709,
+			BT2100,
+			Value,
+			Luster,
+			Lightness
+		};
+
+		/// <summary>
+		/// Reads any supported (aka: binary) PNM image from the filesystem.
+		/// 24 and 32 bit images will be converted to 8-bit grayscale automatically.
+		/// The PNM format specifies 709 gamma compression, but some are know to use sRGB.
+		/// When converting to grayscale, this could impact your choice of algorithm.
+		/// </summary>
+		/// <param name="params">Select a grayscale conversion algorithm via: grayscale</param>
+		/// <returns>An 8 bit Image object</returns>
+		static Image Read(const std::string& fileLocation, const Parameters& params = Parameters())
 		{
 			std::ifstream file;
 			file.open(fileLocation.c_str(), std::ios::binary);
 
 			PNM pnm;
 			Image image;
-			pnm.ReadPNM(file, image);
+			pnm.ReadPNM(file, image, params);
 
 			file.clear();
 			file.close(); // Automatically closes, but done explicitly for posterity.
@@ -47,6 +79,9 @@ namespace Doxa
 			return image;
 		}
 
+		/// <summary>
+		/// Writes an 8-bit grayscale Image to the filesystem
+		/// </summary>
 		static void Write(const Image& image, const std::string& fileLocation)
 		{
 			if (image.data == nullptr) return;
@@ -109,8 +144,10 @@ namespace Doxa
 			inputStream.read(reinterpret_cast<char *>(image.data), image.size);
 		}
 
-		void Read24BitBinary(std::istream& inputStream, Image& image)
+		void Read24BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
 		{
+			auto toGrayscale = GrayscaleFactory(params);
+
 			Pixel8 red, green, blue;
 			for (int idx = 0; idx < image.size; ++idx)
 			{
@@ -121,12 +158,14 @@ namespace Doxa
 				// If the pixel is already gray, do not apply apply the correction
 				image.data[idx] = (red == green && green == blue) ?
 					blue :
-					Palette::Gray(red, green, blue); // Convert to GrayScale
+					toGrayscale(red, green, blue); // Convert to GrayScale
 			}
 		}
 
-		void Read32BitBinary(std::istream& inputStream, Image& image)
+		void Read32BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
 		{
+			auto toGrayscale = GrayscaleFactory(params);
+
 			Pixel8 red, green, blue, alpha;
 			for (int idx = 0; idx < image.size; ++idx)
 			{
@@ -138,11 +177,11 @@ namespace Doxa
 				// If the pixel is already gray, do not apply apply the correction
 				image.data[idx] = (red == green && green == blue) ?
 					blue :
-					Palette::Gray(red, green, blue); // Convert to GrayScale
+					toGrayscale(red, green, blue); // Convert to GrayScale
 			}
 		}
 
-		void ReadPNM(std::istream& inputStream, Image& image)
+		void ReadPNM(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
 		{
 			std::string magicNumber;
 
@@ -190,7 +229,7 @@ namespace Doxa
 				image.size = image.width * image.height;
 				image.data = new Pixel8[image.size];
 
-				return Read24BitBinary(inputStream, image);
+				return Read24BitBinary(inputStream, image, params);
 			}
 			else if (magicNumber == "P7") // PAM arbitrary bit - Binary
 			{
@@ -228,10 +267,10 @@ namespace Doxa
 
 					return Read8BitBinary(inputStream, image);
 				case 3:
-					return Read24BitBinary(inputStream, image);
+					return Read24BitBinary(inputStream, image, params);
 				case 4:
 					if (image.tupleType != TupleTypes::RGBA) throw "PAM: Only 32bit RGBA is supported.";
-					return Read32BitBinary(inputStream, image);
+					return Read32BitBinary(inputStream, image, params);
 				}
 			}
 
@@ -304,6 +343,51 @@ namespace Doxa
 
 			const size_t size = image.size * sizeof(Pixel8);
 			outputStream.write(reinterpret_cast<char *>(image.data), size);
+		}
+
+		/// <summary>
+		/// Returns a specific Grayscale algorithm based on parameter configuration.
+		/// Defaulting to: Qt
+		/// This default may change in the future, as Mean is expected to perform better.
+		/// </summary>
+		/// <param name="params">Must set: grayscale</param>
+		/// <returns>A Grayscale algorithm</returns>
+		std::function<Pixel8 (Pixel8, Pixel8, Pixel8)> GrayscaleFactory(const Parameters& params)
+		{
+			// TODO: Add support for sRGB and 709 conversion to Linear RGB, then to gray, then potentially gamma corrected.
+			std::function<Pixel8(Pixel8, Pixel8, Pixel8)> algorithm;
+
+			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Qt);
+
+			switch (gsEnum)
+			{
+			case GrayscaleConversion::Qt:
+				algorithm = Grayscale::Qt<Pixel8>;
+				break;
+			case GrayscaleConversion::Mean:
+				algorithm = Grayscale::Mean<Pixel8>;
+				break;
+			case GrayscaleConversion::BT601:
+				algorithm = Grayscale::BT601<Pixel8>;
+				break;
+			case GrayscaleConversion::BT709:
+				algorithm = Grayscale::BT709<Pixel8>;
+				break;
+			case GrayscaleConversion::BT2100:
+				algorithm = Grayscale::BT2100<Pixel8>;
+				break;
+			case GrayscaleConversion::Value:
+				algorithm = Grayscale::Value<Pixel8>;
+				break;
+			case GrayscaleConversion::Luster:
+				algorithm = Grayscale::Luster<Pixel8>;
+				break;
+			case GrayscaleConversion::Lightness:
+				algorithm = Grayscale::Lightness<Pixel8>;
+				break;
+			}
+
+			return algorithm;
 		}
 	};
 }

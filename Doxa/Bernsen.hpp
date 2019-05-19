@@ -22,7 +22,7 @@ namespace Doxa
 			Algorithm::Initialize(grayScaleImageIn);
 		}
 
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			Pixel8 min, max;
 

@@ -11,7 +11,7 @@ namespace Doxa::UnitTests
 		class BinarizationTestharness : public Algorithm<BinarizationTestharness>
 		{
 		public:
-			void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+			void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 			{
 				std::fill_n(binaryImageOut.data, binaryImageOut.size, Palette::Black);
 			}
@@ -39,7 +39,7 @@ namespace Doxa::UnitTests
 			// Execute our method under test
 			BinarizationTestharness algorithm;
 			algorithm.Initialize(grayScaleImageIn);
-			algorithm.ToBinary(binaryImageOut, Parameters());
+			algorithm.ToBinary(binaryImageOut);
 
 			// Assert correctness
 			TestUtilities::AssertImageData(binaryImageOut, expected);
@@ -63,7 +63,7 @@ namespace Doxa::UnitTests
 			Image image(2, 2, input);
 
 			// Execute our method under test
-			BinarizationTestharness::UpdateToBinary(image, Parameters());
+			BinarizationTestharness::UpdateToBinary(image);
 
 			// Assert correctness
 			TestUtilities::AssertImageData(image, expected);

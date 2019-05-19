@@ -31,7 +31,7 @@ namespace Doxa
 		/// </summary>
 		/// <param name="binaryImageOut">An Image object with preallocated memory which will store the output</param>
 		/// <param name="parameters">Any parameters the algorithm may need</param>
-		virtual void ToBinary(Image& binaryImageOut, const Parameters& parameters) = 0;
+		virtual void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters()) = 0;
 	};
 
 
@@ -56,7 +56,7 @@ namespace Doxa
 		/// <summary>
 		/// A conveniance method for taking in a Gray Scale image /w params and returning a Binary image.
 		/// </summary>
-		static Image ToBinaryImage(const Image& grayScaleImageIn, const Parameters& parameters)
+		static Image ToBinaryImage(const Image& grayScaleImageIn, const Parameters& parameters = Parameters())
 		{
 			// Generate space for the binary image
 			Image binaryImageOut(grayScaleImageIn.width, grayScaleImageIn.height);
@@ -74,7 +74,7 @@ namespace Doxa
 		/// A conveniance method for safely converting a Gray Scale image to Binary.
 		/// Note: A temporary image is created to safely operate on, which may not always be necessary.
 		/// </summary>
-		static void UpdateToBinary(Image& image, const Parameters& parameters)
+		static void UpdateToBinary(Image& image, const Parameters& parameters = Parameters())
 		{
 			// Not all Calculators support in-place updating, thus we need a temporary Image store.
 			Image binaryImageOut = ToBinaryImage(image, parameters);
@@ -99,12 +99,12 @@ namespace Doxa
 		/// Calculates and returns the global threshold of the image.
 		/// </summary>
 		/// <returns>A global binarization threshold value</returns>
-		virtual Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters) = 0;
+		virtual Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters = Parameters()) = 0;
 
 		/// <summary>
 		/// Global binarization based on a single threshold
 		/// </summary>
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			const Pixel8 threshold = Threshold(Algorithm<BinaryAlgorithm>::grayScaleImageIn, parameters);
 

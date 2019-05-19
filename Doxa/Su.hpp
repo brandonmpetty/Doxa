@@ -30,7 +30,7 @@ namespace Doxa
 	class Su : public Algorithm<Su>
 	{
 	public:
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// 0 will trigger the auto detection of these parameters as detailed in the paper
 			int windowSize = parameters.Get("window", 0); // Based on Stroke Size

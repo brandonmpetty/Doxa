@@ -1,5 +1,6 @@
 #include "CppUnitTest.h"
 #include "../MeanVarianceCalculator.hpp"
+#include "../Grayscale.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -26,9 +27,9 @@ namespace Doxa::UnitTests
 		{
 			// Setup
 			Pixel8 bits[] = {
-				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
-				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
-				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)
+				Grayscale::Qt(10, 20, 30), Grayscale::Qt(40, 50, 60), Grayscale::Qt(70, 80, 90),
+				Grayscale::Qt(30, 40, 50), Grayscale::Qt(50, 05, 05), Grayscale::Qt(50, 30, 10),
+				Grayscale::Qt(03, 05, 07), Grayscale::Qt(11, 13, 17), Grayscale::Qt(00, 25, 12)
 			};
 			Image image(3, 3, bits);
 
@@ -57,9 +58,9 @@ namespace Doxa::UnitTests
 		{
 			// Setup
 			Pixel8 bits[] = {
-				Palette::Gray(10, 20, 30), Palette::Gray(40, 50, 60), Palette::Gray(70, 80, 90),
-				Palette::Gray(30, 40, 50), Palette::Gray(50, 05, 05), Palette::Gray(50, 30, 10),
-				Palette::Gray(03, 05, 07), Palette::Gray(11, 13, 17), Palette::Gray(00, 25, 12)
+				Grayscale::Qt(10, 20, 30), Grayscale::Qt(40, 50, 60), Grayscale::Qt(70, 80, 90),
+				Grayscale::Qt(30, 40, 50), Grayscale::Qt(50, 05, 05), Grayscale::Qt(50, 30, 10),
+				Grayscale::Qt(03, 05, 07), Grayscale::Qt(11, 13, 17), Grayscale::Qt(00, 25, 12)
 			};
 			Image image(3, 3, bits);
 

@@ -106,7 +106,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsSuTest)
 		{
-			Image imageSu = Su::ToBinaryImage(image, Parameters());
+			Image imageSu = Su::ToBinaryImage(image);
 
 			TestUtilities::AssertImageFile(imageSu, projFolder + "2JohnC1V3-Su.pbm");
 		}
@@ -122,7 +122,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(AlgorithmsOtsuTest)
 		{
-			Image imageOtsu = Otsu::ToBinaryImage(image, Parameters());
+			Image imageOtsu = Otsu::ToBinaryImage(image);
 
 			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}

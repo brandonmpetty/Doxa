@@ -87,6 +87,7 @@
     <ClInclude Include="DRDM.hpp" />
     <ClInclude Include="EdgeDetector.hpp" />
     <ClInclude Include="Gatos.hpp" />
+    <ClInclude Include="Grayscale.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="ISauvola.hpp" />
     <ClInclude Include="Morphology.hpp" />

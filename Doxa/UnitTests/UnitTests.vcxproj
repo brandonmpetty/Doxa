@@ -100,6 +100,7 @@
     <ClCompile Include="ContrastImageTests.cpp" />
     <ClCompile Include="ConvolutionTests.cpp" />
     <ClCompile Include="EdgeDetectorTests.cpp" />
+    <ClCompile Include="GrayscaleTests.cpp" />
     <ClCompile Include="ImageTests.cpp" />
     <ClCompile Include="ISauvolaTests.cpp" />
     <ClCompile Include="LocalWindowTests.cpp" />
