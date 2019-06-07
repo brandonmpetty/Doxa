@@ -21,6 +21,42 @@
 				padding-right: 10px;
 				display: none;
 			}
+			#perf-section {
+				display: none;
+			}
+			#perf-section label {
+				padding-left: 10px;
+			}
+			#workspace {
+				display: none;
+			}
+			
+			#loader {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				z-index: 1;
+				width: 150px;
+				height: 150px;
+				margin: -75px 0 0 -75px;
+				border: 16px solid #f3f3f3;
+				border-radius: 50%;
+				border-top: 16px solid #3498db;
+				width: 120px;
+				height: 120px;
+				-webkit-animation: spin 2s linear infinite;
+				animation: spin 2s linear infinite;
+			}
+
+			@-webkit-keyframes spin {
+				0% { -webkit-transform: rotate(0deg); }
+				100% { -webkit-transform: rotate(360deg); }
+			}
+
+			@keyframes spin {
+				0% { transform: rotate(0deg); }
+				100% { transform: rotate(360deg); }
+			}
 		</style>
 	</head>
 	<body>
@@ -30,7 +66,8 @@
 	<a href="https://github.com/brandonmpetty/Doxa">https://github.com/brandonmpetty/Doxa</a><br/>
 	<br/><br/>
 	
-	<div style="display: table;">
+	<div id="loader"></div>
+	<div id="workspace" style="display: table; visibility: hidden;">
 		<div style="padding-bottom: 10px; text-align: left;">
 			<label for="algorithm" style="padding-right: 10px;">Algorithm:
 				<select id="algorithm" onchange="selectAlgorithm(this.value); canvasToBinary();">
@@ -59,6 +96,31 @@
 			
 			<button id="apply" type="button" onclick="canvasToBinary();">Apply</button>
 		</div>
+		<div style="padding-bottom: 10px; text-align: left;">
+			<input id="performance" type="checkbox" onclick="togglePerformance();">Analyze</button>
+			
+			<span id="perf-section">
+				<label for="accuracy">Accuracy:
+					<span id="accuracy"></span>
+				</label>
+				
+				<label for="fmeasure">F-Measure:
+					<span id="fmeasure"></span>
+				</label>
+				
+				<label for="psnr">PSNR:
+					<span id="psnr"></span>
+				</label>
+				
+				<label for="nrm">NRM:
+					<span id="nrm"></span>
+				</label>
+				
+				<label for="drdm">DRDM:
+					<span id="drdm"></span>
+				</label>
+			</span>
+		</div>
 		<div class="img-comp-container">
 			<div class="img-comp-img">
 				<canvas id="binaryCanvas">
@@ -75,17 +137,27 @@
 			Author(s): <span id="authors"></span><br/>
 			Citation: <span id="citation" /></span>
 		</div>
+		<canvas id="groundTruthCanvas" style="display: none;">
+			Sorry. Your browser does not support HTML5 canvas element.
+		</canvas>
 	</div>
 	</center>
+	
+	<!-- Path: https://github.com/brandonmpetty/Doxa/raw/master/Doxa/UnitTests/Resources/2JohnC1V3-GroundTruth.pbm
+	<input id="uploadInput" type="file" name="Load Ground Truth" onchange="loadImageFromFile(this);" 
+		accept=".pam, .pgm, .pbm"/>
+	-->
 	
 	<script type="text/javascript">
 		var srcImage;
 		var dstImage;
+		var gtImage;
 		var currentAlgorithm;
+		var algorithms;
 		
         function drawImgToCanvas(img, id) {
-            var canvas = document.getElementById(id);
-            var ctx = canvas.getContext('2d');
+            let canvas = document.getElementById(id);
+            let ctx = canvas.getContext('2d');
 
             canvas.width = img.width;
             canvas.height = img.height;
@@ -95,8 +167,8 @@
 		
 		function canvasToBinary() {
 			// Update params
-			for (var key in currentAlgorithm.params) {
-				var el = document.getElementById(key+'-el');
+			for (let key in currentAlgorithm.params) {
+				let el = document.getElementById(key+'-el');
 				currentAlgorithm.params[key] = Number(el.value);
 			}
 		
@@ -105,18 +177,60 @@
 			
 			// Draw to Canvas
 			dstImage.draw('binaryCanvas');
+			
+			// Analyze performance after binarization
+			if (document.getElementById('performance').checked && gtImage) {
+				calculatePerformance();
+			}
 		}
 		
-		function initializeImages() {
-			// Read directly from the canvas
-            var canvas = document.getElementById('sourceCanvas');
-            var ctx = canvas.getContext('2d');
-			var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		function togglePerformance() {
+			// Toggle
+			document.getElementById('perf-section').style.display = 
+				document.getElementById('performance').checked ? "inline-block" : "none";
+		
+			// Do not init if already loaded
+			if (gtImage) return;
+		
+			// Load the ground truth and calculate
+			canvasToDoxaImage('../Images/2JohnC1V3-GroundTruth.png', 'groundTruthCanvas', (image)=>{
+				gtImage = image;
+				
+				calculatePerformance();
+			});
+		}
+		
+		function calculatePerformance() {
+			let performance = Doxa.calculatePerformance(gtImage, dstImage);
 			
-			// Create an Image object for our input and output images
-			// Our source image will never change
-			srcImage = srcImage || new Doxa.Image(imageData.width, imageData.height).load(imageData);
-			dstImage = dstImage || new Doxa.Image(imageData.width, imageData.height);
+			document.getElementById('accuracy').innerHTML = performance.accuracy.toFixed(4);
+			document.getElementById('fmeasure').innerHTML = performance.fm.toFixed(4);
+			document.getElementById('psnr').innerHTML = performance.psnr.toFixed(4);
+			document.getElementById('nrm').innerHTML = performance.nrm.toFixed(4);
+			document.getElementById('drdm').innerHTML = performance.drdm.toFixed(4);
+		}
+		
+		function canvasToDoxaImage(imageSrc, canvasId, callback) {
+			// Take a JS Image object in any supported Web format.
+			let img = new Image();
+			img.src = imageSrc;
+			img.onload = function() {
+			
+				// Normalize it through Canvas
+			    let canvas = document.getElementById(canvasId);
+				let ctx = canvas.getContext('2d');
+
+				canvas.width = img.width;
+				canvas.height = img.height;
+
+				ctx.drawImage(img, 0, 0);
+
+				// Get the raw RGB values
+				let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+				
+				// Convert it to a Doxa Image and trigger the callback
+				callback(new Doxa.Image().loadFromCanvas(imageData));
+			};
 		}
 		
 		function initializeAlgorithm() {		
@@ -134,35 +248,67 @@
 				Object.keys(currentAlgorithm.params).length === 0 ? 'none' : 'inline-block';
 		
 			// Hide all input elements
-			var divsToHide = document.getElementsByClassName("algInput");
-			for(var i = 0; i < divsToHide.length; ++i){
+			let divsToHide = document.getElementsByClassName("algInput");
+			for(let i = 0; i < divsToHide.length; ++i){
 				divsToHide[i].style.display = 'none';
 			}
 			
 			// Set all algorithm defaults based on algorithm parameters
-			for (var key in currentAlgorithm.params) {
-				var el = document.getElementById(key+'-el');
+			for (let key in currentAlgorithm.params) {
+				let el = document.getElementById(key+'-el');
 				el.value = currentAlgorithm.params[key];
 				el.parentElement.style.display = 'inline-block';
 			}
 		}
 		
 		function loadAlgorithms() {
-			var options = "";
-			Doxa.Algorithm.forEach(function(alg) {
-				options += "<option value='" + alg.enum + "'>" + alg.name + "</option>";
+			// Set available algorithms
+			algorithms = Doxa.getAlgorithms();
+		
+			let options = "";
+			algorithms.forEach(function(alg) {
+				options += "<option value='" + alg.enum.value + "'>" + alg.name + "</option>";
 			});
 			
 			document.getElementById('algorithm').innerHTML = options;
 		}
 		
-		function selectAlgorithm(value) {
+		function selectAlgorithm(algorithm) {
+			// Allows for an Int or Wasm Enum object
+			let value = typeof algorithm === 'object' ? algorithm.value : algorithm;
+			
 			// The order of this call does matter since we are dealing with a global.
-			currentAlgorithm = Doxa.Algorithm[value];
+			currentAlgorithm = algorithms[value];
 			
 			initializeInputs();
 			initializeAlgorithm();
 		}
+		
+		/* This functionality is currently disabled
+		function loadImageFromFile(fileInput) {
+			if (fileInput.files.length == 0) return;
+			var file = fileInput.files[0];
+
+			var fr = new FileReader();
+			fr.onload = function () {
+				var data = new Uint8Array(fr.result);
+
+				Module['FS_createDataFile']('/', file.name, data, true, true, true);
+
+				// Free existing file memory.  In the future, reusing it, if big enough.
+				if (gtImage) {
+					gtImage.free();
+				}
+				
+				// Load the file through Doxa, from the WASM virtual file system.
+				gtImage = new Doxa.Image().loadFromFile('/' + file.name);
+				
+				gtImage.draw('binaryCanvas');
+			};
+			fr.readAsArrayBuffer(file);
+		}
+		*/
+		
     </script>
     <script type="text/javascript" src="doxaWasm.js"></script>
 	<script type="text/javascript" src="doxa.js"></script>
@@ -171,23 +317,24 @@
 			// Create our algorithms selection list
 			loadAlgorithms();
 			
-			// Initialize our image slider
-			var sourceImg = new Image();
-			sourceImg.src = '../Images/2JohnC1V3.png';
-			sourceImg.onload = function() {
-				// Draw image to Canvas
-				drawImgToCanvas(sourceImg, 'sourceCanvas');
-				
-				// Initialize Doxa Image memory for our Color and Binary images
-				initializeImages();
-				
+			// Load our source image for the image slider
+			canvasToDoxaImage('../Images/2JohnC1V3.png', 'sourceCanvas', (image)=>{
+				srcImage = image;
+			
+				// Initialize our destination/binary image
+				dstImage = new Doxa.Image(image.width, image.height);
+
 				// Convert the color image to binary and show on the other Canvas
-				selectAlgorithm(0); // 0 = Otsu
+				selectAlgorithm(Module.Binarization.Algorithms.OTSU);
 				canvasToBinary();
 				
-				// Initialize the comparison code
+				// Initialize the comparison code for the image slider
 				initComparisons();
-			};
+				
+				// Display
+				document.getElementById("loader").style.display = "none";
+				document.getElementById("workspace").style.visibility = "visible";
+			});
 		};
 	</script>
   </body>
