@@ -7,12 +7,12 @@ Known Issues:
 
 Release Build
 ```
-em++ -O3 -o ./dist/doxaWasm.js doxaWasm.cpp -std=c++1z -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['writeAsciiToMemory']"
+em++ -O3 -o ./dist/doxaWasm.js doxaWasm.cpp -std=c++1z -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH=1 --bind
 ```
 
 Debug Build
 ```
-em++ -O0 -o ./dist/doxaWasm.js doxaWasm.cpp -std=c++1z -s WASM=1 -s NO_EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['writeAsciiToMemory']" -g4 --source-map-base http://localhost:8080/
+em++ -O0 -o ./dist/doxaWasm.js doxaWasm.cpp <same as above> -g4 --source-map-base http://localhost:8080/
 ```
 
 Host the server from the root of this project

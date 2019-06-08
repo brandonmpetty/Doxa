@@ -177,18 +177,20 @@ namespace Doxa
 
 			return (1.0 / 100) * (116 * addGamma(BT709(r, g, b)) - 16);
 		}
-
-		/// <summary>
-		/// A normalized implementation since we are usually not working with decimal.
-		/// This assumes that RGB are Linear values.  It is unlike you will use this
-		/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
-		/// </summary>
-		template<>
-		static inline constexpr Pixel8 Lightness(Pixel8 r, Pixel8 g, Pixel8 b)
-		{
-			return Lightness((double)r / 255, (double)g / 255, (double)b / 255) * 255;
-		}
 	};
+
+	/// <summary>
+	/// A normalized implementation since we are usually not working with decimal.
+	/// This assumes that RGB are Linear values.  It is unlike you will use this
+	/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
+	/// 
+	/// C++ Note: Some compilers do not like template specialization defined in the class.
+	/// </summary>
+	template<>
+	inline constexpr Pixel8 Grayscale::Lightness(Pixel8 r, Pixel8 g, Pixel8 b)
+	{
+		return Lightness((double)r / 255, (double)g / 255, (double)b / 255) * 255;
+	}
 }
 
 
