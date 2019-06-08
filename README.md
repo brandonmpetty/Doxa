@@ -87,11 +87,13 @@ qImage.save("binary-image.png");
 Other examples can be found in the Demo folder, like the [BinaryImageConverter](/Demo/BinaryImageConverter) tool.
 
 ### Performance Analysis
-
 Another thing that sets ΔBF apart is its focus on binarization performance.
 The [PerformanceMetrics](/Demo/PerformanceMetrics) demo highlights how easy it is to get detailed metrics given a sample output and a ground-truth.
-The Kumite demo, which would analyze every K value and Window Size permutation, has been moved out of this project and will have its own repo in the future.
 
+### WebAssembly
+Experimental WASM support has been added in order to expose ΔBF to the web.
+With the provided JavaScript wrapper, it is easy to utilize this framework in any web project.
+A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
 ### Help Requested
 * Verification of algorithm correctness (especially the Wiener filter used in Gatos)
