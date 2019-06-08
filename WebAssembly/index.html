@@ -97,7 +97,10 @@
 			<button id="apply" type="button" onclick="canvasToBinary();">Apply</button>
 		</div>
 		<div style="padding-bottom: 10px; text-align: left;">
-			<input id="performance" type="checkbox" onclick="togglePerformance();">Analyze</button>
+			<label for="performance" style="vertical-align: top;">
+				<input name="performance" id="performance" type="checkbox" onclick="togglePerformance();" style="vertical-align: top;"/>
+				Analyze
+			</label>
 			
 			<span id="perf-section">
 				<label for="accuracy">Accuracy:
@@ -119,6 +122,19 @@
 				<label for="drdm">DRDM:
 					<span id="drdm"></span>
 				</label>
+				<div>
+					<label for="totalTime">Total Time:
+						<span id="totalTime"></span> ms
+					</label>
+				
+					<label for="initTime">Initialization Time:
+						<span id="initTime"></span> ms
+					</label>
+					
+					<label for="binTime">Binarization Time:
+						<span id="binTime"></span> ms
+					</label>
+				</div>
 			</span>
 		</div>
 		<div class="img-comp-container">
@@ -154,6 +170,8 @@
 		var gtImage;
 		var currentAlgorithm;
 		var algorithms;
+		var initTime;
+		var binTime;
 		
         function drawImgToCanvas(img, id) {
             let canvas = document.getElementById(id);
@@ -172,8 +190,14 @@
 				currentAlgorithm.params[key] = Number(el.value);
 			}
 		
+			// Performance test
+			let timer = performance.now();
+		
 			// Convert to Binary
 			Doxa.toBinary(dstImage, currentAlgorithm.params);
+			
+			// Calculate time in milliseconds
+			binTime = performance.now() - timer;
 			
 			// Draw to Canvas
 			dstImage.draw('binaryCanvas');
@@ -203,11 +227,17 @@
 		function calculatePerformance() {
 			let performance = Doxa.calculatePerformance(gtImage, dstImage);
 			
+			// Performance
 			document.getElementById('accuracy').innerHTML = performance.accuracy.toFixed(4);
 			document.getElementById('fmeasure').innerHTML = performance.fm.toFixed(4);
 			document.getElementById('psnr').innerHTML = performance.psnr.toFixed(4);
 			document.getElementById('nrm').innerHTML = performance.nrm.toFixed(4);
 			document.getElementById('drdm').innerHTML = performance.drdm.toFixed(4);
+			
+			// Speed
+			document.getElementById('initTime').innerHTML = initTime.toFixed(2);
+			document.getElementById('binTime').innerHTML = binTime.toFixed(2);
+			document.getElementById('totalTime').innerHTML = (initTime + binTime).toFixed(2);
 		}
 		
 		function canvasToDoxaImage(imageSrc, canvasId, callback) {
@@ -238,8 +268,14 @@
 			document.getElementById('authors').textContent = currentAlgorithm.authors;
 			document.getElementById('citation').textContent = currentAlgorithm.title + " : " + currentAlgorithm.date;
 			
+			// Performance test
+			let timer = performance.now();
+			
 			// Convert the image to binary
 			Doxa.initialize(currentAlgorithm.enum, srcImage);
+			
+			// Many algorithms setup integral images, so this time could vary significantly
+			initTime = performance.now() - timer;
 		}
 		
 		function initializeInputs() {
