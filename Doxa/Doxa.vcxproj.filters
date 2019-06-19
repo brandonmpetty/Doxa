@@ -69,6 +69,10 @@
     <ClInclude Include="EdgeDetector.hpp">
       <Filter>Processors</Filter>
     </ClInclude>
+    <ClInclude Include="Grayscale.hpp" />
+    <ClInclude Include="Bataineh.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">

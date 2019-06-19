@@ -96,6 +96,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmTests.cpp" />
+    <ClCompile Include="BatainehTests.cpp" />
     <ClCompile Include="BinarizationTests.cpp" />
     <ClCompile Include="ContrastImageTests.cpp" />
     <ClCompile Include="ConvolutionTests.cpp" />

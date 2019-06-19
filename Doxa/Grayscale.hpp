@@ -177,6 +177,28 @@ namespace Doxa
 
 			return (1.0 / 100) * (116 * addGamma(BT709(r, g, b)) - 16);
 		}
+
+		/// <summary>
+		/// CIELAB & CIELUV L Value.  Calculates Lightness when RGB are non-linear
+		/// sRGB values.  Since almost every RGB color value we will see is sRGB,
+		/// this formula should be used instead of Lightness(r,g,b).
+		/// </summary>
+		static inline Pixel8 sRgbToLightness(Pixel8 r, Pixel8 g, Pixel8 b)
+		{
+			// These are sRGB values
+			double red = (double)r / 255;
+			double green = (double)g / 255;
+			double blue = (double)b / 255;
+
+			// Convert to Linear
+			Grayscale::sRgbToLinear(red, green, blue);
+
+			// Convert to CIE L - Lightness
+			const double y = Grayscale::Lightness(red, green, blue);
+
+			// Return normalized Y value
+			return y * 255;
+		}
 	};
 
 	/// <summary>

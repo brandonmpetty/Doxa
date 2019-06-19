@@ -357,7 +357,7 @@ namespace Doxa
 			// TODO: Add support for sRGB and 709 conversion to Linear RGB, then to gray, then potentially gamma corrected.
 			std::function<Pixel8(Pixel8, Pixel8, Pixel8)> algorithm;
 
-			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Qt);
+			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Qt); // TODO: Update this to MEAN.
 
 			switch (gsEnum)
 			{
@@ -383,7 +383,8 @@ namespace Doxa
 				algorithm = Grayscale::Luster<Pixel8>;
 				break;
 			case GrayscaleConversion::Lightness:
-				algorithm = Grayscale::Lightness<Pixel8>;
+				// This requires a change in colorspace.  sRGB is assumed.
+				algorithm = Grayscale::sRgbToLightness;
 				break;
 			}
 

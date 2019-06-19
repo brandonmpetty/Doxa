@@ -11,6 +11,7 @@
 #include "../Wan.hpp"
 #include "../Su.hpp"
 #include "../ISauvola.hpp"
+#include "../Bataineh.hpp"
 
 
 namespace Doxa::UnitTests
@@ -29,7 +30,7 @@ namespace Doxa::UnitTests
 
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.ppm";
-			image = PNM::Read(filePath);
+			image = PNM::Read(filePath, ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
 		}
 
 		TEST_METHOD(AlgorithmsSauvolaTest)
@@ -126,6 +127,18 @@ namespace Doxa::UnitTests
 
 			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}
+
+		/*
+		TEST_METHOD(AlgorithmsBatainehTest)
+		{
+			Image imageBataineh = Bataineh::ToBinaryImage(image);
+
+			// TODO: Assert when we know this algorithm is correct.
+			PNM::Write(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
+
+			//TestUtilities::AssertImageFile(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
+		}
+		*/
 	};
 
 	// Static objects

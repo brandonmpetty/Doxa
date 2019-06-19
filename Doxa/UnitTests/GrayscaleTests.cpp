@@ -27,25 +27,14 @@ namespace Doxa::UnitTests
 			Assert::AreEqual(1.0, Grayscale::BT2100(1.0, 1.0, 1.0), 0.001);
 		}
 
-		TEST_METHOD(GrayscalesRGBToLightnessTest)
+		TEST_METHOD(GrayscalesRgbToLightnessTest)
 		{
-			// These are sRGB values
-			double red = (double)47 / 255;
-			double green = (double)155 / 255;
-			double blue = (double)220 / 255;
-
-			// Convert to Linear
-			Grayscale::sRgbToLinear(red, green, blue);
-
-			// Convert to CIE L - Lightness
-			double y = Grayscale::Lightness(red, green, blue);
+			const Pixel8 y = Grayscale::sRgbToLightness(47, 155, 220);
 
 			// Note: .6030 is using the d50 weights, not the 709 weights which our algorithm uses.
 			// The weights are only slightly different, so I am keeping the d50 value for posterity.
 			// See: https://observablehq.com/@mbostock/lab-and-rgb
-			Assert::AreEqual(0.6030, y, 0.01);
-
-			// To normalize, you would multiply y by 255.
+			Assert::AreEqual(0.6030 * 255, y, 0.01 * 255);
 		}
 	};
 }

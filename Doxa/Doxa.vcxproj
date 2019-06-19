@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Algorithm.hpp" />
+    <ClInclude Include="Bataineh.hpp" />
     <ClInclude Include="Bernsen.hpp" />
     <ClInclude Include="ContrastImage.hpp" />
     <ClInclude Include="Convolution.hpp" />
