@@ -68,11 +68,15 @@ namespace Doxa::UnitTests
 			// Create a Red Black White image for analysis
 			PNM::Write(rbwImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-RBW.pgm");
 
+			// Calculate P Value - helps determine window size
+			double p = (double)blackCountImage / redCountImage;
+			Logger::WriteMessage(("p = " + std::to_string(p)).c_str());
+
 			// Calculate the Primary Window size
 			int primaryWindowWidth;
 			int primaryWindowHeight;
 			bataineh.PrimaryWindow(primaryWindowWidth, primaryWindowHeight,
-				(double)blackCountImage / redCountImage,
+				p,
 				sigmaGlobal,
 				maxGrayValue,
 				rbwImage.width,

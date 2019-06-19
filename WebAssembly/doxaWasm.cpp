@@ -13,6 +13,7 @@
 #include "../Doxa/ISauvola.hpp"
 #include "../Doxa/Nick.hpp"
 #include "../Doxa/TRSingh.hpp"
+#include "../Doxa/Bataineh.hpp"
 #include "../Doxa/Wan.hpp"
 #include "../Doxa/Wolf.hpp"
 #include "../Doxa/Su.hpp"
@@ -74,8 +75,9 @@ public:
 		NICK = 5,
 		SU = 6,
 		TRSINGH = 7,
-		ISAUVOLA = 8,
-		WAN = 9
+		BATAINEH = 8,
+		ISAUVOLA = 9,
+		WAN = 10
 	};
 	
 	Binarization(const Algorithms algorithm)
@@ -106,6 +108,9 @@ public:
 				break;
 			case TRSINGH:
 				algorithmPtr = new TRSingh();
+				break;
+			case BATAINEH:
+				algorithmPtr = new Bataineh();
 				break;
 			case ISAUVOLA:
 				algorithmPtr = new ISauvola();
@@ -206,6 +211,7 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("NICK", Binarization::Algorithms::NICK)
 		.value("SU", Binarization::Algorithms::SU)
 		.value("TRSINGH", Binarization::Algorithms::TRSINGH)
+		.value("BATAINEH", Binarization::Algorithms::BATAINEH)
 		.value("ISAUVOLA", Binarization::Algorithms::ISAUVOLA)
 		.value("WAN", Binarization::Algorithms::WAN)
 	;

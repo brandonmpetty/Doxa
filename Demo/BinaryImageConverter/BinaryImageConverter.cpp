@@ -12,6 +12,7 @@
 #include "../../Doxa/Gatos.hpp"
 #include "../../Doxa/Su.hpp"
 #include "../../Doxa/TRSingh.hpp"
+#include "../../Doxa/Bataineh.hpp"
 #include "../../Doxa/Wan.hpp"
 #include "../../Doxa/ISauvola.hpp"
 
@@ -38,6 +39,7 @@ int main(int argc, char* argv[])
 	bool gatos = false;
 	bool su = false;
 	bool trsingh = false;
+	bool bataineh = false;
 	bool wan = false;
 	bool isauvola = false;
 
@@ -68,6 +70,8 @@ int main(int argc, char* argv[])
 			su = true;
 		else if (arg.compare("-trsingh") == 0)
 			trsingh = true;
+		else if (arg.compare("-bataineh") == 0)
+			bataineh = true;
 		else if (arg.compare("-wan") == 0)
 			wan = true;
 		else if (arg.compare("-isauvola") == 0)
@@ -95,7 +99,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (source == "") return Help(0);
-	if (!otsu && !bernsen && !niblack && !sauvola && !wolf && !nick && !gatos && !su && !trsingh && !wan && !isauvola) 
+	if (!otsu && !bernsen && !niblack && !sauvola && !wolf && !nick && !gatos && !su && !trsingh && !bataineh && !wan && !isauvola) 
 		return Help(0);
 
 	try
@@ -110,7 +114,7 @@ int main(int argc, char* argv[])
 
 		if (otsu)
 		{
-			Image binaryImage = Otsu::ToBinaryImage(image, parameters);
+			Image binaryImage = Otsu::ToBinaryImage(image);
 			PNM::Write(binaryImage, output + "-Otsu.pbm");
 		}
 
@@ -171,6 +175,12 @@ int main(int argc, char* argv[])
 			PNM::Write(binaryImage, output + "-TRSingh.pbm");
 		}
 
+		if (bataineh)
+		{
+			Image binaryImage = TRSingh::ToBinaryImage(image);
+			PNM::Write(binaryImage, output + "-Bataineh.pbm");
+		}
+
 		if (wan)
 		{
 			parameters.Set("k", k == 0.0 ? 0.2 : k);
@@ -209,7 +219,7 @@ int Help(const int returnValue)
 		<< endl
 		<< "Usage: BinaryImageConverter.exe --source <image location> [-<algorithm>] [--w <window size>] [--k <k value>]" << endl
 		<< endl
-		<< "Algorithms: otsu, bernsen, niblack, sauvola, wolf, nick, gatos, su, trsingh, wan, isauvola" << endl
+		<< "Algorithms: otsu, bernsen, niblack, sauvola, wolf, nick, gatos, su, trsingh, bataineh, wan, isauvola" << endl
 		<< endl
 		<< "Multiple algorithms can be specified at once.  Defaults: w = 75, k = 0.2 (Nick's k = -0.2), g = 60" << endl
 		<< "Example: BinaryImageConverter.exe --source c:\\image.pam -wolf -sauvola --w 23 --k 0.15" << endl
