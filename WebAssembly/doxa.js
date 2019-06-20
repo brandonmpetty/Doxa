@@ -28,6 +28,9 @@
 		algorithms[Wasm.Binarization.Algorithms.TRSINGH.value] =	{
 			name: 'T.R. Singh', params: { window: 75, k: 0.20 }, enum: Wasm.Binarization.Algorithms.TRSINGH,
 			date: 2011, title: 'A New local Adaptive Thresholding Technique in Binarization', authors: 'T. Romen Singh, Sudipta Roy, O. Imocha Singh, Tejmani Sinam, Kh. Manglem Singh'};
+		algorithms[Wasm.Binarization.Algorithms.BATAINEH.value] =	{
+			name: 'Bataineh', params: { }, enum: Wasm.Binarization.Algorithms.BATAINEH,
+			date: 2011, title: 'An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows', authors: 'Bilal Bataineh, Siti Norul Huda Sheikh Abdullah, Khairuddin Omar'};
 		algorithms[Wasm.Binarization.Algorithms.ISAUVOLA.value] =	{
 			name: 'ISauvola', 	params: { window: 15, k: 0.01 }, enum: Wasm.Binarization.Algorithms.ISAUVOLA,
 			date: 2016, title: 'ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization', authors: 'Zineb Hadjadj, Abdelkrimo Meziane, Yazid Cherfa, Mohamed Cheriet, Insaf Setitra'};

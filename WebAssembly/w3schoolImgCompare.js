@@ -9,7 +9,7 @@ function initComparisons() {
   compareImages(x[0]);
 
   function compareImages(img) {
-	var slider, img, clicked = 0, w, h;
+	var slider, img, w, h;
 	/*get the width and height of the img element*/
 	w = img.offsetWidth;
 	h = img.offsetHeight;
@@ -30,26 +30,23 @@ function initComparisons() {
 	/*or touched (for touch screens:*/
 	slider.addEventListener("touchstart", slideReady);
 	/*and released (for touch screens:*/
-	window.addEventListener("touchstop", slideFinish);
+	window.addEventListener("touchend", slideFinish);
 	function slideReady(e) {
 	  /*prevent any other actions that may occur when moving over the image:*/
 	  e.preventDefault();
-	  /*the slider is now clicked and ready to move:*/
-	  clicked = 1;
+
 	  /*execute a function when the slider is moved:*/
 	  window.addEventListener("mousemove", slideMove);
 	  window.addEventListener("touchmove", slideMove);
 	}
 	function slideFinish() {
 	  /*the slider is no longer clicked:*/
-	  clicked = 0;
+	  window.removeEventListener("mousemove", slideMove);
+	  window.removeEventListener("touchmove", slideMove);
 	}
 	function slideMove(e) {
-	  var pos;
-	  /*if the slider is no longer clicked, exit this function:*/
-	  if (clicked == 0) return false;
 	  /*get the cursor's x position:*/
-	  pos = getCursorPos(e)
+	  var pos = getCursorPos(e)
 	  /*prevent the slider from being positioned outside the image:*/
 	  if (pos < 0) pos = 0;
 	  if (pos > w) pos = w;
@@ -62,11 +59,24 @@ function initComparisons() {
 	  /*get the x positions of the image:*/
 	  a = img.getBoundingClientRect();
 	  /*calculate the cursor's x coordinate, relative to the image:*/
-	  x = e.pageX - a.left;
+	  x = pointerEventToXY(e).x - a.left;
 	  /*consider any page scrolling:*/
 	  x = x - window.pageXOffset;
 	  return x;
 	}
+	function pointerEventToXY(e) {
+      /*fix touch eventing in original code*/
+      var out = {x:0, y:0};
+      if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
+        var touch = e.touches[0] || e.changedTouches[0];
+        out.x = touch.pageX;
+        out.y = touch.pageY;
+      } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+        out.x = e.pageX;
+        out.y = e.pageY;
+      }
+      return out;
+    }
 	function slide(x) {
 	  /*resize the image:*/
 	  img.style.width = x + "px";
