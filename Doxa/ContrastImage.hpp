@@ -52,7 +52,7 @@ namespace Doxa
 			// Run it through Otsu binarization to make it a high contrast image
 			Otsu otsu;
 			otsu.Initialize(highContrastImage);
-			otsu.ToBinary(highContrastImage, Parameters());
+			otsu.ToBinary(highContrastImage);
 		}
 	};
 }

@@ -28,7 +28,7 @@ namespace Doxa
 	class Gatos : public Algorithm<Gatos>
 	{
 	public:
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// Read parameters, utilizing defaults
 			const int glyphSize = parameters.Get("glyph", 60);

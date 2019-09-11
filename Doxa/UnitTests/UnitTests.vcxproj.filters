@@ -16,6 +16,8 @@
     <ClCompile Include="ContrastImageTests.cpp" />
     <ClCompile Include="ConvolutionTests.cpp" />
     <ClCompile Include="EdgeDetectorTests.cpp" />
+    <ClCompile Include="GrayscaleTests.cpp" />
+    <ClCompile Include="BatainehTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utilities">

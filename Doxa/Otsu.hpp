@@ -24,7 +24,7 @@ namespace Doxa
 	public:
 		static const int HISTOGRAM_SIZE = 256;
 
-		Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters)
+		Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters = Parameters())
 		{
 			// Compute number of pixels
 			long int N = grayScaleImage.size;

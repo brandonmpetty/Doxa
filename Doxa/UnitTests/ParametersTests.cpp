@@ -31,6 +31,9 @@ namespace Doxa::UnitTests
 		{
 			Parameters param({ { "z", 4 } });
 
+			// Verify it was initialized
+			Assert::AreEqual(param.Get("z", 0), 4);
+
 			// Set Int
 			param.Set("x", 1);
 			Assert::AreEqual(1, param.Get("x", 22));
@@ -42,6 +45,15 @@ namespace Doxa::UnitTests
 			// Set Existing Value
 			param.Set("z", 5);
 			Assert::AreEqual(5, param.Get("z", 22));
+		}
+
+		TEST_METHOD(ParametersParser)
+		{
+			// Parsed as a JSON string
+			Parameters params = Parameters::FromJson(R"({"window": 75, "custom": "test", "k": -0.01})");
+
+			Assert::AreEqual(params.Get("window", 0), 75);
+			Assert::AreEqual(params.Get("k", 0.0), -0.01, 0.0001);
 		}
 	};
 }

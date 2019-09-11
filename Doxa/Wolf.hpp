@@ -23,7 +23,7 @@ namespace Doxa
 			MeanVarianceCalculator::Initialize(grayScaleImageIn);
 		}
 
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters)
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			double mean, stddev;
 			double min = std::numeric_limits<double>::max();
