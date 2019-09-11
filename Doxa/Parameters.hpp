@@ -52,13 +52,14 @@ namespace Doxa
 		}
 		
 		/// <summary>
-		/// CTOR
 		/// A very naive JSON object parser.  Useful for WebAssembly.
 		/// Example: Parameters params(R"({"window": 75, "k": -0.01})");
 		/// </summary>
 		/// <param name="json">A simple JSON object</param>
-		Parameters(const std::string& json)
+		static Parameters FromJson(const std::string& json)
 		{
+			Parameters params;
+
 			std::size_t keyStart = json.find('"');
 			while (keyStart != std::string::npos)
 			{
@@ -79,16 +80,18 @@ namespace Doxa
 				// Value Type: Double
 				else if (value.find('.') != std::string::npos)
 				{
-					parameterMap[key] = std::stod(value);
+					params.parameterMap[key] = std::stod(value);
 				}
 				// Value Type: Integer
 				else
 				{
-					parameterMap[key] = std::stoi(value);
+					params.parameterMap[key] = std::stoi(value);
 				}
 
 				keyStart = json.find('"', ++keyStop);
 			}
+
+			return params;
 		}
 
 		Parameters() {}

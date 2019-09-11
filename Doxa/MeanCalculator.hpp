@@ -48,35 +48,28 @@ namespace Doxa
 	protected:
 		inline void CalculateDiff(double& diff, const Region& window) const
 		{
-			const int xmax_ymax = (window.bottomRight.y * imageWidth) + window.bottomRight.x;
+			const int bottomRight = (window.bottomRight.y * imageWidth) + window.bottomRight.x;
+
+			diff = integral_image[bottomRight];
+
+			if (window.upperLeft.y)
+			{
+				const int upperRight = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
+
+				diff -= integral_image[upperRight];
+			}
 
 			if (window.upperLeft.x)
 			{
-				const int xmin_ymax = (window.bottomRight.y * imageWidth) + (window.upperLeft.x - 1);
+				const int bottomLeft = (window.bottomRight.y * imageWidth) + (window.upperLeft.x - 1);
+
+				diff -= integral_image[bottomLeft];
 
 				if (window.upperLeft.y)
 				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
-					const int xmin_ymin = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
+					const int upperLeft = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
 
-					diff = (integral_image[xmax_ymax] + integral_image[xmin_ymin]) - (integral_image[xmax_ymin] + integral_image[xmin_ymax]);
-				}
-				else
-				{
-					diff = integral_image[xmax_ymax] - integral_image[xmin_ymax];
-				}
-			}
-			else
-			{
-				if (window.upperLeft.y)
-				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
-
-					diff = integral_image[xmax_ymax] - integral_image[xmax_ymin];
-				}
-				else
-				{
-					diff = integral_image[xmax_ymax];
+					diff += integral_image[upperLeft];
 				}
 			}
 		}
@@ -107,10 +100,9 @@ namespace Doxa
 				for (int x = 1; x < grayScaleImage.width; ++x)
 				{
 					cell = row + x;
-
-					integralImage[cell] = integralImage[cell - grayScaleImage.width] + rowSum + grayScaleImage.data[cell];
-
 					rowSum += grayScaleImage.data[cell];
+
+					integralImage[cell] = integralImage[cell - grayScaleImage.width] + rowSum;
 				}
 			}
 		}

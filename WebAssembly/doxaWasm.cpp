@@ -139,7 +139,7 @@ public:
 	void ToBinary(intptr_t data, const std::string& params)
 	{
 		Image image = Image::Reference(this->width, this->height, reinterpret_cast<Pixel8*>(data));
-		algorithmPtr->ToBinary(image, params);
+		algorithmPtr->ToBinary(image, Parameters::FromJson(params));
 	}
 	
 	Algorithms CurrentAlgorithm() { return algorithm; }
@@ -169,31 +169,6 @@ protected:
 	int height = 0;
 }; // Class: Binarization
 
-
-/*	Uncomment for FileSystem Access.  Note: this will more than double the output size.
-extern "C"
-{
-	/// <summary>
-	/// Reads a native PNM file inside the WASM virtual filesystem.
-	/// </summary>
-	/// <param name="width">A ptr that will return back the image width</param>
-	/// <param name="height">A ptr that will return back the image height</param>
-	/// <param name="height">A c-string representing the file location to open</param>
-	Pixel8* EMSCRIPTEN_KEEPALIVE ReadPNM(int* width, int* height, const char* location)
-	{
-		// Read in any supported PNM format and return an 8bit linear RGB grayscale representation
-		Image image = PNM::Read(location);
-		
-		// Our calling code will be responsible for freeing this memory
-		image.managedExternally = true;
-		
-		*width = image.width;
-		*height = image.height;
-
-		return image.data;
-	}
-} // Extern C
-*/
 
 
 EMSCRIPTEN_BINDINGS(doxa_wasm) {

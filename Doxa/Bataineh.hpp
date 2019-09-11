@@ -8,7 +8,7 @@
 #include "MeanVarianceCalculator.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
-// This code is highly experimental and has not been fully unit tested yet! //
+// This algorithm is being deemed unreproducible as of 09/10/2019.          //
 // See: BatainehTests for a deep analysis of this implementation.           //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,16 @@ namespace Doxa
 	/// The Bataineh Algorithm: Bilal Bataineh, Siti Norul Huda Sheikh Abdullah, Khairuddin Omar
 	/// 
 	/// This implementation was painstakingly put together and does not match up perfectly with the results of the paper.
-	/// While the results are close, I have been unable to work with the authors to overcome many challenges presented in the paper.
+	/// While the results are usable, I have been unable to work with the authors to overcome many challenges presented
+	/// in the paper.  Due to the number of issues, this work is being deemed unreproducible.
+	/// 
+	/// This algorithm should not be cited by any reputable research paper until these items have been addressed:
+	///		1. An obvious divide by zero problem in the SAdaptive equation
+	///		2. Partial code snippet from the author shows part of the Window Threshold equation being mult. by 2
+	///		3. No independent example of this algorithm actually working
+	/// 
+	/// Bilal Bataineh did provided me with a code snippet that was of some assistance.
+	/// It should be noted that his implementation uses a Luma BT601 conversion: PNM::GrayscaleConversion::BT601
 	/// 
 	/// </summary>
 	/// <remarks>"An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011.</remarks>
@@ -63,15 +72,12 @@ namespace Doxa
 			{
 				// Calculate threshold for the Window
 				const double sigmaAdaptive = SigmaAdaptive(detailedWindow.stddev, sigmaMin, sigmaMax, maxGrayValue);
-				const Pixel8 threshold = WindowThreshold(detailedWindow.mean, meanGlobal, detailedWindow.stddev, sigmaAdaptive);
+				const double threshold = WindowThreshold(detailedWindow.mean, meanGlobal, detailedWindow.stddev, sigmaAdaptive);
 
 				// Convert to binary
 				LocalWindow::Iterate(Algorithm::grayScaleImageIn.width, detailedWindow.window, [&](const int& positionWindow) {
-					Pixel8 val = Algorithm::grayScaleImageIn.data[positionWindow];
 					binaryImageOut.data[positionWindow] =
 						Algorithm::grayScaleImageIn.data[positionWindow] <= threshold ? Palette::Black : Palette::White;
-
-					Pixel8 val2 = binaryImageOut.data[positionWindow];
 				});
 			}
 		}
@@ -98,34 +104,36 @@ namespace Doxa
 		/// </summary>
 		void inline constexpr PrimaryWindow(int& primaryWidth, int& primaryHeight, double p, double sigmaGlobal, Pixel8 maxGray, int imageWidth, int imageHeight)
 		{
-			if (p <= 1)
-			{
-				primaryWidth = imageWidth / 40;
-				primaryHeight = imageHeight / 30;
-			}
-			else if (p >= 2.5 || (sigmaGlobal < 0.1*maxGray))
+
+			if (p >= 2.5 || (sigmaGlobal < 0.1*maxGray))
 			{
 				primaryWidth = imageWidth / 6;
 				primaryHeight = imageHeight / 4;
 			}
-			else
+			else if (p > 1 || (imageWidth + imageHeight < 400))
 			{
 				primaryWidth = imageWidth / 30;
 				primaryHeight = imageHeight / 20;
+			}
+			else
+			{
+				primaryWidth = imageWidth / 40;
+				primaryHeight = imageHeight / 30;
 			}
 		}
 
 		double inline constexpr SigmaAdaptive(const double sigmaWindow, const double sigmaMin, const double sigmaMax, const Pixel8 maxGray)
 		{
-			// Note: In the original paper, this had a divide by 0 problem (SigmaMax - SigmaMax).  Assuming either SigmaMin or SigmaWindow.
+			// Note: In the original paper, this had a divide by 0 problem (SigmaMax - SigmaMax).  Bilal helped clear this confusion.
 			return ((sigmaWindow - sigmaMin) / (sigmaMax - sigmaMin)) * maxGray;
 		}
 
-		Pixel8 inline constexpr WindowThreshold(const double meanWindow, const double meanGlobal, const double sigmaWindow, const double sigmaAdaptive)
+		double inline constexpr WindowThreshold(const double meanWindow, const double meanGlobal, const double sigmaWindow, const double sigmaAdaptive)
 		{
 			// Note: In the original paper, the Mw^2 * Sw was Mw^2 - Sw.  The authors later corrected it.
-			// Note: Mg + Sw might need to be Mw + Sw.  This fixed some black boxes I was getting.
-			return meanWindow - ((meanWindow*meanWindow * sigmaWindow) / ((meanWindow + sigmaWindow)*(sigmaAdaptive + sigmaWindow)));
+			// Note: The author gave me some partial code that contained this function.  SigmaAdaptive was multiplied by 2!
+			// This threshold value can go negative at times, and even return NAN!  In both cases the block will be white.
+			return meanWindow - ((meanWindow*meanWindow * sigmaWindow) / ((meanGlobal + sigmaWindow)*(2*sigmaAdaptive + sigmaWindow)));
 		}
 
 		double inline constexpr ConfusionThreshold(const double meanGlobal, const double sigmaGlobal, const Pixel8 maxGray)

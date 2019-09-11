@@ -128,17 +128,12 @@ namespace Doxa::UnitTests
 			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}
 
-		/*
 		TEST_METHOD(AlgorithmsBatainehTest)
 		{
 			Image imageBataineh = Bataineh::ToBinaryImage(image);
 
-			// TODO: Assert when we know this algorithm is correct.
-			PNM::Write(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
-
-			//TestUtilities::AssertImageFile(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
+			TestUtilities::AssertImageFile(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
 		}
-		*/
 	};
 
 	// Static objects

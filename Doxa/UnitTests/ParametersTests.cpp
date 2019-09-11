@@ -29,10 +29,7 @@ namespace Doxa::UnitTests
 
 		TEST_METHOD(ParametersSetTest)
 		{
-			// Note: For some reason the compiler can think we are passing a string... 
-			// so we have to be specific when passing one parameter.
-			// This is a side effect of the JSON parser that was added.
-			Parameters param(ParameterMap{ { "z", 4 } });
+			Parameters param({ { "z", 4 } });
 
 			// Verify it was initialized
 			Assert::AreEqual(param.Get("z", 0), 4);
@@ -53,7 +50,7 @@ namespace Doxa::UnitTests
 		TEST_METHOD(ParametersParser)
 		{
 			// Parsed as a JSON string
-			Parameters params(R"({"window": 75, "custom": "test", "k": -0.01})");
+			Parameters params = Parameters::FromJson(R"({"window": 75, "custom": "test", "k": -0.01})");
 
 			Assert::AreEqual(params.Get("window", 0), 75);
 			Assert::AreEqual(params.Get("k", 0.0), -0.01, 0.0001);

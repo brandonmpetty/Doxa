@@ -34,7 +34,7 @@ namespace Doxa::UnitTests
 
 			// Setup
 			const std::string filePath = TestUtilities::ProjectFolder() + "2JohnC1V3.ppm";
-			const Image grayScaleImage = PNM::Read(filePath, ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Mean} });
+			const Image grayScaleImage = PNM::Read(filePath, ParameterMap{ {"grayscale", PNM::GrayscaleConversion::BT601} });
 			BatainehTestharness bataineh;
 			bataineh.Initialize(grayScaleImage);
 
@@ -42,18 +42,18 @@ namespace Doxa::UnitTests
 			double sigmaGlobal;
 			double meanGlobal;
 			bataineh.CalculateMeanStdDev(meanGlobal, sigmaGlobal, Region(grayScaleImage.width, grayScaleImage.height));
-			if (enableAssertions) Assert::AreEqual(32.3004, sigmaGlobal, 0.001);
-			if (enableAssertions) Assert::AreEqual(181.6902, meanGlobal, 0.001);
+			if (enableAssertions) Assert::AreEqual(31.6197, sigmaGlobal, 0.001);
+			if (enableAssertions) Assert::AreEqual(186.3858, meanGlobal, 0.001);
 			Logger::WriteMessage(("Mg = " + std::to_string(meanGlobal) + ", Sg = " + std::to_string(sigmaGlobal)).c_str());
 
 			// Get Max Gray Value
 			const Pixel8 maxGrayValue = bataineh.GetMaxGrayValue();
-			if (enableAssertions) Assert::AreEqual((Pixel8)219, maxGrayValue);
+			if (enableAssertions) Assert::AreEqual((Pixel8)222, maxGrayValue);
 			Logger::WriteMessage(("MAXlevel = " + std::to_string(maxGrayValue)).c_str());
 
 			// Calculate Confusion Threshold
 			const double confThreshold = bataineh.ConfusionThreshold(meanGlobal, sigmaGlobal, maxGrayValue);
-			if (enableAssertions) Assert::AreEqual(146.5504, confThreshold, 0.001);
+			if (enableAssertions) Assert::AreEqual(151.0563, confThreshold, 0.001);
 			Logger::WriteMessage(("Tc = " + std::to_string(confThreshold)).c_str());
 
 			// Find total Red and Black pixels
@@ -61,8 +61,8 @@ namespace Doxa::UnitTests
 			int redCountImage;
 			int blackCountImage;
 			bataineh.RedBlack(redCountImage, blackCountImage, rbwImage, confThreshold, sigmaGlobal);
-			if (enableAssertions) Assert::AreEqual(20221, redCountImage);
-			if (enableAssertions) Assert::AreEqual(35056, blackCountImage);
+			if (enableAssertions) Assert::AreEqual(19513, redCountImage);
+			if (enableAssertions) Assert::AreEqual(34320, blackCountImage);
 			Logger::WriteMessage(("REDg = " + std::to_string(redCountImage) + ", BLACKg = " + std::to_string(blackCountImage)).c_str());
 
 			// Create a Red Black White image for analysis
@@ -88,23 +88,27 @@ namespace Doxa::UnitTests
 
 			// Break the image into Primary and Secondary windows
 			std::vector<BatainehTestharness::DetailedWindow> windows = bataineh.GetWindows(rbwImage, blackCountImage, redCountImage, sigmaGlobal, maxGrayValue);
-			if (enableAssertions) Assert::AreEqual((size_t)1136, windows.size());
+			if (enableAssertions) Assert::AreEqual((size_t)1121, windows.size());
 			Logger::WriteMessage(("PW & SW Count = " + std::to_string(windows.size())).c_str());
+
+			// Create a window breakdown image for analysis
+			Image windowImage = GenerateWindowImage(rbwImage, windows);
+			PNM::Write(windowImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-Windows.pgm");
 
 			// Get Sigma Max and Min as well as local window Sigma and Mean
 			double sigmaMax;
 			double sigmaMin;
 			bataineh.SigmaMinMaxAndMean(sigmaMin, sigmaMax, windows);
-			if (enableAssertions) Assert::AreEqual(0.8952, sigmaMin, 0.001);
-			if (enableAssertions) Assert::AreEqual(53.1309, sigmaMax, 0.001);
+			if (enableAssertions) Assert::AreEqual(0.7923, sigmaMin, 0.001);
+			if (enableAssertions) Assert::AreEqual(52.7487, sigmaMax, 0.001);
 			Logger::WriteMessage(("Smin = " + std::to_string(sigmaMin) + ", Smax = " + std::to_string(sigmaMax)).c_str());
 
 			// Get a target Window and analyze it
 			Logger::WriteMessage("First Window Details:");
 
 			BatainehTestharness::DetailedWindow detailedWindow = windows.front(); // First Window
-			if (enableAssertions) Assert::AreEqual(182.4861, detailedWindow.mean, 0.001);
-			if (enableAssertions) Assert::AreEqual(27.81389, detailedWindow.stddev, 0.001);
+			if (enableAssertions) Assert::AreEqual(185.8893, detailedWindow.mean, 0.001);
+			if (enableAssertions) Assert::AreEqual(26.9717, detailedWindow.stddev, 0.001);
 			Logger::WriteMessage(("Mw = " + std::to_string(detailedWindow.mean) + ", Sw = " + std::to_string(detailedWindow.stddev)).c_str());
 
 			if (enableAssertions) Assert::AreEqual(23, detailedWindow.window.Width());
@@ -112,12 +116,39 @@ namespace Doxa::UnitTests
 			Logger::WriteMessage(("Ww = " + std::to_string(detailedWindow.window.Width()) + ", Wh = " + std::to_string(detailedWindow.window.Height())).c_str());
 
 			const double sigmaAdaptive = bataineh.SigmaAdaptive(detailedWindow.stddev, sigmaMin, sigmaMax, maxGrayValue);
-			if (enableAssertions) Assert::AreEqual(112.8572, sigmaAdaptive, 0.001);
+			if (enableAssertions) Assert::AreEqual(111.8597, sigmaAdaptive, 0.001);
 			Logger::WriteMessage(("Sadaptive = " + std::to_string(sigmaAdaptive)).c_str());
 
 			const Pixel8 threshold = bataineh.WindowThreshold(detailedWindow.mean, meanGlobal, detailedWindow.stddev, sigmaAdaptive);
-			if (enableAssertions) Assert::AreEqual((Pixel8)151, threshold);
+			if (enableAssertions) Assert::AreEqual((Pixel8)168, threshold);
 			Logger::WriteMessage(("Tw = " + std::to_string(threshold)).c_str());
+		}
+
+	protected:
+		/// <summary>
+		/// A method that draws the bottom, and right side of every window onto the image.
+		/// </summary>
+		/// <returns>An Image with window outlines</returns>
+		Image GenerateWindowImage(const Image& image, const std::vector<BatainehTestharness::DetailedWindow>& windows)
+		{
+			Image windowImage(image); // Make a deep copy
+
+			for (auto it = windows.begin(); it != windows.end(); ++it)
+			{
+				// Draw bottom horizontal bar
+				for (int x = it->window.upperLeft.x; x < it->window.bottomRight.x; ++x)
+				{
+					windowImage.Pixel(x, it->window.bottomRight.y) = 75;
+				}
+
+				// Draw right vertical bar
+				for (int y = it->window.upperLeft.y; y < it->window.bottomRight.y; ++y)
+				{
+					windowImage.Pixel(it->window.bottomRight.x, y) = 75;
+				}
+			}
+
+			return windowImage;
 		}
 	};
 }

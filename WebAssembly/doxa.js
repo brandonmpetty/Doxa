@@ -58,38 +58,6 @@
 			return this;
 		};
 		
-		/* This must be enabled in doxaWasm.cpp
-		
-		// Loads this Image object with content read from a valid PNM formatted file
-		// Note: Once loaded, the caller is responsible for freeing the memory
-		this.loadFromFile = function(filePath) {
-			// Allocate memory for parameters
-			var widthPtr = Wasm._malloc(4);		// 32bit integer
-			var heightPtr = Wasm._malloc(4);	// 32big integer
-			var filePathPtr = Wasm._malloc(filePath.length);
-			
-			try {
-				Wasm.writeAsciiToMemory(filePath, filePathPtr);
-
-				// Call our actual function
-				this.heapPtr = Wasm._ReadPNM(widthPtr, heightPtr, filePathPtr);
-
-				// Set image values
-				this.width = Wasm.getValue(widthPtr, "i32");
-				this.height = Wasm.getValue(heightPtr, "i32");
-				this.size = this.width * this.height;
-			}
-			finally {
-				// Free memory
-				Module._free(widthPtr);
-				Module._free(heightPtr);
-				Module._free(filePathPtr);
-			}
-			
-			return this;
-		};
-		*/
-		
 		// Draws this Image directly to an HTML5 Canvas
 		this.draw = function(canvasId) {
 			var canvas = document.getElementById(canvasId);

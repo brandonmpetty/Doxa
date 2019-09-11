@@ -52,39 +52,41 @@ namespace Doxa
 	protected:
 		inline void CalculateDiffs(double& diff, double& sqdiff, const Region& window) const
 		{
-			const int xmax_ymax = (window.bottomRight.y * imageWidth) + window.bottomRight.x;
+			// Optimization Note: With MSVC, simplifying this to match MeanCalculator::CalculateDiffs incurred a small performance hit.
+
+			const int bottomRight = (window.bottomRight.y * imageWidth) + window.bottomRight.x;
 
 			if (window.upperLeft.x)
 			{
-				const int xmin_ymax = (window.bottomRight.y * imageWidth) + (window.upperLeft.x - 1);
+				const int bottomLeft = (window.bottomRight.y * imageWidth) + (window.upperLeft.x - 1);
 
 				if (window.upperLeft.y)
 				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
-					const int xmin_ymin = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
+					const int upperRight = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
+					const int upperLeft = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
 
-					diff = (integral_image[xmax_ymax] + integral_image[xmin_ymin]) - (integral_image[xmax_ymin] + integral_image[xmin_ymax]);
-					sqdiff = (integral_sqimg[xmax_ymax] + integral_sqimg[xmin_ymin]) - (integral_sqimg[xmax_ymin] + integral_sqimg[xmin_ymax]);
+					diff = (integral_image[bottomRight] + integral_image[upperLeft]) - (integral_image[upperRight] + integral_image[bottomLeft]);
+					sqdiff = (integral_sqimg[bottomRight] + integral_sqimg[upperLeft]) - (integral_sqimg[upperRight] + integral_sqimg[bottomLeft]);
 				}
 				else
 				{
-					diff = integral_image[xmax_ymax] - integral_image[xmin_ymax];
-					sqdiff = integral_sqimg[xmax_ymax] - integral_sqimg[xmin_ymax];
+					diff = integral_image[bottomRight] - integral_image[bottomLeft];
+					sqdiff = integral_sqimg[bottomRight] - integral_sqimg[bottomLeft];
 				}
 			}
 			else
 			{
 				if (window.upperLeft.y)
 				{
-					const int xmax_ymin = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
+					const int upperRight = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
 
-					diff = integral_image[xmax_ymax] - integral_image[xmax_ymin];
-					sqdiff = integral_sqimg[xmax_ymax] - integral_sqimg[xmax_ymin];
+					diff = integral_image[bottomRight] - integral_image[upperRight];
+					sqdiff = integral_sqimg[bottomRight] - integral_sqimg[upperRight];
 				}
 				else
 				{
-					diff = integral_image[xmax_ymax];
-					sqdiff = integral_sqimg[xmax_ymax];
+					diff = integral_image[bottomRight];
+					sqdiff = integral_sqimg[bottomRight];
 				}
 			}
 		}
@@ -163,10 +165,9 @@ namespace Doxa
 				for (int x = 1; x < grayScaleImage.width; ++x)
 				{
 					cell = row + x;
-
-					integralImage[cell] = integralImage[cell - grayScaleImage.width] + rowSum + grayScaleImage.data[cell];
-
 					rowSum += grayScaleImage.data[cell];
+
+					integralImage[cell] = integralImage[cell - grayScaleImage.width] + rowSum;
 				}
 			}
 
