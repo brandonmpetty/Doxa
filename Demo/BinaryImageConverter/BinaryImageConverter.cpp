@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 
 		if (bataineh)
 		{
-			Image binaryImage = TRSingh::ToBinaryImage(image);
+			Image binaryImage = Bataineh::ToBinaryImage(image);
 			PNM::Write(binaryImage, output + "-Bataineh.pbm");
 		}
 
