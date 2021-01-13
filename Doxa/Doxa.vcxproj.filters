@@ -36,12 +36,6 @@
     <ClInclude Include="Wolf.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
-    <ClInclude Include="MeanCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
-    <ClInclude Include="MeanVarianceCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
     <ClInclude Include="DRDM.hpp">
       <Filter>Performance</Filter>
     </ClInclude>
@@ -72,6 +66,21 @@
     <ClInclude Include="Grayscale.hpp" />
     <ClInclude Include="Bataineh.hpp">
       <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralImageMeanCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralImageMeanVarianceCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="ChanMeanCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="ChanMeanVarianceCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="IntegralImage.h">
+      <Filter>Calculators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -25,7 +25,8 @@ In English, this means that it has the ability to turn a color or gray scale ima
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished.
+* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
+* Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
 
 **Performance Metrics**
 * Overall Accuracy

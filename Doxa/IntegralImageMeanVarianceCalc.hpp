@@ -1,56 +1,64 @@
 // Δoxa Binarization Framework
 // License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
-#ifndef MEANVARIANCECALCULATOR_HPP
-#define MEANVARIANCECALCULATOR_HPP
+#ifndef INTEGRALIMAGEMEANVARIANCECALC_HPP
+#define INTEGRALIMAGEMEANVARIANCECALC_HPP
 
-#include "MeanCalculator.hpp"
+#include "Image.hpp"
+#include "Region.hpp"
+#include "IntegralImage.h"
 
 
 namespace Doxa
 {
 	/// <summary>
 	/// The Shafait Algorithm: Faisal Shafait, Daniel Keysers, Thomas M. Breuel
-	/// An integral image based calculator for calculating Mean, Variance, and Std. Deviation.
+	/// An integral image based calculator for calculating Mean, Population Variance.
+	/// 
+	/// Note: For extremely large images, this algorithm will fail.
 	/// </summary>
 	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
-	class MeanVarianceCalculator
-		: public MeanCalculator
+	class IntegralImageMeanVarianceCalc
 	{
 	public:
-		MeanVarianceCalculator()
-			: MeanCalculator(),
-			integral_sqimg(0) {}
+		IntegralImageMeanVarianceCalc() {}
 
-		void Initialize(const Image& grayScaleImage)
+		template<typename Algorithm>
+		void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
 		{
-			integral_image.resize(grayScaleImage.size);
-			imageWidth = grayScaleImage.width;
-			integral_sqimg.resize(grayScaleImage.size);
+			const int imageWidth = grayScaleImageIn.width;
 
-			BuildIntegralImages(integral_image, integral_sqimg, grayScaleImage);
+			// Initialize Integral Images
+			IntegralImage integralImage(grayScaleImageIn.size), integralSqrImage(grayScaleImageIn.size);
+			BuildIntegralImages(integralImage, integralSqrImage, grayScaleImageIn);
+			//BuildIntegralImagesLowMem(integralImage, integralSqrImage, grayScaleImageIn); // This can significantly reduce the memory used, but may be slower
+
+			// Run our binarization algorithm
+			double mean, variance;
+			LocalWindow::Process(binaryImageOut, grayScaleImageIn, windowSize, [&](const Region& window, const int& index) {
+				CalculateMeanVariance(mean, variance, imageWidth, integralImage, integralSqrImage, window);
+
+				return algorithm(mean, variance, index);
+			});
 		}
 
-		inline void CalculateMeanStdDev(double& mean, double& stddev, const Region& window) const
-		{
-			CalculateMeanVariance(mean, stddev, window);
-
-			stddev = sqrt(stddev);
-		}
-
-		inline void CalculateMeanVariance(double& mean, double& variance, const Region& window) const
+		inline void CalculateMeanVariance(double& mean, double& variance, const int imageWidth, const IntegralImage& integralImage, const IntegralImage& integralSqrImage, const Region& window) const
 		{
 			// Note: This data type has a large impact on performance.
 			double diff, sqdiff;
-			CalculateDiffs(diff, sqdiff, window);
+			CalculateDiffs(diff, sqdiff, imageWidth, integralImage, integralSqrImage, window);
 
 			// Get the Mean and Variance using our Shafait inspired algorithm
 			const int area = window.Area();
 			mean = diff / area;
-			variance = (sqdiff - diff*diff / area) / (area - 1);
+			
+			// Sample Variance
+			//variance = (sqdiff - diff*diff / area) / (area - 1);
+
+			// Population Variance
+			variance = (sqdiff / area) - (mean * mean);
 		}
 
-	protected:
-		inline void CalculateDiffs(double& diff, double& sqdiff, const Region& window) const
+		inline void CalculateDiffs(double& diff, double& sqdiff, const int imageWidth, const IntegralImage& integralImage, const IntegralImage& integralSqrImage, const Region& window) const
 		{
 			// Optimization Note: With MSVC, simplifying this to match MeanCalculator::CalculateDiffs incurred a small performance hit.
 
@@ -65,13 +73,13 @@ namespace Doxa
 					const int upperRight = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
 					const int upperLeft = ((window.upperLeft.y - 1) * imageWidth) + (window.upperLeft.x - 1);
 
-					diff = (integral_image[bottomRight] + integral_image[upperLeft]) - (integral_image[upperRight] + integral_image[bottomLeft]);
-					sqdiff = (integral_sqimg[bottomRight] + integral_sqimg[upperLeft]) - (integral_sqimg[upperRight] + integral_sqimg[bottomLeft]);
+					diff = (integralImage[bottomRight] + integralImage[upperLeft]) - (integralImage[upperRight] + integralImage[bottomLeft]);
+					sqdiff = (integralSqrImage[bottomRight] + integralSqrImage[upperLeft]) - (integralSqrImage[upperRight] + integralSqrImage[bottomLeft]);
 				}
 				else
 				{
-					diff = integral_image[bottomRight] - integral_image[bottomLeft];
-					sqdiff = integral_sqimg[bottomRight] - integral_sqimg[bottomLeft];
+					diff = integralImage[bottomRight] - integralImage[bottomLeft];
+					sqdiff = integralSqrImage[bottomRight] - integralSqrImage[bottomLeft];
 				}
 			}
 			else
@@ -80,19 +88,20 @@ namespace Doxa
 				{
 					const int upperRight = ((window.upperLeft.y - 1) * imageWidth) + window.bottomRight.x;
 
-					diff = integral_image[bottomRight] - integral_image[upperRight];
-					sqdiff = integral_sqimg[bottomRight] - integral_sqimg[upperRight];
+					diff = integralImage[bottomRight] - integralImage[upperRight];
+					sqdiff = integralSqrImage[bottomRight] - integralSqrImage[upperRight];
 				}
 				else
 				{
-					diff = integral_image[bottomRight];
-					sqdiff = integral_sqimg[bottomRight];
+					diff = integralImage[bottomRight];
+					sqdiff = integralSqrImage[bottomRight];
 				}
 			}
 		}
 
 		void BuildIntegralImages(IntegralImage& integralImage, IntegralImage& integralSqrImage, const Image& grayScaleImage)
 		{
+			// This algorithm uses two temporary images.  See BuildIntegralImagesLowMem for an alternative.
 			IntegralImage rowSumImage(grayScaleImage.size);
 			IntegralImage rowSumSqrImage(grayScaleImage.size);
 			int rowIdx = 0;
@@ -184,10 +193,8 @@ namespace Doxa
 				}
 			}
 		}
-
-		IntegralImage integral_sqimg;
 	};
 }
 
 
-#endif //MEANVARIANCECALCULATOR_HPP
+#endif //INTEGRALIMAGEMEANVARIANCECALC_HPP

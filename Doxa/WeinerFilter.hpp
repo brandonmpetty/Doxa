@@ -4,10 +4,9 @@
 #define WIENERFILTER_HPP
 
 #include "Types.hpp"
-#include "Palette.hpp"
 #include "Region.hpp"
 #include "Image.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "IntegralImageMeanVarianceCalc.hpp"
 
 
 namespace Doxa
@@ -24,8 +23,14 @@ namespace Doxa
 	public:
 		static void Filter(Image& outputImage, const Image& inputImage, const int windowSize = 3)
 		{
-			MeanVarianceCalculator calculator;
-			calculator.Initialize(inputImage);
+			const int imageWidth = inputImage.width;
+
+			// Initialize Integral Images -- Int Images are used here since the values are processed twice
+			IntegralImageMeanVarianceCalc calculator;
+			IntegralImage integralImage, integralSqrImage;
+			integralImage.resize(inputImage.size);
+			integralSqrImage.resize(inputImage.size);
+			calculator.BuildIntegralImages(integralImage, integralSqrImage, inputImage);
 
 			// Obtain the average variance for all pixels
 			double mean, variance;
@@ -33,7 +38,7 @@ namespace Doxa
 
 			LocalWindow::Iterate(inputImage, windowSize, [&](const Region& window, const int& position)
 			{
-				calculator.CalculateMeanVariance(mean, variance, window);
+				calculator.CalculateMeanVariance(mean, variance, imageWidth, integralImage, integralSqrImage, window);
 
 				sumVariance += variance;
 			});
@@ -43,7 +48,7 @@ namespace Doxa
 			// Apply Wiener Filter
 			LocalWindow::Iterate(inputImage, windowSize, [&](const Region& window, const int& position)
 			{
-				calculator.CalculateMeanVariance(mean, variance, window);
+				calculator.CalculateMeanVariance(mean, variance, imageWidth, integralImage, integralSqrImage, window);
 
 				// The avgVariance is simulating noise-variance.  It should always be greater than variance.
 				outputImage.data[position] = variance < avgVariance ?

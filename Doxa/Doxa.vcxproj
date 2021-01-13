@@ -83,6 +83,8 @@
     <ClInclude Include="Algorithm.hpp" />
     <ClInclude Include="Bataineh.hpp" />
     <ClInclude Include="Bernsen.hpp" />
+    <ClInclude Include="ChanMeanCalc.hpp" />
+    <ClInclude Include="ChanMeanVarianceCalc.hpp" />
     <ClInclude Include="ContrastImage.hpp" />
     <ClInclude Include="Convolution.hpp" />
     <ClInclude Include="DRDM.hpp" />
@@ -90,10 +92,11 @@
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Grayscale.hpp" />
     <ClInclude Include="Image.hpp" />
+    <ClInclude Include="IntegralImage.h" />
     <ClInclude Include="ISauvola.hpp" />
     <ClInclude Include="Morphology.hpp" />
     <ClInclude Include="Parameters.hpp" />
-    <ClInclude Include="MeanCalculator.hpp" />
+    <ClInclude Include="IntegralImageMeanCalc.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="Niblack.hpp" />
     <ClInclude Include="Nick.hpp" />
@@ -103,7 +106,7 @@
     <ClInclude Include="PNM.hpp" />
     <ClInclude Include="Region.hpp" />
     <ClInclude Include="Sauvola.hpp" />
-    <ClInclude Include="MeanVarianceCalculator.hpp" />
+    <ClInclude Include="IntegralImageMeanVarianceCalc.hpp" />
     <ClInclude Include="Su.hpp" />
     <ClInclude Include="TRSingh.hpp" />
     <ClInclude Include="Types.hpp" />

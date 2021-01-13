@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "IntegralImageMeanVarianceCalc.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 // This algorithm is being deemed unreproducible as of 09/10/2019.          //
@@ -31,13 +31,19 @@ namespace Doxa
 	/// 
 	/// </summary>
 	/// <remarks>"An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011.</remarks>
-	class Bataineh : public Algorithm<Bataineh>, public MeanVarianceCalculator
+	class Bataineh : public Algorithm<Bataineh>, public IntegralImageMeanVarianceCalc
 	{
 	public:
+
 		void Initialize(const Image& grayScaleImageIn)
 		{
 			Algorithm::Initialize(grayScaleImageIn);
-			MeanVarianceCalculator::Initialize(grayScaleImageIn);
+
+			// Initialize Integral Images
+			Bataineh::imageWidth = grayScaleImageIn.width;
+			Bataineh::integralImage.resize(grayScaleImageIn.size);
+			Bataineh::integralSqrImage.resize(grayScaleImageIn.size);
+			BuildIntegralImages(Bataineh::integralImage, Bataineh::integralSqrImage, Algorithm::grayScaleImageIn);
 		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
@@ -45,7 +51,7 @@ namespace Doxa
 			// Get global std-dev and mean values
 			double sigmaGlobal;
 			double meanGlobal;
-			CalculateMeanStdDev(meanGlobal, sigmaGlobal, Region(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height));
+			CalculateGlobals(meanGlobal, sigmaGlobal);
 
 			// Get Max Gray Value
 			const Pixel8 maxGrayValue = GetMaxGrayValue();
@@ -96,6 +102,21 @@ namespace Doxa
 			double mean;
 			double stddev;
 		};
+
+		void CalculateGlobals(double& mean, double& stddev) const
+		{
+			const Region window(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
+
+			CalculateMeanStdDev(mean, stddev, window);
+		}
+
+		inline void CalculateMeanStdDev(double& mean, double& stddev, const Region& window) const
+		{
+			double variance;
+			CalculateMeanVariance(mean, variance, Bataineh::imageWidth, Bataineh::integralImage, Bataineh::integralSqrImage, window);
+
+			stddev = std::sqrt(variance);
+		}
 
 		/// <summary>
 		/// Calculates the size of the Primary Window.  These windows are fixed to the image and do not surround the pixel.
@@ -312,6 +333,10 @@ namespace Doxa
 			// Merge Secondary Windows into our main Window vector
 			windows.insert(std::end(windows), std::begin(secondaryWindows), std::end(secondaryWindows));
 		}
+
+
+		int imageWidth = 0;
+		IntegralImage integralImage, integralSqrImage;
 	};
 }
 

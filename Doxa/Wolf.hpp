@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "IntegralImageMeanVarianceCalc.hpp"
 
 
 namespace Doxa
@@ -14,13 +14,18 @@ namespace Doxa
 	/// The Wolf Algorithm: Christian Wolf, Jean-Michel Jolion
 	/// </summary>
 	/// <remarks>"Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.</remarks>
-	class Wolf : public Algorithm<Wolf>, public MeanVarianceCalculator
+	class Wolf : public Algorithm<Wolf>, public IntegralImageMeanVarianceCalc
 	{
 	public:
 		void Initialize(const Image& grayScaleImageIn)
 		{
 			Algorithm::Initialize(grayScaleImageIn);
-			MeanVarianceCalculator::Initialize(grayScaleImageIn);
+
+			// Initialize Integral Images - II are used because we have to iterate through the values twice
+			Wolf::imageWidth = grayScaleImageIn.width;
+			Wolf::integralImage.resize(grayScaleImageIn.size);
+			Wolf::integralSqrImage.resize(grayScaleImageIn.size);
+			BuildIntegralImages(Wolf::integralImage, Wolf::integralSqrImage, Algorithm::grayScaleImageIn);
 		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
@@ -48,6 +53,18 @@ namespace Doxa
 				return mean - k * (1 - (stddev / maxStdDev)) * (mean - min);
 			});
 		}
+
+		inline void CalculateMeanStdDev(double& mean, double& stddev, const Region& window) const
+		{
+			double variance;
+			CalculateMeanVariance(mean, variance, Wolf::imageWidth, Wolf::integralImage, Wolf::integralSqrImage, window);
+
+			stddev = std::sqrt(variance);
+		}
+
+
+		int imageWidth = 0;
+		IntegralImage integralImage, integralSqrImage;
 	};
 }
 
