@@ -21,9 +21,9 @@ namespace Doxa
 		template<typename Algorithm>
 		void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
 		{
-			Iterate(grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int possition) {
-				binaryImageOut.data[possition] =
-					grayScaleImageIn.data[possition] <= algorithm(mean, variance, possition) ?
+			Iterate(grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int position) {
+				binaryImageOut.data[position] =
+					grayScaleImageIn.data[position] <= algorithm(mean, variance, position) ?
 					Palette::Black : Palette::White;
 			});
 		}
