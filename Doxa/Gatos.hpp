@@ -8,7 +8,7 @@
 #include "Palette.hpp"
 #include "Region.hpp"
 #include "Image.hpp"
-#include "WeinerFilter.hpp"
+#include "WienerFilter.hpp"
 
 ////////////////////////////////////////////////////////////////////////
 // This code is highly experimental and has not been unit tested yet! //

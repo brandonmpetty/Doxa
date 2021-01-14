@@ -51,9 +51,6 @@
     <ClInclude Include="ContrastImage.hpp">
       <Filter>Processors</Filter>
     </ClInclude>
-    <ClInclude Include="WeinerFilter.hpp">
-      <Filter>Processors</Filter>
-    </ClInclude>
     <ClInclude Include="ISauvola.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
@@ -81,6 +78,9 @@
     </ClInclude>
     <ClInclude Include="IntegralImage.h">
       <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="WienerFilter.hpp">
+      <Filter>Processors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

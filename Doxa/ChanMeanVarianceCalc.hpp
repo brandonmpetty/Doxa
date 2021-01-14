@@ -21,6 +21,17 @@ namespace Doxa
 		template<typename Algorithm>
 		void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
 		{
+			Iterate(grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int possition) {
+				binaryImageOut.data[possition] =
+					grayScaleImageIn.data[possition] <= algorithm(mean, variance, possition) ?
+					Palette::Black : Palette::White;
+			});
+		}
+
+
+		template<typename Processor>
+		void Iterate(const Image& grayScaleImageIn, const int windowSize, Processor processor)
+		{
 			// Setup constants
 			const int width = grayScaleImageIn.width;
 			const int height = grayScaleImageIn.height;
@@ -96,9 +107,7 @@ namespace Doxa
 					const double mean = ((double)sum) / count;
 					const double variance = ((double)squareSum) / count - mean * mean;
 
-					binaryImageOut.data[ind] = 
-						grayScaleImageIn.data[ind] <= algorithm(mean, variance, ind) ?
-							Palette::Black : Palette::White;
+					processor(mean, variance, ind);
 				}
 
 				// Now that our windows is sliding through the right side of the image, we have to remove the left most colum.
@@ -114,9 +123,7 @@ namespace Doxa
 					const double mean = ((double)sum) / count;
 					const double variance = ((double)squareSum) / count - mean * mean;
 
-					binaryImageOut.data[ind] =
-						grayScaleImageIn.data[ind] <= algorithm(mean, variance, ind) ?
-						Palette::Black : Palette::White;
+					processor(mean, variance, ind);
 				}
 			}
 

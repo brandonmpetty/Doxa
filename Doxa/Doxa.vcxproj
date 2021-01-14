@@ -111,7 +111,7 @@
     <ClInclude Include="TRSingh.hpp" />
     <ClInclude Include="Types.hpp" />
     <ClInclude Include="Wan.hpp" />
-    <ClInclude Include="WeinerFilter.hpp" />
+    <ClInclude Include="WienerFilter.hpp" />
     <ClInclude Include="Wolf.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
