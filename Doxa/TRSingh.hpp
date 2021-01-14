@@ -17,10 +17,6 @@ namespace Doxa
 	class TRSingh : public Algorithm<TRSingh>, public ChanMeanCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{

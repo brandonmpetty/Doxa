@@ -1,7 +1,6 @@
 #include "TestUtilities.hpp"
 #include "../ChanMeanCalc.hpp"
 #include "../ChanMeanVarianceCalc.hpp"
-#include "../IntegralImageMeanCalc.hpp"
 #include "../IntegralImageMeanVarianceCalc.hpp"
 #include "../Grayscale.hpp"
 #include "../Niblack.hpp"
@@ -16,6 +15,27 @@ namespace Doxa::UnitTests
 		// Initialized Objects
 		static Image image;
 		static std::string projFolder;
+
+		// A sample algorithm that will allow us to switch out the calculator seemlessly
+		// The library does not use this pattern because there is no reason to ever use Integral Images.
+		template<typename Calculator>
+		class NiblackBase : public Algorithm<NiblackBase<Calculator>>, public Calculator
+		{
+		public:
+
+			void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
+			{
+				// Read parameters, utilizing defaults
+				const int windowSize = parameters.Get("window", 75);
+				const double k = parameters.Get("k", 0.2);
+
+				Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int&) {
+					const double stddev = std::sqrt(variance);
+
+					return (mean + (k * stddev));
+				});
+			}
+		};
 
 	public:
 
@@ -56,14 +76,8 @@ namespace Doxa::UnitTests
 			IntegralImage testIntegralSquareImage(integralSquareImage);
 			meanVarianceCalculator.BuildIntegralImages(testIntegralImage,testIntegralSquareImage, image);
 
-			// Test Integral Only Image Creation
-			IntegralImageMeanCalc meanCalculator;
-			IntegralImage testIntegralImage2(integralImage.size());
-			meanCalculator.BuildIntegralImage(testIntegralImage2, image);
-
 			// Assert Single and Squared Integral Image Creation
 			Assert::IsTrue(testIntegralImage == integralImage);
-			Assert::IsTrue(testIntegralImage2 == integralImage);
 			Assert::IsTrue(testIntegralSquareImage == integralSquareImage);
 		}
 
@@ -81,7 +95,6 @@ namespace Doxa::UnitTests
 			Image output(3, 3);
 
 			// Output variables
-			meanVarianceVector meanII;
 			meanVarianceVector meanVarianceII;
 			meanVarianceVector meanChan;
 			meanVarianceVector meanVarianceChan;
@@ -93,22 +106,15 @@ namespace Doxa::UnitTests
 				return 0.0;
 			});
 
-			// Integral Image Mean
-			IntegralImageMeanCalc meanCalculator;
-			meanCalculator.Process(output, image, 3, [&](const double& mean, const int&) {
-				meanII.push_back({ mean, 0.0 });
-				return 0.0;
-			});
-
 			// Chan Mean Variance
-			IntegralImageMeanVarianceCalc meanVarianceCalculatorChan;
+			ChanMeanVarianceCalc meanVarianceCalculatorChan;
 			meanVarianceCalculatorChan.Process(output, image, 3, [&](const double& mean, const double& variance, const int&) {
 				meanVarianceChan.push_back({ mean, variance });
 				return 0.0;
 			});
 
 			// Chan Mean
-			IntegralImageMeanCalc meanCalculatorChan;
+			ChanMeanCalc meanCalculatorChan;
 			meanCalculatorChan.Process(output, image, 3, [&](const double& mean, const int&) {
 				meanChan.push_back({ mean, 0.0 });
 				return 0.0;
@@ -120,11 +126,10 @@ namespace Doxa::UnitTests
 			//Assert::AreEqual(std::get<1>(meanVarianceII.at(4)), 524.77, 0.01);
 			Assert::AreEqual(std::get<1>(meanVarianceII.at(4)), 466.469, 0.01);
 			Assert::IsTrue(meanVarianceII == meanVarianceChan);
-			Assert::IsTrue(meanII == meanChan);
 			
 			for (int i = 0; i < image.size; ++i)
 			{
-				Assert::AreEqual(std::get<0>(meanVarianceII.at(i)), std::get<0>(meanII.at(i)), 0.01);
+				Assert::AreEqual(std::get<0>(meanVarianceII.at(i)), std::get<0>(meanChan.at(i)), 0.01);
 			}
 		}
 

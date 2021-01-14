@@ -17,10 +17,6 @@ namespace Doxa
 	class Nick : public Algorithm<Nick>, public ChanMeanVarianceCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{

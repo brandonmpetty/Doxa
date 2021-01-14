@@ -64,9 +64,6 @@
     <ClInclude Include="Bataineh.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
-    <ClInclude Include="IntegralImageMeanCalc.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
     <ClInclude Include="IntegralImageMeanVarianceCalc.hpp">
       <Filter>Calculators</Filter>
     </ClInclude>
@@ -74,9 +71,6 @@
       <Filter>Calculators</Filter>
     </ClInclude>
     <ClInclude Include="ChanMeanVarianceCalc.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
-    <ClInclude Include="IntegralImage.h">
       <Filter>Calculators</Filter>
     </ClInclude>
     <ClInclude Include="WienerFilter.hpp">

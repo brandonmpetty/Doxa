@@ -14,14 +14,9 @@ namespace Doxa
 	/// The Niblack Algorithm: Wayne Niblack
 	/// </summary>
 	/// <remarks>"An Introduction to Digital Image Processing", 1986.</remarks>
-	template<typename Calculator>
-	class NiblackBase : public Algorithm<NiblackBase<Calculator>>, public Calculator
+	class Niblack : public Algorithm<Niblack>, public ChanMeanVarianceCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
@@ -36,11 +31,6 @@ namespace Doxa
 			});
 		}
 	};
-
-	/// <summary>
-	/// The Niblack binarization algorithm using the Chan algorithm for quick statistical calculations.
-	/// </summary>
-	typedef NiblackBase<ChanMeanVarianceCalc> Niblack;
 }
 
 

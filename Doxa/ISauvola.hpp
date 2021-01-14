@@ -18,6 +18,7 @@ namespace Doxa
 	class ISauvola : public Algorithm<ISauvola>
 	{
 	public:
+
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// Step 1 - Initialization Step

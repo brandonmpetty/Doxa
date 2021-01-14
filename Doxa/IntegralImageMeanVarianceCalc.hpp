@@ -3,24 +3,27 @@
 #ifndef INTEGRALIMAGEMEANVARIANCECALC_HPP
 #define INTEGRALIMAGEMEANVARIANCECALC_HPP
 
+#include <vector>
 #include "Image.hpp"
 #include "Region.hpp"
-#include "IntegralImage.h"
 
 
 namespace Doxa
 {
+	typedef std::vector<int64_t> IntegralImage;
+
 	/// <summary>
 	/// The Shafait Algorithm: Faisal Shafait, Daniel Keysers, Thomas M. Breuel
 	/// An integral image based calculator for calculating Mean, Population Variance.
 	/// 
 	/// Note: For extremely large images, this algorithm will fail.
+	/// This algorithm has been replaced by Chan.  Chan is roughly 3x faster, consumes a fraction of the memory,
+	/// and allows for large image processing.
 	/// </summary>
 	/// <remarks>"Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.</remarks>
 	class IntegralImageMeanVarianceCalc
 	{
 	public:
-		IntegralImageMeanVarianceCalc() {}
 
 		template<typename Algorithm>
 		void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
@@ -38,6 +41,25 @@ namespace Doxa
 				CalculateMeanVariance(mean, variance, imageWidth, integralImage, integralSqrImage, window);
 
 				return algorithm(mean, variance, index);
+			});
+		}
+
+		template<typename Processor>
+		void Iterate(const Image& grayScaleImageIn, const int windowSize, Processor processor)
+		{
+			const int imageWidth = grayScaleImageIn.width;
+
+			// Initialize Integral Images
+			IntegralImage integralImage(grayScaleImageIn.size), integralSqrImage(grayScaleImageIn.size);
+			BuildIntegralImages(integralImage, integralSqrImage, grayScaleImageIn);
+			//BuildIntegralImagesLowMem(integralImage, integralSqrImage, grayScaleImageIn); // This can significantly reduce the memory used, but may be slower
+
+			// Run our binarization algorithm
+			double mean, variance;
+			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& index) {
+				CalculateMeanVariance(mean, variance, imageWidth, integralImage, integralSqrImage, window);
+
+				return processor(mean, variance, index);
 			});
 		}
 

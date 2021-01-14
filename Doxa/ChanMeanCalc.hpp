@@ -9,14 +9,25 @@
 namespace Doxa
 {
 	/// <summary>
-	/// A version of the Chan algorithm for just calculating the Mean.
+	/// A version of the Chan algorithm for calculating just the Mean.
 	/// </summary>
+	/// <see cref="ChanMeanVarianceCalc"/>
 	class ChanMeanCalc
 	{
 	public:
 
 		template<typename Algorithm>
 		void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
+		{
+			Iterate(grayScaleImageIn, windowSize, [&](const double& mean, const int position) {
+				binaryImageOut.data[position] =
+					grayScaleImageIn.data[position] <= algorithm(mean, position) ?
+					Palette::Black : Palette::White;
+			});
+		}
+
+		template<typename Processor>
+		void Iterate(const Image& grayScaleImageIn, const int windowSize, Processor processor)
 		{
 			// Setup constants
 			const int width = grayScaleImageIn.width;
@@ -81,9 +92,7 @@ namespace Doxa
 
 					const double mean = ((double)sum) / area;
 
-					binaryImageOut.data[ind] =
-						grayScaleImageIn.data[ind] <= algorithm(mean, ind) ?
-						Palette::Black : Palette::White;
+					processor(mean, ind);
 				}
 
 				// Now that our windows is sliding through the right side of the image, we have to remove the left most colum.
@@ -97,9 +106,7 @@ namespace Doxa
 
 					const double mean = ((double)sum) / area;
 
-					binaryImageOut.data[ind] =
-						grayScaleImageIn.data[ind] <= algorithm(mean, ind) ?
-						Palette::Black : Palette::White;
+					processor(mean, ind);
 				}
 			}
 

@@ -92,11 +92,9 @@
     <ClInclude Include="Gatos.hpp" />
     <ClInclude Include="Grayscale.hpp" />
     <ClInclude Include="Image.hpp" />
-    <ClInclude Include="IntegralImage.h" />
     <ClInclude Include="ISauvola.hpp" />
     <ClInclude Include="Morphology.hpp" />
     <ClInclude Include="Parameters.hpp" />
-    <ClInclude Include="IntegralImageMeanCalc.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="Niblack.hpp" />
     <ClInclude Include="Nick.hpp" />

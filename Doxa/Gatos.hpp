@@ -30,6 +30,7 @@ namespace Doxa
 	class Gatos : public Algorithm<Gatos>
 	{
 	public:
+
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// Read parameters, utilizing defaults
