@@ -6,16 +6,20 @@
 #include <unordered_set>
 #include "Sauvola.hpp"
 #include "ContrastImage.hpp"
-#include "Morphology.hpp"
+//#include "Morphology.hpp"
 
 
 namespace Doxa
 {
 	/// <summary>
 	/// The ISauvola Algorithm: Zineb Hadjadj, Abdelkrimo Meziane, Yazid Cherfa, Mohamed Cheriet, Insaf Setitra
+	/// 
+	/// This algorithm has been abstracted so that any binarization algorithm can leverage this technique.
+	/// Example: Improved&lt;Sauvola&gt;::ToBinaryImage(...);
 	/// </summary>
 	/// <remarks>"ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization", 2016.</remarks>
-	class ISauvola : public Algorithm<ISauvola>
+	template<class BinarizationClass>
+	class Improved : public Algorithm<Improved<BinarizationClass>>
 	{
 	public:
 
@@ -28,11 +32,11 @@ namespace Doxa
 			// Step 1 b - Removing Open because it removes too much detail
 			//Morphology::Open(highContrastImage, highContrastImage, 3);
 
-			// Step 2 - Sauvola’s Binarization Step
-			Image sauvolaImage = Sauvola::ToBinaryImage(Algorithm::grayScaleImageIn, parameters);
+			// Step 2 - Binarization Step
+			Image binImage = BinarizationClass::ToBinaryImage(Algorithm::grayScaleImageIn, parameters);
 
 			// Step 3 - Sequential Combination
-			Combine(binaryImageOut, highContrastImage, sauvolaImage);
+			Combine(binaryImageOut, highContrastImage, binImage);
 		}
 
 	protected:
@@ -137,6 +141,11 @@ namespace Doxa
 			}
 		}
 	};
+
+	/// <summary>
+	/// A convenience name for backwards compatibility with this library.
+	/// </summary>
+	typedef Improved<Sauvola> ISauvola;
 }
 
 
