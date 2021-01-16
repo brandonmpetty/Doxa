@@ -1,0 +1,14 @@
+{
+  "name": "nodejsdemo",
+  "version": "1.0.0",
+  "description": "A simple demo showing how to use the Doxa library with NodeJS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "sharp": "^0.27.0"
+  }
+}
