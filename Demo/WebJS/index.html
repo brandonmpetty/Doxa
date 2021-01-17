@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<title>Δoxa Binarization Framework - WebAssembly Demo</title>
+	</head>
+	<body>
+		<canvas id="democanvas">
+			Sorry. Your browser does not support HTML5 canvas element.
+		</canvas>
+
+        <script type="text/javascript" src="doxaWasm.js"></script>
+        <script type="text/javascript" src="doxa.js"></script>
+        <script>
+
+            async function LoadCanvas(canvas, src) {
+
+                return new Promise((resolve, reject) => {
+
+                    // Load image into canvas using onload callback
+                    const img = new Image();
+                    img.onerror = function() {
+                        reject();
+                    };
+                    img.onload = function() {
+                        const ctx = canvas.getContext('2d');
+
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        resolve();
+                    };
+
+                    img.src = src;
+                });
+            }
+
+            function ReadCanvas(canvas) {
+
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                return new Doxa.Image(imageData.width, imageData.height, imageData.data);
+            }
+
+            async function Demo() {
+
+                // Load an image into the Canvas
+                const canvas = document.getElementById('democanvas');
+                await LoadCanvas(canvas, '2JohnC1V3.png');
+
+                // Initialize the Doxa framework
+                const Algorithms = await Doxa.initialize();
+
+                // Generate an Image object from the Canvas
+                const image = ReadCanvas(canvas);
+
+                // Generate a binary image
+                const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
+
+                // Draw image back to the same Canvas
+                binImage.draw(canvas);
+
+                // Remember to free the memory of your WASM based images
+                image.free();
+                binImage.free();
+            }
+
+            Demo();
+        </script>
+    </body>
+</html>

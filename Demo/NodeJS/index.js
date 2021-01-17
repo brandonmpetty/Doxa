@@ -4,7 +4,7 @@
  * The code below gives an example of how to read an image, convert it to binary, and get performance stats.
  * We are using the image processing library Sharp to show how to read and write images in NodeJS.
  */
-const { Image, Doxa } = require('./doxaNode.js');
+const { Doxa } = require('./doxa.js');
 const sharp = require('sharp');
 
 /**
@@ -16,7 +16,7 @@ async function ReadImage(file) {
 		.raw()
 		.toBuffer({ resolveWithObject: true })
 		.then(content => {
-			return new Image(content.info.width, content.info.height, content.data);
+			return new Doxa.Image(content.info.width, content.info.height, content.data);
 		});
 }
 
@@ -41,18 +41,18 @@ async function Demo() {
 	const Algorithms = await Doxa.initialize();
 
 	// Read local image files to process
-	const gtImage = await ReadImage('../../README/2JohnC1V3-GroundTruth.png');
-	const image = await ReadImage('../../README/2JohnC1V3.png');
+	const gtImage = await ReadImage('2JohnC1V3-GroundTruth.png');
+	const image = await ReadImage('2JohnC1V3.png');
 
 	// Generate a binary image
-	const binImage = Doxa.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
+	const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
 
 	// Get performance information
-	const perf = Doxa.calculatePerformance(gtImage, binImage);
+	const perf = Doxa.Binarization.calculatePerformance(gtImage, binImage);
 	console.dir(perf);
 
 	// Write file
-	await WriteImage(binImage, './binary.png');
+	await WriteImage(binImage, 'binary.png');
 
 	// Remember to free the memory of your WASM based images
 	gtImage.free();

@@ -1,32 +1,10 @@
 # Δoxa Binarization Framework - WebAssembly
 
 ## Introduction
-This is an **experimental** project that exposes the ΔBF, written in C++, to JavaScript via WebAssembly.
+This is an **experimental** project that exposes the ΔBF, written in C++, to JavaScript via WebAssembly.  It works both server side and client side.  For a simple example of how it works, checkout the [WebJS](../Demo/WebJS) and [NodeJS](../Demo/NodeJS) demos.
 
 **Known Issues**
 * Not currently exposing the Gatos algorithm since it is only partially implemented.
-
-### Example
-```javascript
-// Get the 32-bit ImageData object from a Canvas
-let canvas = document.getElementById(canvasId);
-let ctx = canvas.getContext('2d');
-let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-// Build 8-bit Doxa Image objects to use in our library
-let srcImage = new Doxa.Image().loadFromCanvas(imageData);
-let dstImage = new Doxa.Image(srcImage.width, srcImage.height);
-
-// Convert to Binary
-Doxa.initialize(Module.Binarization.Algorithms.WOLF, srcImage);
-Doxa.toBinary(dstImage, { window: 20, k: 0.18 });
-
-... // Skipping code for building gtImage
-
-// Calculate all performance metrics
-let performance = Doxa.calculatePerformance(gtImage, dstImage);
-console.log(performance.accuracy.toFixed(4));
-```
 
 ## Building with Emscripten
 Release Build
