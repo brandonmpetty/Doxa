@@ -70,4 +70,6 @@ int main()
 
 	// Save the processed image
 	cv::imwrite(R"(binary.png)", cvGsImage);
+	
+	return 0;
 }

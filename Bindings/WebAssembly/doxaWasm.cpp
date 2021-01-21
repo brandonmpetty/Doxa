@@ -2,24 +2,9 @@
 #include <emscripten/bind.h>
 //#include <iostream>
 
-#include "../Doxa/Types.hpp"
-#include "../Doxa/Palette.hpp"
-#include "../Doxa/Image.hpp"
-
-#include "../Doxa/Otsu.hpp"
-#include "../Doxa/Bernsen.hpp"
-#include "../Doxa/Niblack.hpp"
-#include "../Doxa/Sauvola.hpp"
-#include "../Doxa/ISauvola.hpp"
-#include "../Doxa/Nick.hpp"
-#include "../Doxa/TRSingh.hpp"
-#include "../Doxa/Bataineh.hpp"
-#include "../Doxa/Wan.hpp"
-#include "../Doxa/Wolf.hpp"
-#include "../Doxa/Su.hpp"
-
-#include "../Doxa/ClassifiedPerformance.hpp"
-#include "../Doxa/DRDM.hpp"
+#include "../../Doxa/BinarizationFactory.hpp"
+#include "../../Doxa/ClassifiedPerformance.hpp"
+#include "../../Doxa/DRDM.hpp"
 
 //#include "../Doxa/PNM.hpp"
 using namespace Doxa;
@@ -44,7 +29,7 @@ Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, 
 	
 	ClassifiedPerformance::Classifications classifications;
 	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
-	// TODO: Right now this should never fail, aka: return false.
+	// TODO: If this fails, we may want to 0 out the return values
 
 	Performance perf;
 	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
@@ -65,60 +50,11 @@ Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, 
 class Binarization
 {
 public:
-	enum Algorithms
-	{
-		OTSU = 0,
-		BERNSEN = 1,
-		NIBLACK = 2,
-		SAUVOLA = 3,
-		WOLF = 4,
-		NICK = 5,
-		SU = 6,
-		TRSINGH = 7,
-		BATAINEH = 8,
-		ISAUVOLA = 9,
-		WAN = 10
-	};
 	
 	Binarization(const Algorithms algorithm)
 	: algorithm(algorithm)
 	{
-		switch (algorithm)
-		{
-			case OTSU:
-				algorithmPtr = new Otsu();
-				break;
-			case BERNSEN:
-				algorithmPtr = new Bernsen();
-				break;
-			case NIBLACK:
-				algorithmPtr = new Niblack();
-				break;
-			case SAUVOLA:
-				algorithmPtr = new Sauvola();
-				break;
-			case NICK:
-				algorithmPtr = new Nick();
-				break;
-			case WOLF:
-				algorithmPtr = new Wolf();
-				break;
-			case SU:
-				algorithmPtr = new Su();
-				break;
-			case TRSINGH:
-				algorithmPtr = new TRSingh();
-				break;
-			case BATAINEH:
-				algorithmPtr = new Bataineh();
-				break;
-			case ISAUVOLA:
-				algorithmPtr = new ISauvola();
-				break;
-			case WAN:
-				algorithmPtr = new Wan();
-				break;
-		}
+		algorithmPtr = BinarizationFactory::Algorithm(algorithm);
 	}
 	
 	~Binarization()
@@ -177,19 +113,19 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.function("initialize", &Binarization::Initialize, allow_raw_pointers())
 		.function("toBinary", &Binarization::ToBinary, allow_raw_pointers())
 		.function("currentAlgorithm", &Binarization::CurrentAlgorithm);
-	enum_<Binarization::Algorithms>("Binarization.Algorithms")
-		.value("OTSU", Binarization::Algorithms::OTSU)
-		.value("BERNSEN", Binarization::Algorithms::BERNSEN)
-		.value("NIBLACK", Binarization::Algorithms::NIBLACK)
-		.value("SAUVOLA", Binarization::Algorithms::SAUVOLA)
-		.value("WOLF", Binarization::Algorithms::WOLF)
-		.value("NICK", Binarization::Algorithms::NICK)
-		.value("SU", Binarization::Algorithms::SU)
-		.value("TRSINGH", Binarization::Algorithms::TRSINGH)
-		.value("BATAINEH", Binarization::Algorithms::BATAINEH)
-		.value("ISAUVOLA", Binarization::Algorithms::ISAUVOLA)
-		.value("WAN", Binarization::Algorithms::WAN)
-	;
+	enum_<Algorithms>("Binarization.Algorithms")
+		.value("OTSU", Algorithms::OTSU)
+		.value("BERNSEN", Algorithms::BERNSEN)
+		.value("NIBLACK", Algorithms::NIBLACK)
+		.value("SAUVOLA", Algorithms::SAUVOLA)
+		.value("WOLF", Algorithms::WOLF)
+		.value("NICK", Algorithms::NICK)
+		.value("SU", Algorithms::SU)
+		.value("TRSINGH", Algorithms::TRSINGH)
+		.value("BATAINEH", Algorithms::BATAINEH)
+		.value("ISAUVOLA", Algorithms::ISAUVOLA)
+		.value("WAN", Algorithms::WAN)
+		.value("GATOS", Algorithms::GATOS);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];
@@ -202,5 +138,4 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.field("nrm", &Performance::NRM)
 		.field("drdm", &Performance::DRDM);
 	function("calculatePerformance", &CalculatePerformance, allow_raw_pointers());
-	;
 };

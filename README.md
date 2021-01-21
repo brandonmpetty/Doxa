@@ -63,7 +63,7 @@ PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party C++ frameworks like OpenCV and Qt.  Examples can be found under the Demo folder.
 
 ### Performance Analysis
-Another thing that sets ΔBF apart is its focus on binarization performance.  This makes incredibly simple to see how your changes affect the overall quality of an algorithm.
+Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
 
 ### Language Bindings
 Experimental WASM support has been added in order to expose ΔBF to the web, as well as NodeJs.  With the provided JavaScript wrapper, it is easy to utilize this framework in any JS project.

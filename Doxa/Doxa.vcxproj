@@ -83,6 +83,7 @@
     <ClInclude Include="Algorithm.hpp" />
     <ClInclude Include="Bataineh.hpp" />
     <ClInclude Include="Bernsen.hpp" />
+    <ClInclude Include="BinarizationFactory.hpp" />
     <ClInclude Include="ChanMeanCalc.hpp" />
     <ClInclude Include="ChanMeanVarianceCalc.hpp" />
     <ClInclude Include="ContrastImage.hpp" />

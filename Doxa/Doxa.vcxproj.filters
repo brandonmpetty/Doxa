@@ -76,6 +76,7 @@
     <ClInclude Include="WienerFilter.hpp">
       <Filter>Processors</Filter>
     </ClInclude>
+    <ClInclude Include="BinarizationFactory.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">

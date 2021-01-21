@@ -6,10 +6,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa", "Doxa\Doxa.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa.UnitTests", "Doxa\UnitTests\UnitTests.vcxproj", "{3F5B603C-C917-47FA-AB92-66E4E31E8061}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PerformanceMetrics", "Demo\PerformanceMetrics\PerformanceMetrics.vcxproj", "{0655A226-2A76-47A8-9111-C472C8F7BFDD}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BinaryImageConverter", "Demo\BinaryImageConverter\BinaryImageConverter.vcxproj", "{9D1DEE35-01EF-4174-A7E9-FBBB7F9BC099}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,14 +20,6 @@ Global
 		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Debug|x64.Build.0 = Debug|x64
 		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Release|x64.ActiveCfg = Release|x64
 		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Release|x64.Build.0 = Release|x64
-		{0655A226-2A76-47A8-9111-C472C8F7BFDD}.Debug|x64.ActiveCfg = Debug|x64
-		{0655A226-2A76-47A8-9111-C472C8F7BFDD}.Debug|x64.Build.0 = Debug|x64
-		{0655A226-2A76-47A8-9111-C472C8F7BFDD}.Release|x64.ActiveCfg = Release|x64
-		{0655A226-2A76-47A8-9111-C472C8F7BFDD}.Release|x64.Build.0 = Release|x64
-		{9D1DEE35-01EF-4174-A7E9-FBBB7F9BC099}.Debug|x64.ActiveCfg = Debug|x64
-		{9D1DEE35-01EF-4174-A7E9-FBBB7F9BC099}.Debug|x64.Build.0 = Debug|x64
-		{9D1DEE35-01EF-4174-A7E9-FBBB7F9BC099}.Release|x64.ActiveCfg = Release|x64
-		{9D1DEE35-01EF-4174-A7E9-FBBB7F9BC099}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
