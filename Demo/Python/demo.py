@@ -21,4 +21,7 @@ performance = doxapy.calculate_performance(groundtruth_image, binary_image)
 print(performance)
 
 # Display our resulting image
-Image.fromarray(binary_image).show() 
+Image.fromarray(binary_image).show()
+
+# Lines 11 - 16 could be replaced with this one-liner, if you want to update the same image.
+#doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.SAUVOLA, grayscale_image)

@@ -39,6 +39,10 @@ namespace Doxa::UnitTests
 
 			Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 
+			Image imageSauvola2(image);
+			Sauvola::UpdateToBinary(imageSauvola2, parameters);
+
+			TestUtilities::AssertImages(imageSauvola, imageSauvola2);
 			TestUtilities::AssertImageFile(imageSauvola, projFolder + "2JohnC1V3-Sauvola.pbm");
 		}
 
@@ -48,6 +52,10 @@ namespace Doxa::UnitTests
 
 			Image imageNiblack = Niblack::ToBinaryImage(image, parameters);
 
+			Image imageNiblack2(image);
+			Niblack::UpdateToBinary(imageNiblack2, parameters);
+
+			TestUtilities::AssertImages(imageNiblack, imageNiblack2);
 			TestUtilities::AssertImageFile(imageNiblack, projFolder + "2JohnC1V3-Niblack.pbm");
 		}
 
@@ -57,6 +65,10 @@ namespace Doxa::UnitTests
 
 			Image imageWolf = Wolf::ToBinaryImage(image, parameters);
 
+			Image imageWolf2(image);
+			Wolf::UpdateToBinary(imageWolf2, parameters);
+
+			TestUtilities::AssertImages(imageWolf, imageWolf2);
 			TestUtilities::AssertImageFile(imageWolf, projFolder + "2JohnC1V3-Wolf.pbm");
 		}
 
@@ -66,6 +78,10 @@ namespace Doxa::UnitTests
 
 			Image imageNICK = Nick::ToBinaryImage(image, parameters);
 
+			Image imageNICK2(image);
+			Nick::UpdateToBinary(imageNICK2, parameters);
+
+			TestUtilities::AssertImages(imageNICK, imageNICK2);
 			TestUtilities::AssertImageFile(imageNICK, projFolder + "2JohnC1V3-NICK.pbm");
 		}
 
@@ -75,6 +91,10 @@ namespace Doxa::UnitTests
 
 			Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
+			Image imageBernsen2(image);
+			Bernsen::UpdateToBinary(imageBernsen2, parameters);
+
+			TestUtilities::AssertImages(imageBernsen, imageBernsen2);
 			TestUtilities::AssertImageFile(imageBernsen, projFolder + "2JohnC1V3-Bensen.pbm");
 		}
 
@@ -82,9 +102,13 @@ namespace Doxa::UnitTests
 		{
 			const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
 
-			Image imageTRSing = TRSingh::ToBinaryImage(image, parameters);
+			Image imageTRSingh = TRSingh::ToBinaryImage(image, parameters);
 
-			TestUtilities::AssertImageFile(imageTRSing, projFolder + "2JohnC1V3-TRSing.pbm");
+			Image imageTRSingh2(image);
+			TRSingh::UpdateToBinary(imageTRSingh2, parameters);
+
+			TestUtilities::AssertImages(imageTRSingh, imageTRSingh2);
+			TestUtilities::AssertImageFile(imageTRSingh, projFolder + "2JohnC1V3-TRSingh.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsWANTest)
@@ -93,6 +117,10 @@ namespace Doxa::UnitTests
 
 			Image imageWAN = Wan::ToBinaryImage(image, parameters);
 
+			Image imageWAN2(image);
+			Wan::UpdateToBinary(imageWAN2, parameters);
+
+			TestUtilities::AssertImages(imageWAN, imageWAN2);
 			TestUtilities::AssertImageFile(imageWAN, projFolder + "2JohnC1V3-WAN.pbm");
 		}
 
@@ -102,6 +130,10 @@ namespace Doxa::UnitTests
 
 			Image imageGatos = Gatos::ToBinaryImage(image, parameters);
 
+			Image imageGatos2(image);
+			Gatos::UpdateToBinary(imageGatos2, parameters);
+
+			TestUtilities::AssertImages(imageGatos, imageGatos2);
 			TestUtilities::AssertImageFile(imageGatos, projFolder + "2JohnC1V3-Gatos.pbm");
 		}
 
@@ -109,6 +141,10 @@ namespace Doxa::UnitTests
 		{
 			Image imageSu = Su::ToBinaryImage(image);
 
+			Image imageSu2(image);
+			Su::UpdateToBinary(imageSu2);
+
+			TestUtilities::AssertImages(imageSu, imageSu2);
 			TestUtilities::AssertImageFile(imageSu, projFolder + "2JohnC1V3-Su.pbm");
 		}
 
@@ -118,6 +154,10 @@ namespace Doxa::UnitTests
 
 			Image imageISauvola = ISauvola::ToBinaryImage(image, parameters);
 
+			Image imageISauvola2(image);
+			ISauvola::UpdateToBinary(imageISauvola2, parameters);
+
+			TestUtilities::AssertImages(imageISauvola, imageISauvola2);
 			TestUtilities::AssertImageFile(imageISauvola, projFolder + "2JohnC1V3-ISauvola.pbm");
 		}
 
@@ -125,6 +165,10 @@ namespace Doxa::UnitTests
 		{
 			Image imageOtsu = Otsu::ToBinaryImage(image);
 
+			Image imageOtsu2(image);
+			Otsu::UpdateToBinary(imageOtsu2);
+
+			TestUtilities::AssertImages(imageOtsu, imageOtsu2);
 			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 		}
 
@@ -132,6 +176,10 @@ namespace Doxa::UnitTests
 		{
 			Image imageBataineh = Bataineh::ToBinaryImage(image);
 
+			Image imageBataineh2(image);
+			Bataineh::UpdateToBinary(imageBataineh2);
+
+			TestUtilities::AssertImages(imageBataineh, imageBataineh2);
 			TestUtilities::AssertImageFile(imageBataineh, projFolder + "2JohnC1V3-Bataineh.pbm");
 		}
 	};

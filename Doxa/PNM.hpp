@@ -347,7 +347,7 @@ namespace Doxa
 
 		/// <summary>
 		/// Returns a specific Grayscale algorithm based on parameter configuration.
-		/// Defaulting to: Qt
+		/// Defaulting to: Mean
 		/// This default may change in the future, as Mean is expected to perform better.
 		/// </summary>
 		/// <param name="params">Must set: grayscale</param>
@@ -357,7 +357,7 @@ namespace Doxa
 			// TODO: Add support for sRGB and 709 conversion to Linear RGB, then to gray, then potentially gamma corrected.
 			std::function<Pixel8(Pixel8, Pixel8, Pixel8)> algorithm;
 
-			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Qt); // TODO: Update this to MEAN.
+			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Mean);
 
 			switch (gsEnum)
 			{

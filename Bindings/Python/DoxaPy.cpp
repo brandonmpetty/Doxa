@@ -68,6 +68,13 @@ public:
 		algorithmPtr->ToBinary(image, parameters);
 	}
 
+	static void UpdateToBinary(const Algorithms algorithm, const py::array_t<Pixel8>& imageArray, const ParameterMap& parameters={})
+	{
+		Binarization binAlg(algorithm);
+		binAlg.Initialize(imageArray);
+		binAlg.ToBinary(imageArray);
+	}
+
 	Algorithms CurrentAlgorithm() { return algorithm; }
 
 protected:
@@ -87,7 +94,8 @@ PYBIND11_MODULE(doxapy, m) {
 	binarization.def(py::init<const Algorithms>())
 		.def("initialize", &Binarization::Initialize)
 		.def("to_binary", &Binarization::ToBinary, py::arg("binaryImageArray"), py::arg("parameters") = ParameterMap())
-		.def("algorithm", &Binarization::CurrentAlgorithm);
+		.def("algorithm", &Binarization::CurrentAlgorithm)
+		.def_static("update_to_binary", &Binarization::UpdateToBinary, py::arg("algorithm"), py::arg("imageArray"), py::arg("parameters") = ParameterMap());
 
 	py::enum_<Algorithms>(binarization, "Algorithms")
 		.value("OTSU", Algorithms::OTSU)
