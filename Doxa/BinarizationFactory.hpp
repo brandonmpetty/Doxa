@@ -8,7 +8,7 @@
 #include "Bernsen.hpp"
 #include "Niblack.hpp"
 #include "Sauvola.hpp"
-//#include "ISauvola.hpp"
+#include "ISauvola.hpp"
 #include "Nick.hpp"
 #include "TRSingh.hpp"
 #include "Bataineh.hpp"
@@ -77,7 +77,7 @@ namespace Doxa
 				algorithmPtr = new Bataineh();
 				break;
 			case ISAUVOLA:
-				//algorithmPtr = new ISauvola();
+				algorithmPtr = new ISauvola();
 				break;
 			case WAN:
 				algorithmPtr = new Wan();

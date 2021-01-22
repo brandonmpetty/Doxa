@@ -109,7 +109,7 @@ protected:
 
 EMSCRIPTEN_BINDINGS(doxa_wasm) {
 	class_<Binarization>("Binarization")
-		.constructor<Binarization::Algorithms>()
+		.constructor<Algorithms>()
 		.function("initialize", &Binarization::Initialize, allow_raw_pointers())
 		.function("toBinary", &Binarization::ToBinary, allow_raw_pointers())
 		.function("currentAlgorithm", &Binarization::CurrentAlgorithm);

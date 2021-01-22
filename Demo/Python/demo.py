@@ -1,24 +1,24 @@
 from PIL import Image
 import numpy as np
-import DoxaPy
+import doxapy
 
-
-def ReadImage(file):
+def read_image(file):
     return np.array(Image.open(file).convert('L'))
 
+
 # Read our target image and setup an output image buffer
-grayScaleImage = ReadImage("2JohnC1V3.png")
-binaryImage = np.empty(grayScaleImage.shape, grayScaleImage.dtype)
+grayscale_image = read_image("2JohnC1V3.png")
+binary_image = np.empty(grayscale_image.shape, grayscale_image.dtype)
 
 # Pick an algorithm from the DoxaPy library and convert the image to binary
-sauvola = DoxaPy.Binarization(DoxaPy.Binarization.Algorithms.SAUVOLA)
-sauvola.Initialize(grayScaleImage)
-sauvola.ToBinary(binaryImage)
+sauvola = doxapy.Binarization(doxapy.Binarization.Algorithms.SAUVOLA)
+sauvola.initialize(grayscale_image)
+sauvola.to_binary(binary_image, {"window": 75, "k": 0.2}) # algorithm params are optional
 
 # Calculate the binarization performance using a Ground Truth image
-groundTruthImage = ReadImage("2JohnC1V3-GroundTruth.png")
-performance = DoxaPy.CalculatePerformance(groundTruthImage, binaryImage)
+groundtruth_image = read_image("2JohnC1V3-GroundTruth.png")
+performance = doxapy.calculate_performance(groundtruth_image, binary_image)
 print(performance)
 
 # Display our resulting image
-Image.fromarray(binaryImage).show() 
+Image.fromarray(binary_image).show() 

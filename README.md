@@ -6,8 +6,9 @@
 </p>
 
 ## Introduction
-ΔBF is an image binarization framework written in C++ which focuses primarily on local adaptive thresholding algorithms.
+ΔBF is an image binarization framework which focuses primarily on local adaptive thresholding algorithms.
 In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
+It is written in C++ but supports multiple language bindings.
 
 **Algorithms**
 * Otsu - "A threshold selection method from gray-level histograms", 1979.
@@ -66,7 +67,10 @@ PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
 
 ### Language Bindings
-Experimental WASM support has been added in order to expose ΔBF to the web, as well as NodeJs.  With the provided JavaScript wrapper, it is easy to utilize this framework in any JS project.
+* Javascript / WASM
+* Python
+
+Experimental WASM support has been added in order to expose ΔBF to the web, as well as NodeJs.  For Python, an experimental DoxaPy library has been developed.  Examples of how to use each binding are provided in the Demo folder.
 
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 

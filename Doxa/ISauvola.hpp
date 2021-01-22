@@ -26,14 +26,14 @@ namespace Doxa
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// Step 1 - Initialization Step
-			Image highContrastImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
-			ContrastImage::GenerateHighContrastImage(highContrastImage, Algorithm::grayScaleImageIn);
+			Image highContrastImage(Improved::grayScaleImageIn.width, Improved::grayScaleImageIn.height);
+			ContrastImage::GenerateHighContrastImage(highContrastImage, Improved::grayScaleImageIn);
 
 			// Step 1 b - Removing Open because it removes too much detail
 			//Morphology::Open(highContrastImage, highContrastImage, 3);
 
 			// Step 2 - Binarization Step
-			Image binImage = BinarizationClass::ToBinaryImage(Algorithm::grayScaleImageIn, parameters);
+			Image binImage = BinarizationClass::ToBinaryImage(Improved::grayScaleImageIn, parameters);
 
 			// Step 3 - Sequential Combination
 			Combine(binaryImageOut, highContrastImage, binImage);

@@ -4,7 +4,7 @@
 #include "../../Doxa/DRDM.hpp"
 
 // Visual C++ Compiler:
-//cl /EHsc /std:c++17 /O2 /I"%OPENCV_DIR%\include" "%OPENCV_DIR%\x64\vc15\lib\opencv_world451.lib"  main.cpp
+//cl /EHsc /std:c++17 /O2 /I"%OPENCV_DIR%\include" "%OPENCV_DIR%\x64\vc15\lib\opencv_world451.lib"  demoOpenCV.cpp
 
 
 Doxa::Image ToDoxaImageReference(const cv::Mat& gsImage)

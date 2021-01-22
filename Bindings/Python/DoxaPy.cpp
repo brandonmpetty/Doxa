@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 #include "../../Doxa/BinarizationFactory.hpp"
 #include "../../Doxa/ClassifiedPerformance.hpp"
@@ -10,37 +11,29 @@ using namespace Doxa;
 
 
 // Pybind helper for converting from an array to a Doxa Image.  This will reference the array, not create a copy.
-Image ArrayToImage(const py::array_t<Doxa::Pixel8>& image)
+Image ArrayToImage(const py::array_t<Doxa::Pixel8>& imageArray)
 {
-	return Image::Reference(image.shape(1), image.shape(0), reinterpret_cast<Pixel8*>(image.request().ptr));
+	return Image::Reference(imageArray.shape(1), imageArray.shape(0), reinterpret_cast<Pixel8*>(imageArray.request().ptr));
 }
 
-struct Performance
-{
-	double Accuracy;
-	double FM;
-	double PSNR;
-	double NRM;
-	double DRDM;
-};
 
-double CalculatePerformance(const py::array_t<Pixel8>& groundTruthArray, const py::array_t<Pixel8>& binaryArray)
+py::dict CalculatePerformance(const py::array_t<Pixel8>& groundTruthImageArray, const py::array_t<Pixel8>& binaryImageArray)
 {
-	Image groundTruthImage = ArrayToImage(groundTruthArray);
-	Image binaryImage = ArrayToImage(binaryArray);
+	Image groundTruthImage = ArrayToImage(groundTruthImageArray);
+	Image binaryImage = ArrayToImage(binaryImageArray);
 
 	ClassifiedPerformance::Classifications classifications;
 	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
 	// TODO: If this fails, we may want to 0 out the return values
 
-	Performance perf;
-	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
-	perf.FM = ClassifiedPerformance::CalculateFMeasure(classifications);
-	perf.PSNR = ClassifiedPerformance::CalculatePSNR(classifications);
-	perf.NRM = ClassifiedPerformance::CalculateNRM(classifications);
-	perf.DRDM = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
+	auto dict = py::dict();
+	dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);
+	dict["fm"] = ClassifiedPerformance::CalculateFMeasure(classifications);
+	dict["psnr"] = ClassifiedPerformance::CalculatePSNR(classifications);
+	dict["nrm"] = ClassifiedPerformance::CalculateNRM(classifications);
+	dict["drdm"] = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
 
-	return perf.Accuracy;
+	return dict;
 }
 
 
@@ -63,54 +56,38 @@ public:
 		delete algorithmPtr;
 	}
 
-	void Initialize(const py::array_t<Pixel8>& grayScaleArray)
+	void Initialize(const py::array_t<Pixel8>& grayScaleImageArray)
 	{
-		Image image = ArrayToImage(grayScaleArray);
+		Image image = ArrayToImage(grayScaleImageArray);
 		algorithmPtr->Initialize(image);
 	}
 
-	void ToBinary(const py::array_t<Pixel8>& binaryArray)
+	void ToBinary(const py::array_t<Pixel8>& binaryImageArray, const ParameterMap& parameters={})
 	{
-		Image image = ArrayToImage(binaryArray);
-		algorithmPtr->ToBinary(image);
+		Image image = ArrayToImage(binaryImageArray);
+		algorithmPtr->ToBinary(image, parameters);
 	}
 
 	Algorithms CurrentAlgorithm() { return algorithm; }
 
-	/*
-		static void Debug(Pixel8* data, const int width, const int height)
-		{
-			std::cout << "Debug - start (" << width << "x" << height << ")" << std::endl;
-			const size_t size = width * height;
-
-			for (size_t idx = 0; idx < size; ++idx)
-			{
-				const Pixel8 pixel = data[idx];
-
-				std::cout
-					<< "Index: " << idx << " Value: " << std::to_string(pixel) << std::endl;
-			}
-
-			data[0] = 42; // Verify the ability to set
-			std::cout << "Debug - stop" << std::endl;
-		}
-	*/
 protected:
 	const Algorithms algorithm;
 	IAlgorithm* algorithmPtr = nullptr;
 }; // Class: Binarization
 
 
-PYBIND11_MODULE(DoxaPy, m) {
+// Expose routines using the PEP8 style guide
+PYBIND11_MODULE(doxapy, m) {
 	m.doc() = "DoxaPy: Python bindings for the Doxa image binarization framework";
 
-	m.def("CalculatePerformance", &CalculatePerformance, "Obtain binarization performance information based on a Ground Truth.");
+	m.def("calculate_performance", &CalculatePerformance, "Obtain binarization performance information based on a Ground Truth.");
 
 	py::class_<Binarization> binarization(m, "Binarization");
 
 	binarization.def(py::init<const Algorithms>())
-		.def("Initialize", &Binarization::Initialize)
-		.def("ToBinary", &Binarization::ToBinary);
+		.def("initialize", &Binarization::Initialize)
+		.def("to_binary", &Binarization::ToBinary, py::arg("binaryImageArray"), py::arg("parameters") = ParameterMap())
+		.def("algorithm", &Binarization::CurrentAlgorithm);
 
 	py::enum_<Algorithms>(binarization, "Algorithms")
 		.value("OTSU", Algorithms::OTSU)
