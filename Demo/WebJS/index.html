@@ -16,7 +16,7 @@
         <script type="text/javascript" src="doxa.js"></script>
         <script>
 
-            async function LoadCanvas(canvas, src) {
+            async function loadCanvas(canvas, src) {
 
                 return new Promise((resolve, reject) => {
 
@@ -39,7 +39,7 @@
                 });
             }
 
-            function ReadCanvas(canvas) {
+            function readCanvas(canvas) {
 
                 const ctx = canvas.getContext('2d');
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -50,13 +50,13 @@
 
                 // Load an image into the Canvas
                 const canvas = document.getElementById('democanvas');
-                await LoadCanvas(canvas, '2JohnC1V3.png');
+                await loadCanvas(canvas, '2JohnC1V3.png');
 
                 // Initialize the Doxa framework
                 const Algorithms = await Doxa.initialize();
 
                 // Generate an Image object from the Canvas
-                const image = ReadCanvas(canvas);
+                const image = readCanvas(canvas);
 
                 // Generate a binary image
                 const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
