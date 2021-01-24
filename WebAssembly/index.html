@@ -70,7 +70,7 @@
 	<div id="workspace" style="display: table; visibility: hidden; max-width: 700px;">
 		<div style="padding-bottom: 10px; text-align: left;">
 			<label for="algorithm" style="padding-right: 10px;">Algorithm:
-				<select id="algorithm" onchange="selectAlgorithm(this.value); canvasToBinary();">
+				<select id="algorithm" onchange="selectAlgorithm(this.value);">
 				</select>
 			</label>
 			
@@ -123,16 +123,8 @@
 					<span id="drdm"></span>
 				</label>
 				<div>
-					<label for="totalTime">Total Time:
-						<span id="totalTime"></span> ms
-					</label>
-				
-					<label for="initTime">Initialization Time:
-						<span id="initTime"></span> ms
-					</label>
-					
-					<label for="binTime">Binarization Time:
-						<span id="binTime"></span> ms
+					<label for="time">Binarization Time:
+						<span id="time"></span> ms
 					</label>
 				</div>
 			</span>
@@ -159,48 +151,69 @@
 	</div>
 	</center>
 	
-	<!-- Path: https://github.com/brandonmpetty/Doxa/raw/master/Doxa/UnitTests/Resources/2JohnC1V3-GroundTruth.pbm
-	<input id="uploadInput" type="file" name="Load Ground Truth" onchange="loadImageFromFile(this);" 
-		accept=".pam, .pgm, .pbm"/>
-	-->
 	
 	<script type="text/javascript">
-		var srcImage;
-		var dstImage;
-		var gtImage;
-		var currentAlgorithm;
-		var algorithms;
-		var initTime;
-		var binTime;
-		
-        function drawImgToCanvas(img, id) {
-            let canvas = document.getElementById(id);
-            let ctx = canvas.getContext('2d');
+		let srcCanvas;
+		let dstCanvas;
+		let srcImage;
+		let dstImage;
+		let gtImage;
+		let currentAlgorithm;
+		let algorithms = [];
+		let time;
+	
+		async function loadCanvas(canvas, src) {
 
-            canvas.width = img.width;
-            canvas.height = img.height;
+			return new Promise((resolve, reject) => {
 
-            ctx.drawImage(img, 0, 0);
-        }
+				// Load image into canvas using onload callback
+				const img = new Image();
+				img.onerror = function() {
+					reject();
+				};
+				img.onload = function() {
+					const ctx = canvas.getContext('2d');
+
+					canvas.width = img.width;
+					canvas.height = img.height;
+					ctx.drawImage(img, 0, 0);
+
+					resolve();
+				};
+
+				img.src = src;
+			});
+		}
+
+		function readCanvas(canvas) {
+
+			const ctx = canvas.getContext('2d');
+			const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+			return new Doxa.Image(imageData.width, imageData.height, imageData.data);
+		}
 		
 		function canvasToBinary() {
-			// Update params
-			for (let key in currentAlgorithm.params) {
-				let el = document.getElementById(key+'-el');
+			// Get params from UI and update selected object algorithm
+			for (const key in currentAlgorithm.params) {
+				const el = document.getElementById(key+'-el');
 				currentAlgorithm.params[key] = Number(el.value);
 			}
 		
-			// Performance test
-			let timer = performance.now();
+			// Performance speed test
+			const timer = performance.now();
 		
 			// Convert to Binary
-			Doxa.toBinary(dstImage, currentAlgorithm.params);
+			dstImage = Doxa.Binarization.toBinary(
+				currentAlgorithm.enum, 
+				srcImage, 
+				currentAlgorithm.params, 
+				dstImage); // If the first call, allocate memory.  All other calls use the allocated memory.
 			
 			// Calculate time in milliseconds
-			binTime = performance.now() - timer;
+			time = performance.now() - timer;
 			
 			// Draw to Canvas
-			dstImage.draw('binaryCanvas');
+			dstImage.draw(dstCanvas);
 			
 			// Analyze performance after binarization
 			if (document.getElementById('performance').checked && gtImage) {
@@ -208,7 +221,7 @@
 			}
 		}
 		
-		function togglePerformance() {
+		async function togglePerformance() {
 			// Toggle
 			document.getElementById('perf-section').style.display = 
 				document.getElementById('performance').checked ? "inline-block" : "none";
@@ -217,15 +230,15 @@
 			if (gtImage) return;
 		
 			// Load the ground truth and calculate
-			canvasToDoxaImage('../Images/2JohnC1V3-GroundTruth.png', 'groundTruthCanvas', (image)=>{
-				gtImage = image;
-				
-				calculatePerformance();
-			});
+			await loadCanvas(gtCanvas, '../Images/2JohnC1V3-GroundTruth.png');
+			gtImage = readCanvas(gtCanvas);
+
+			// Since this is the first load, calculate it
+			calculatePerformance();
 		}
 		
 		function calculatePerformance() {
-			let performance = Doxa.calculatePerformance(gtImage, dstImage);
+			const performance = Doxa.Binarization.calculatePerformance(gtImage, dstImage);
 			
 			// Performance
 			document.getElementById('accuracy').innerHTML = performance.accuracy.toFixed(4);
@@ -235,32 +248,7 @@
 			document.getElementById('drdm').innerHTML = performance.drdm.toFixed(4);
 			
 			// Speed
-			document.getElementById('initTime').innerHTML = initTime.toFixed(2);
-			document.getElementById('binTime').innerHTML = binTime.toFixed(2);
-			document.getElementById('totalTime').innerHTML = (initTime + binTime).toFixed(2);
-		}
-		
-		function canvasToDoxaImage(imageSrc, canvasId, callback) {
-			// Take a JS Image object in any supported Web format.
-			let img = new Image();
-			img.src = imageSrc;
-			img.onload = function() {
-			
-				// Normalize it through Canvas
-			    let canvas = document.getElementById(canvasId);
-				let ctx = canvas.getContext('2d');
-
-				canvas.width = img.width;
-				canvas.height = img.height;
-
-				ctx.drawImage(img, 0, 0);
-
-				// Get the raw RGB values
-				let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-				
-				// Convert it to a Doxa Image and trigger the callback
-				callback(new Doxa.Image().loadFromCanvas(imageData));
-			};
+			document.getElementById('time').innerHTML = time.toFixed(2);
 		}
 		
 		function initializeAlgorithm() {		
@@ -268,14 +256,8 @@
 			document.getElementById('authors').textContent = currentAlgorithm.authors;
 			document.getElementById('citation').textContent = currentAlgorithm.title + " : " + currentAlgorithm.date;
 			
-			// Performance test
-			let timer = performance.now();
-			
-			// Convert the image to binary
-			Doxa.initialize(currentAlgorithm.enum, srcImage);
-			
-			// Many algorithms setup integral images, so this time could vary significantly
-			initTime = performance.now() - timer;
+			// On initial select, convert to binary
+			canvasToBinary();
 		}
 		
 		function initializeInputs() {
@@ -297,81 +279,89 @@
 			}
 		}
 		
-		function loadAlgorithms() {
-			// Set available algorithms
-			algorithms = Doxa.getAlgorithms();
-		
-			let options = "";
-			algorithms.forEach(function(alg) {
-				options += "<option value='" + alg.enum.value + "'>" + alg.name + "</option>";
-			});
-			
-			document.getElementById('algorithm').innerHTML = options;
-		}
-		
 		function selectAlgorithm(algorithm) {
-			// Allows for an Int or Wasm Enum object
-			let value = typeof algorithm === 'object' ? algorithm.value : algorithm;
-			
 			// The order of this call does matter since we are dealing with a global.
-			currentAlgorithm = algorithms[value];
+			currentAlgorithm = algorithms[algorithm];
 			
 			initializeInputs();
 			initializeAlgorithm();
 		}
 		
-		/* This functionality is currently disabled
-		function loadImageFromFile(fileInput) {
-			if (fileInput.files.length == 0) return;
-			var file = fileInput.files[0];
-
-			var fr = new FileReader();
-			fr.onload = function () {
-				var data = new Uint8Array(fr.result);
-
-				Module['FS_createDataFile']('/', file.name, data, true, true, true);
-
-				// Free existing file memory.  In the future, reusing it, if big enough.
-				if (gtImage) {
-					gtImage.free();
-				}
-				
-				// Load the file through Doxa, from the WASM virtual file system.
-				gtImage = new Doxa.Image().loadFromFile('/' + file.name);
-				
-				gtImage.draw('binaryCanvas');
-			};
-			fr.readAsArrayBuffer(file);
-		}
-		*/
+		function loadAlgorithms(algorithEnums) {
+			// Set available algorithms
+			algorithms[algorithEnums.OTSU] = { 
+				name: 'Otsu', 		params: {}, enum: algorithEnums.OTSU,
+				date: 1979, title: 'A threshold selection method from gray-level histograms', authors: 'Nobuyuki Otsu'};
+			algorithms[algorithEnums.BERNSEN] = { 
+				name: 'Bernsen', 	params: { window: 75, threshold: 100, 'contrast-limit': 25 }, enum: algorithEnums.BERNSEN,
+				date: 1986, title: 'Dynamic thresholding of gray-level images', authors: 'John Bernsen'};
+			algorithms[algorithEnums.NIBLACK] =	{
+				name: 'Niblack', 	params: { window: 223, k: -0.61 }, enum: algorithEnums.NIBLACK,
+				date: 1986, title: 'An Introduction to Digital Image Processing', authors: 'Wayne Niblack'};
+			algorithms[algorithEnums.SAUVOLA] =	{
+				name: 'Sauvola', 	params: { window: 26, k: 0.10 }, enum: algorithEnums.SAUVOLA,
+				date: 1999, title: 'Adaptive document image binarization', authors: 'J. Sauvola, M. Pietikäinen'};
+			algorithms[algorithEnums.WOLF] =	{
+				name: 'Wolf', 		params: { window: 20, k: 0.18 }, enum: algorithEnums.WOLF,
+				date: 2003, title: 'Extraction and Recognition of Artificial Text in Multimedia Documents', authors: 'Christian Wolf, Jean-Michel Jolion'};
+			algorithms[algorithEnums.NICK] =	{
+				name: 'N.I.C.K.', 	params: { window: 44, k:-0.10 }, enum: algorithEnums.NICK,
+				date: 2009, title: 'Comparison of Niblack inspired Binarization methods for ancient documents', authors: 'Khurram Khurshid, Imran Siddiqi, Claudie Faure, Nicole Vincent'};
+			algorithms[algorithEnums.SU] =	{
+				name: 'Su', 		params: { window: 26, k: 0.10 }, enum: algorithEnums.SU,
+				date: 2010, title: 'Binarization of Historical Document Images Using the Local Maximum and Minimum', authors: 'Bolan Su, Shijian Lu, and Chew Lim Tan'};
+			algorithms[algorithEnums.TRSINGH] =	{
+				name: 'T.R. Singh', params: { window: 75, k: 0.20 }, enum: algorithEnums.TRSINGH,
+				date: 2011, title: 'A New local Adaptive Thresholding Technique in Binarization', authors: 'T. Romen Singh, Sudipta Roy, O. Imocha Singh, Tejmani Sinam, Kh. Manglem Singh'};
+			algorithms[algorithEnums.BATAINEH] =	{
+				name: 'Bataineh', params: { }, enum: algorithEnums.BATAINEH,
+				date: 2011, title: 'An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows', authors: 'Bilal Bataineh, Siti Norul Huda Sheikh Abdullah, Khairuddin Omar'};
+			algorithms[algorithEnums.ISAUVOLA] =	{
+				name: 'ISauvola', 	params: { window: 15, k: 0.01 }, enum: algorithEnums.ISAUVOLA,
+				date: 2016, title: 'ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization', authors: 'Zineb Hadjadj, Abdelkrimo Meziane, Yazid Cherfa, Mohamed Cheriet, Insaf Setitra'};
+			algorithms[algorithEnums.WAN] =	{
+				name: 'Wan', 		params: { window: 75, k: 0.20 }, enum: algorithEnums.WAN,
+				date: 2018, title: 'Binarization of Document Image Using Optimum Threshold Modification', authors: 'Wan Azani Mustafa, Mohamed Mydin M. Abdul Kader'};
 		
+			let options = "";
+			algorithms.forEach(function(alg) {
+				options += "<option value='" + alg.enum + "'>" + alg.name + "</option>";
+			});
+			
+			document.getElementById('algorithm').innerHTML = options;
+		}
+
     </script>
     <script type="text/javascript" src="doxaWasm.js"></script>
 	<script type="text/javascript" src="doxa.js"></script>
 	<script>
-		Module.onRuntimeInitialized = async _ => {
-			// Create our algorithms selection list
-			loadAlgorithms();
-			
-			// Load our source image for the image slider
-			canvasToDoxaImage('../Images/2JohnC1V3.png', 'sourceCanvas', (image)=>{
-				srcImage = image;
-			
-				// Initialize our destination/binary image
-				dstImage = new Doxa.Image(image.width, image.height);
+		async function initialize() {
+		    // Initialize the Doxa framework
+            const algorithmEnums = await Doxa.initialize();
 
-				// Convert the color image to binary and show on the other Canvas
-				selectAlgorithm(Module.Binarization.Algorithms.OTSU);
-				canvasToBinary();
-				
-				// Initialize the comparison code for the image slider
-				initComparisons();
-				
-				// Display
-				document.getElementById("loader").style.display = "none";
-				document.getElementById("workspace").style.visibility = "visible";
-			});
-		};
+			// Create our algorithms selection list
+			loadAlgorithms(algorithmEnums);
+
+			// Setup canvas and get a Doxa Image out of it
+			srcCanvas = document.getElementById('sourceCanvas');
+			dstCanvas = document.getElementById('binaryCanvas');
+			gtCanvas = document.getElementById('groundTruthCanvas');
+			
+			await loadCanvas(srcCanvas, '../Images/2JohnC1V3.png');
+			srcImage = readCanvas(srcCanvas);
+
+			// Convert the color image to binary and show on the Canvas
+			selectAlgorithm(algorithmEnums.OTSU);
+
+			// Initialize the comparison code for the image slider
+			initComparisons();
+
+			// Display
+			document.getElementById("loader").style.display = "none";
+			document.getElementById("workspace").style.visibility = "visible";
+		}
+		
+		initialize();
 	</script>
   </body>
 </html>
