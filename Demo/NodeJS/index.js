@@ -11,7 +11,7 @@ const sharp = require('sharp');
  * An example image reader wrapper around Sharp.
  * @param {*} file Input file location.  Should be 32b RGBA.
  */
-async function ReadImage(file) {
+async function readImage(file) {
 	return sharp(file)
 		.raw()
 		.toBuffer({ resolveWithObject: true })
@@ -25,7 +25,7 @@ async function ReadImage(file) {
  * @param {*} image A binary Doxa Image object
  * @param {*} file Output file location.  This can be any supported format.
  */
-async function WriteImage(image, file) {
+async function writeImage(image, file) {
 	return sharp(Buffer.from(image.data()), { 
 		raw: { 
 			width: image.width, 
@@ -35,14 +35,14 @@ async function WriteImage(image, file) {
 	}).toFile(file);
 }
 
-async function Demo() {
+async function demo() {
 
 	// Initialize the Doxa framework
 	const Algorithms = await Doxa.initialize();
 
 	// Read local image files to process
-	const gtImage = await ReadImage('2JohnC1V3-GroundTruth.png');
-	const image = await ReadImage('2JohnC1V3.png');
+	const gtImage = await readImage('2JohnC1V3-GroundTruth.png');
+	const image = await readImage('2JohnC1V3.png');
 
 	// Generate a binary image
 	const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
@@ -52,7 +52,7 @@ async function Demo() {
 	console.dir(perf);
 
 	// Write file
-	await WriteImage(binImage, 'binary.png');
+	await writeImage(binImage, 'binary.png');
 
 	// Remember to free the memory of your WASM based images
 	gtImage.free();
@@ -61,4 +61,4 @@ async function Demo() {
 }
 
 // Run our demo
-Demo();
+demo();
