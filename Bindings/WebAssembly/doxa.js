@@ -130,8 +130,9 @@ const Doxa = {
 				imageOut = new Doxa.Image(imageIn.width, imageIn.height);
 			}
 			
+			const algEnum = Doxa.Wasm.Binarization.Algorithms.values[algorithm];
 			const paramString = JSON.stringify(parameters);
-			const binarization = new Doxa.Wasm.Binarization(algorithm);
+			const binarization = new Doxa.Wasm.Binarization(algEnum);
 			
 			binarization.initialize(imageIn.heapPtr, imageIn.width, imageIn.height);
 			binarization.toBinary(imageOut.heapPtr, paramString);
