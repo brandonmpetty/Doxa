@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "ChanMeanVarianceCalc.hpp"
 
 
 namespace Doxa
@@ -14,36 +14,32 @@ namespace Doxa
 	/// The Wolf Algorithm: Christian Wolf, Jean-Michel Jolion
 	/// </summary>
 	/// <remarks>"Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.</remarks>
-	class Wolf : public Algorithm<Wolf>, public MeanVarianceCalculator
+	class Wolf : public Algorithm<Wolf>, public ChanMeanVarianceCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-			MeanVarianceCalculator::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
-			double mean, stddev;
-			double min = std::numeric_limits<double>::max();
-			double maxStdDev = std::numeric_limits<double>::min();
-
 			// Read parameters, utilizing defaults
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 0.2);
 
+			double min = std::numeric_limits<double>::max();
+			double maxVariance = std::numeric_limits<double>::min();
+
 			// Find global min value and max standard deviation value
-			LocalWindow::Iterate(Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
-				CalculateMeanStdDev(mean, stddev, window);
-				if (stddev > maxStdDev) maxStdDev = stddev;
+			Iterate(Algorithm::grayScaleImageIn, windowSize, [&](const double&, const double& variance, const int& position) {
+				
+				if (variance > maxVariance) maxVariance = variance;
 
 				const double tmpMin = Algorithm::grayScaleImageIn.data[position];
 				if (tmpMin < min) min = tmpMin;
 			});
 
-			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
-				CalculateMeanStdDev(mean, stddev, window);
+			const double maxStdDev = std::sqrt(maxVariance);
+
+			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int& position) {
+				const double stddev = std::sqrt(variance);
 
 				return mean - k * (1 - (stddev / maxStdDev)) * (mean - min);
 			});

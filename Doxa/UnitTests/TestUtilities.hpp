@@ -58,5 +58,48 @@ namespace Doxa::UnitTests
 
 			AssertImages(image, imageFromFile);
 		}
+
+		static bool AssertImagesWithDetails(const Image& imageA, const Image& imageB)
+		{
+			char buffer[100];
+
+			if (imageA.height != imageB.height || imageA.width != imageB.width)
+			{
+				std::snprintf(buffer, 100, "Image dimensions do not match.  %dx%d vs %dx%d", imageA.width, imageA.height, imageB.width, imageB.height);
+				Logger::WriteMessage(buffer);
+			}
+			else
+			{
+				bool diffFound = false;
+				int firstHeight = 0;
+				int firstWidth = 0;
+				int firstIndex = 0;
+				int count = 0;
+
+				for (int index = 0; index < imageA.size; index++)
+				{
+					if (imageA.data[index] != imageB.data[index])
+					{
+						if (!diffFound)
+						{
+							firstIndex = index;
+							firstHeight = index / imageA.width;
+							firstWidth = index % imageA.width;
+							diffFound = true;
+						}
+
+						++count;
+					}
+				}
+
+				// No differences found!
+				if (!diffFound) return true;
+
+				std::snprintf(buffer, 100, "%d difference(s) found. Example: Index %d, Width %d, Height %d.", count, firstIndex, firstWidth, firstHeight);
+				Logger::WriteMessage(buffer);
+			}
+
+			return false;
+		}
 	};
 }

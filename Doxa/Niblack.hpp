@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "ChanMeanVarianceCalc.hpp"
 
 
 namespace Doxa
@@ -14,25 +14,18 @@ namespace Doxa
 	/// The Niblack Algorithm: Wayne Niblack
 	/// </summary>
 	/// <remarks>"An Introduction to Digital Image Processing", 1986.</remarks>
-	class Niblack : public Algorithm<Niblack>, public MeanVarianceCalculator
+	class Niblack : public Algorithm<Niblack>, public ChanMeanVarianceCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-			MeanVarianceCalculator::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
-			double mean, stddev;
-
 			// Read parameters, utilizing defaults
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 0.2);
 
-			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
-				CalculateMeanStdDev(mean, stddev, window);
+			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int&) {
+				const double stddev = std::sqrt(variance);
 
 				return (mean + (k * stddev));
 			});

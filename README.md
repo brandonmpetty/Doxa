@@ -6,8 +6,9 @@
 </p>
 
 ## Introduction
-ΔBF is an image binarization framework written in C++ which focuses primarily on local adaptive thresholding algorithms.
+ΔBF is an image binarization framework which focuses primarily on local adaptive thresholding algorithms.
 In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
+It is written in C++ but supports multiple language bindings.
 
 **Algorithms**
 * Otsu - "A threshold selection method from gray-level histograms", 1979.
@@ -25,7 +26,8 @@ In English, this means that it has the ability to turn a color or gray scale ima
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished.
+* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
+* Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
 
 **Performance Metrics**
 * Overall Accuracy
@@ -58,50 +60,22 @@ Image imageSauvola = Sauvola::ToBinaryImage(image, parameters);
 // Save the processed image
 PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 ```
-<br/>
-ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party frameworks like Qt.
 
-```cpp
-// Qt has great support for working with complex file formats
-// Prompt the user to select an image to open, using Qt
-QString imagePath = 
-	QFileDialog::getOpenFileName(
-		this,
-		tr("Open File"),
-		"",
-		tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
-
-// Load the image into a Qt QImage
-QImage qImage(imagePath);
-
-// Use Qt to convert to 8-bit grayscale
-qImage = qImage.convertToFormat(QImage::Format_Grayscale8);
-
-// Operations on the ΔBF Image will directly change the QImage when set as a reference.
-Image image = Image::Reference(qImage.width(), qImage.height(), (Pixel8*)qImage.bits());
-Niblack::UpdateToBinary(image, Parameters());
-
-// Save the updated QImage to the file system, using Qt
-qImage.save("binary-image.png");
-```
-
-Other examples can be found in the Demo folder, like the [BinaryImageConverter](/Demo/BinaryImageConverter) tool.
+ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party C++ frameworks like OpenCV and Qt.  Examples can be found under the Demo folder.
 
 ### Performance Analysis
-Another thing that sets ΔBF apart is its focus on binarization performance.
-The [PerformanceMetrics](/Demo/PerformanceMetrics) demo highlights how easy it is to get detailed metrics given a sample output and a ground-truth.
+Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
 
-### WebAssembly
-Experimental WASM support has been added in order to expose ΔBF to the web.
-With the provided JavaScript wrapper, it is easy to utilize this framework in any web project.
+### Language Bindings
+* Javascript / WASM
+* Python
+
+Experimental WASM support has been added in order to expose ΔBF to the web, as well as NodeJs.  For Python, an experimental DoxaPy library has been developed.  Examples of how to use each binding are provided in the Demo folder.
+
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
-### Help Requested
-* Verification of algorithm correctness (especially the Wiener filter used in Gatos)
-* Implement, in a very clean way, Howe's binarization algorithm
-
 ## License
-CC0 - Brandon M. Petty, 2019
+CC0 - Brandon M. Petty, 2021
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

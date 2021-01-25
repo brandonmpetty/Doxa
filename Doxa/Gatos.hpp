@@ -8,6 +8,7 @@
 #include "Palette.hpp"
 #include "Region.hpp"
 #include "Image.hpp"
+#include "WienerFilter.hpp"
 
 ////////////////////////////////////////////////////////////////////////
 // This code is highly experimental and has not been unit tested yet! //
@@ -21,6 +22,7 @@ namespace Doxa
 	///		Wiener Filter
 	///		Sauvola binarization algorithm
 	///		A background estimation based thresholding algorithm
+	///		Upsampling and other post-processing meassures
 	/// 
 	/// The optional Upsampling on the fourth step is not currently performed, nor the Post-processing for the fifth step.
 	/// </summary>
@@ -28,6 +30,7 @@ namespace Doxa
 	class Gatos : public Algorithm<Gatos>
 	{
 	public:
+
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// Read parameters, utilizing defaults
@@ -35,7 +38,7 @@ namespace Doxa
 
 			// Step 1 - Pre-processing: Run greyscale through Wiener Filter
 			Image filteredImage(Algorithm::grayScaleImageIn);
-			WienerFilter(filteredImage, Algorithm::grayScaleImageIn, 3);
+			WienerFilter::Filter(filteredImage, Algorithm::grayScaleImageIn, 3);
 
 			// Step 2 - Rough estimation of foreground regions: Apply Sauvola binarization
 			Sauvola algorithm;  // TODO - Allow this algorithm to be swapped with any in the library
@@ -94,36 +97,6 @@ namespace Doxa
 		{
 			const double expVal = exp(((-4 * backgroundValue) / (b * (1 - p1))) + ((2 * (1 + p1)) / (1 - p1)));
 			return q * d * (((1 - p2) / (1 + expVal)) + p2);
-		}
-
-		void WienerFilter(Image& outputImage, const Image& inputImage, const int windowSize = 3) const
-		{
-			MeanVarianceCalculator calculator;
-			calculator.Initialize(inputImage);
-
-			// Obtain the average variance for all pixels
-			double mean, variance;
-			double sumVariance = 0;
-
-			LocalWindow::Iterate(inputImage, windowSize, [&](const Region& window, const int& position)
-			{
-				calculator.CalculateMeanVariance(mean, variance, window);
-
-				sumVariance += variance;
-			});
-
-			const double avgVariance = sumVariance / inputImage.size;
-
-			// Apply Wiener Filter
-			LocalWindow::Iterate(inputImage, windowSize, [&](const Region& window, const int& position)
-			{
-				calculator.CalculateMeanVariance(mean, variance, window);
-
-				// The avgVariance is simulating noise-variance.  It should always be greater than variance.
-				outputImage.data[position] = variance < avgVariance ? 
-					mean : // Variance can be 0, so avoid the divide by 0 issue by using mean value.
-					mean + ((variance - avgVariance) * (double)(inputImage.data[position] - mean)) / variance;
-			});
 		}
 
 		// Note: backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the backround entirely

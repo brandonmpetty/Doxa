@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "MeanVarianceCalculator.hpp"
+#include "ChanMeanVarianceCalc.hpp"
 
 
 namespace Doxa
@@ -14,19 +14,12 @@ namespace Doxa
 	/// The WAN Algorithm: Wan Azani Mustafa, Mohamed Mydin M. Abdul Kader
 	/// </summary>
 	/// <remarks>"Binarization of Document Image Using Optimum Threshold Modification", 2018.</remarks>
-	class Wan : public Algorithm<Wan>, public MeanVarianceCalculator
+	class Wan : public Algorithm<Wan>, public ChanMeanVarianceCalc
 	{
 	public:
-		void Initialize(const Image& grayScaleImageIn)
-		{
-			Algorithm::Initialize(grayScaleImageIn);
-			MeanVarianceCalculator::Initialize(grayScaleImageIn);
-		}
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
-			double mean, stddev;
-
 			// Read parameters, utilizing defaults
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 0.2);
@@ -35,8 +28,8 @@ namespace Doxa
 			Image maxImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);
 			Morphology::Dilate(maxImage, Algorithm::grayScaleImageIn, windowSize);
 
-			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
-				CalculateMeanStdDev(mean, stddev, window);
+			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int& position) {
+				const double stddev = std::sqrt(variance);
 
 				return (((double)maxImage.data[position] + mean) / 2) * (1 + k * ((stddev / 128) - 1));
 			});

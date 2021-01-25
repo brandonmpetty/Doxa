@@ -30,6 +30,7 @@ namespace Doxa
 	class Su : public Algorithm<Su>
 	{
 	public:
+
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
 			// 0 will trigger the auto detection of these parameters as detailed in the paper

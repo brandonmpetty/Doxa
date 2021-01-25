@@ -21,12 +21,12 @@ namespace Doxa
 		/// The algorithm should return a threshold under which a gray pixel will become black and
 		/// over which it will become white.
 		/// </summary>
-		template<typename Algorithm>
-		static void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, Algorithm algorithm)
+		template<typename WindowCalculator>
+		static void Process(Image& binaryImageOut, const Image& grayScaleImageIn, const int windowSize, WindowCalculator calculator)
 		{
 			Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position) {
 				binaryImageOut.data[position] =
-					grayScaleImageIn.data[position] <= algorithm(window, position) ?
+					grayScaleImageIn.data[position] <= calculator(window, position) ?
 						Palette::Black : Palette::White;
 			});
 		}
@@ -41,21 +41,19 @@ namespace Doxa
 			const int HALF_WINDOW = windowSize / 2;
 			Region window;
 
-			for (int y = 0; y < imageIn.height; ++y)
+			for (int y = 0, ind = 0; y < imageIn.height; ++y)
 			{
 				// Set Y Window Coordinates
 				window.upperLeft.y = (std::max)(0, y - HALF_WINDOW);
 				window.bottomRight.y = (std::min)(imageIn.height - 1, y + HALF_WINDOW);
 
-				const int row = y * imageIn.width;
-
-				for (int x = 0; x < imageIn.width; ++x)
+				for (int x = 0; x < imageIn.width; ++x, ++ind)
 				{
 					// Set X Window Coordinates
 					window.upperLeft.x = (std::max)(0, x - HALF_WINDOW);
 					window.bottomRight.x = (std::min)(imageIn.width - 1, x + HALF_WINDOW);
 
-					processor(window, row + x);
+					processor(window, ind);
 				}
 			}
 		}

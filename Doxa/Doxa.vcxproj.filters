@@ -36,12 +36,6 @@
     <ClInclude Include="Wolf.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
-    <ClInclude Include="MeanCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
-    <ClInclude Include="MeanVarianceCalculator.hpp">
-      <Filter>Calculators</Filter>
-    </ClInclude>
     <ClInclude Include="DRDM.hpp">
       <Filter>Performance</Filter>
     </ClInclude>
@@ -57,9 +51,6 @@
     <ClInclude Include="ContrastImage.hpp">
       <Filter>Processors</Filter>
     </ClInclude>
-    <ClInclude Include="WeinerFilter.hpp">
-      <Filter>Processors</Filter>
-    </ClInclude>
     <ClInclude Include="ISauvola.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
@@ -73,6 +64,19 @@
     <ClInclude Include="Bataineh.hpp">
       <Filter>Binarization</Filter>
     </ClInclude>
+    <ClInclude Include="IntegralImageMeanVarianceCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="ChanMeanCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="ChanMeanVarianceCalc.hpp">
+      <Filter>Calculators</Filter>
+    </ClInclude>
+    <ClInclude Include="WienerFilter.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
+    <ClInclude Include="BinarizationFactory.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">

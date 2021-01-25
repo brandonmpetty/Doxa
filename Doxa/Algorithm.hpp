@@ -72,15 +72,13 @@ namespace Doxa
 
 		/// <summary>
 		/// A conveniance method for safely converting a Gray Scale image to Binary.
-		/// Note: A temporary image is created to safely operate on, which may not always be necessary.
+		/// Note: You may need to create a temp image and copy it, depending on your algorithm.
 		/// </summary>
 		static void UpdateToBinary(Image& image, const Parameters& parameters = Parameters())
 		{
-			// Not all Calculators support in-place updating, thus we need a temporary Image store.
-			Image binaryImageOut = ToBinaryImage(image, parameters);
-
-			// Safely update our original memory location with the binary image data
-			std::memcpy(image.data, binaryImageOut.data, binaryImageOut.size);
+			BinaryAlgorithm algorithm;
+			algorithm.Initialize(image);
+			algorithm.ToBinary(image, parameters);
 		}
 
 	protected:

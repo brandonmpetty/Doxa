@@ -95,7 +95,6 @@ namespace Doxa
 		static unsigned int NUBN(const Image& controlImage, const int M = 8)
 		{
 			unsigned int nubn = 0;
-			unsigned int nubn2 = 0;
 
 			const int columns = ceil(controlImage.width / M);
 			const int rows = ceil(controlImage.height / M);
@@ -116,8 +115,6 @@ namespace Doxa
 		// Determines if a block is uniform (0) or not (1).
 		static unsigned int NonUniformBlock(const Image& controlImage, const Region& window)
 		{
-			const Pixel8 test = controlImage.Pixel(5, 0, Palette::White);
-
 			// Process all of the pixels in said block
 			const Pixel8 pixel = controlImage.Pixel(window.upperLeft.x, window.upperLeft.y);
 

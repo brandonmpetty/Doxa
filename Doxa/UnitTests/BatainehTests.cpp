@@ -19,6 +19,7 @@ namespace Doxa::UnitTests
 			using Bataineh::SigmaMinMaxAndMean;
 			using Bataineh::SigmaAdaptive;
 			using Bataineh::WindowThreshold;
+			using Bataineh::CalculateMeanStdDev;
 
 			using Bataineh::DetailedWindow;
 		};
@@ -99,8 +100,9 @@ namespace Doxa::UnitTests
 			double sigmaMax;
 			double sigmaMin;
 			bataineh.SigmaMinMaxAndMean(sigmaMin, sigmaMax, windows);
-			if (enableAssertions) Assert::AreEqual(0.7923, sigmaMin, 0.001);
-			if (enableAssertions) Assert::AreEqual(52.7487, sigmaMax, 0.001);
+			// Note: Values calculated with Population Variance
+			if (enableAssertions) Assert::AreEqual(0.7890, sigmaMin, 0.001);
+			if (enableAssertions) Assert::AreEqual(52.6966, sigmaMax, 0.001);
 			Logger::WriteMessage(("Smin = " + std::to_string(sigmaMin) + ", Smax = " + std::to_string(sigmaMax)).c_str());
 
 			// Get a target Window and analyze it
@@ -108,7 +110,7 @@ namespace Doxa::UnitTests
 
 			BatainehTestharness::DetailedWindow detailedWindow = windows.front(); // First Window
 			if (enableAssertions) Assert::AreEqual(185.8893, detailedWindow.mean, 0.001);
-			if (enableAssertions) Assert::AreEqual(26.9717, detailedWindow.stddev, 0.001);
+			if (enableAssertions) Assert::AreEqual(26.9451, detailedWindow.stddev, 0.001);
 			Logger::WriteMessage(("Mw = " + std::to_string(detailedWindow.mean) + ", Sw = " + std::to_string(detailedWindow.stddev)).c_str());
 
 			if (enableAssertions) Assert::AreEqual(23, detailedWindow.window.Width());
@@ -116,7 +118,7 @@ namespace Doxa::UnitTests
 			Logger::WriteMessage(("Ww = " + std::to_string(detailedWindow.window.Width()) + ", Wh = " + std::to_string(detailedWindow.window.Height())).c_str());
 
 			const double sigmaAdaptive = bataineh.SigmaAdaptive(detailedWindow.stddev, sigmaMin, sigmaMax, maxGrayValue);
-			if (enableAssertions) Assert::AreEqual(111.8597, sigmaAdaptive, 0.001);
+			if (enableAssertions) Assert::AreEqual(111.865, sigmaAdaptive, 0.001);
 			Logger::WriteMessage(("Sadaptive = " + std::to_string(sigmaAdaptive)).c_str());
 
 			const Pixel8 threshold = bataineh.WindowThreshold(detailedWindow.mean, meanGlobal, detailedWindow.stddev, sigmaAdaptive);
