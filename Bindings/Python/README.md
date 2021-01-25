@@ -12,7 +12,7 @@ Release Build
 cd Bindings\Python
 mkdir build
 cd build
-cmake -A x64 ..
+cmake ..
 cmake --build . --config Release
 ```
 
