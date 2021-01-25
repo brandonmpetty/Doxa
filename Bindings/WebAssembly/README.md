@@ -1,7 +1,7 @@
 # Δoxa Binarization Framework - WebAssembly
 
 ## Introduction
-This is an **experimental** project that exposes the ΔBF, written in C++, to JavaScript via WebAssembly.  It works both server side and client side.  For a simple example of how it works, checkout the [WebJS](../Demo/WebJS) and [NodeJS](../Demo/NodeJS) demos.
+This is an **experimental** project that exposes the ΔBF, written in C++, to JavaScript via WebAssembly.  It works both server side and client side.  For a simple example of how it works, checkout the [WebJS](../../Demo/WebJS) and [NodeJS](../../Demo/NodeJS) demos.
 
 
 ## Building with Emscripten

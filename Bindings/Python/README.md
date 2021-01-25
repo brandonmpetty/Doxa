@@ -1,7 +1,7 @@
 # Δoxa Binarization Framework - Python
 
 ## Introduction
-This is an **experimental** project that exposes the ΔBF, written in C++, to Python via Pybind11.  For a simple example of how it works, checkout the [Python](../Demo/Python) demo.
+This is an **experimental** project that exposes the ΔBF, written in C++, to Python via Pybind11.  For a simple example of how it works, checkout the [Python](../../Demo/Python) demo.
 
 **Known Issues**
 * CMakeLists.txt is setup, for now, to contain Windows only build params.
