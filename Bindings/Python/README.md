@@ -3,12 +3,10 @@
 ## Introduction
 This is an **experimental** project that exposes the ΔBF, written in C++, to Python via Pybind11.  For a simple example of how it works, checkout the [Python](../../Demo/Python) demo.
 
-**Known Issues**
-* CMakeLists.txt is setup, for now, to contain Windows only build params.
-
 ## Building with Pybind11
 Release Build
 ```
+git submodule update --init --recursive
 cd Bindings\Python
 mkdir build
 cd build
