@@ -1,0 +1,78 @@
+name: Python package
+
+on:
+  push:
+  release:
+    types:
+      - published
+
+jobs:
+  build-wheels:
+    #if: github.event_name == 'release' && github.event.action == 'published'
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: [3.8]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip setuptools wheel cibuildwheel
+    - name: Build
+      run: |
+        cd Bindings/Python
+        python copy-cpp-files.py
+        python -m cibuildwheel
+    - uses: actions/upload-artifact@v2
+      with:
+        path: Bindings/Python/wheelhouse/*.whl
+
+  build-sdist:
+    #if: github.event_name == 'release' && github.event.action == 'published'
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip setuptools pybind11
+    - name: Build dists
+      run: |
+        cd Bindings/Python
+        python copy-cpp-files.py
+        python setup.py sdist
+    - uses: actions/upload-artifact@v2
+      with:
+        path: Bindings/Python/dist/*.tar.gz
+
+  upload-pypi:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}

@@ -6,12 +6,9 @@ This is an **experimental** project that exposes the ΔBF, written in C++, to Py
 ## Building with Pybind11
 Release Build
 ```
-git submodule update --init --recursive
-cd Bindings\Python
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
+cd Bindings/Python
+python copy-cpp-files.py
+python setup.py install
 ```
 
 ## License

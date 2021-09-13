@@ -2,9 +2,9 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include "../../Doxa/BinarizationFactory.hpp"
-#include "../../Doxa/ClassifiedPerformance.hpp"
-#include "../../Doxa/DRDM.hpp"
+#include "Doxa/BinarizationFactory.hpp"
+#include "Doxa/ClassifiedPerformance.hpp"
+#include "Doxa/DRDM.hpp"
 
 namespace py = pybind11;
 using namespace Doxa;
