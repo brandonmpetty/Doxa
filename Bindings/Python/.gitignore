@@ -1,2 +1,4 @@
 build
-pybind11
+dist
+*.egg-info
+Doxa
