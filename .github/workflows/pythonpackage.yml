@@ -32,6 +32,8 @@ jobs:
         cd Bindings/Python
         python copy-cpp-files.py
         python -m cibuildwheel
+      env:
+        CIBW_ARCHS: auto64
     - uses: actions/upload-artifact@v2
       with:
         path: Bindings/Python/wheelhouse/*.whl
