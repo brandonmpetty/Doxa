@@ -17,6 +17,7 @@ struct Performance
 {
 	double Accuracy;
 	double FM;
+	double MCC;
 	double PSNR;
 	double NRM;
 	double DRDM;
@@ -34,6 +35,7 @@ Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, 
 	Performance perf;
 	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
 	perf.FM = ClassifiedPerformance::CalculateFMeasure(classifications);
+	perf.MCC = ClassifiedPerformance::CalculateMCC(classifications);
 	perf.PSNR = ClassifiedPerformance::CalculatePSNR(classifications);
 	perf.NRM = ClassifiedPerformance::CalculateNRM(classifications);
 	perf.DRDM = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
@@ -134,6 +136,7 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 	value_object<Performance>("Performance")
 		.field("accuracy", &Performance::Accuracy)
 		.field("fm", &Performance::FM)
+		.field("mcc", &Performance::MCC)
 		.field("psnr", &Performance::PSNR)
 		.field("nrm", &Performance::NRM)
 		.field("drdm", &Performance::DRDM);

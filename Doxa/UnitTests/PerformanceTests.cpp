@@ -2,6 +2,8 @@
 #include "../ClassifiedPerformance.hpp"
 #include "../DRDM.hpp"
 #include "../Palette.hpp"
+#include "../PNM.hpp"
+#include "TestUtilities.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -104,6 +106,37 @@ namespace Doxa::UnitTests
 			double drdm = DRDM::CalculateDRDM(groundTruthImage, expImage);
 
 			Assert::AreEqual((72357 + 72357 + 32359) / (double)1000000, drdm);
+		}
+
+		TEST_METHOD(MCCTest)
+		{
+			// Numbers and expected value pulled from: https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+			ClassifiedPerformance::Classifications classification;
+			classification.truePositive = 6;
+			classification.trueNegative = 3;
+			classification.falsePositive = 1;
+			classification.falseNegative = 2;
+
+			Assert::AreEqual(ClassifiedPerformance::CalculateMCC(classification), 0.478, 0.001);
+		}
+
+		TEST_METHOD(MCCTest_LargeValues)
+		{
+			// MCC will generate some extremely large values.  Ensure we can handle those by using a real image.
+			std::string projFolder = TestUtilities::ProjectFolder();
+
+			const std::string filePathBinary = projFolder + "2JohnC1V3-Sauvola.pbm";
+			Image binaryImage = PNM::Read(filePathBinary);
+
+			const std::string filePathGT = projFolder + "2JohnC1V3-GroundTruth.pbm";
+			Image groundTruthImage = PNM::Read(filePathGT);
+
+			ClassifiedPerformance::Classifications classifications;
+			bool canCompare = ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
+			Assert::IsTrue(canCompare);
+
+			double result = ClassifiedPerformance::CalculateMCC(classifications);
+			Assert::AreEqual(result, 0.918, 0.001);
 		}
 	};
 }

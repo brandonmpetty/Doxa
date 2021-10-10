@@ -28,6 +28,7 @@ DoxaPy is an image binarization library focussing on local adaptive thresholding
 * F-Measure
 * Peak Signal-To-Noise Ratio (PSNR)
 * Negative Rate Metric (NRM)
+* Matthews Correlation Coefficient (MCC)
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 

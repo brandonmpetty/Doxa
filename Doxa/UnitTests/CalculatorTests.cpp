@@ -29,7 +29,9 @@ namespace Doxa::UnitTests
 				const int windowSize = parameters.Get("window", 75);
 				const double k = parameters.Get("k", 0.2);
 
-				Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int&) {
+				Calculator::Process(binaryImageOut, Algorithm<NiblackBase<Calculator>>::grayScaleImageIn, windowSize, 
+					[&](const double& mean, const double& variance, const int&) {
+
 					const double stddev = std::sqrt(variance);
 
 					return (mean + (k * stddev));

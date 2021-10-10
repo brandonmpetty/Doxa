@@ -1,18 +1,17 @@
 name: Python package
 
 on:
-  push:
+#  push:
   release:
     types:
       - published
 
 jobs:
   build-wheels:
-    #if: github.event_name == 'release' && github.event.action == 'published'
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.8]
     runs-on: ${{ matrix.os }}
 
@@ -34,12 +33,13 @@ jobs:
         python -m cibuildwheel
       env:
         CIBW_ARCHS: auto64
+        # C++17 support started in MacOS 10.13, full support in 10.14+
+        MACOSX_DEPLOYMENT_TARGET: 10.14
     - uses: actions/upload-artifact@v2
       with:
         path: Bindings/Python/wheelhouse/*.whl
 
   build-sdist:
-    #if: github.event_name == 'release' && github.event.action == 'published'
 
     runs-on: ubuntu-latest
 

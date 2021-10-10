@@ -11,7 +11,7 @@ namespace Doxa
 {
 	/// <summary>
 	/// A performance calculator for the family of classification metrics.
-	/// Implemenations: Accuracy, F-Measure, PSNR, and NMR
+	/// Implemenations: Accuracy, F-Measure, PSNR, MCC and NMR
 	/// </summary>
 	class ClassifiedPerformance
 	{
@@ -63,7 +63,7 @@ namespace Doxa
 
 		static double CalculateAccuracy(const Classifications& classifications)
 		{
-			return ((double)(classifications.truePositive + classifications.trueNegative) / classifications.Total()) * 100;
+			return (((double)classifications.truePositive + classifications.trueNegative) / classifications.Total()) * 100;
 		}
 
 		static double CalculateFMeasure(const Classifications& classifications)
@@ -77,10 +77,29 @@ namespace Doxa
 		static double CalculatePSNR(const Classifications& classifications)
 		{
 			// Calculate MSE
-			const double mse = (double)(classifications.falsePositive + classifications.falseNegative) / classifications.Total();
+			const double mse = ((double)classifications.falsePositive + classifications.falseNegative) / classifications.Total();
 
 			// Calculate Peak Signal to Noise Ratio
 			return 10 * log10(1 / mse);
+		}
+
+		/// <summary>
+		/// Matthews Correlation Coefficient
+		/// This should be more reliable than F-Measure for binary classification.  See article below.
+		/// </summary>
+		/// <remarks>https://en.wikipedia.org/wiki/Matthews_correlation_coefficient</remarks>
+		/// <returns>A number between -1 and 1, where 0 is totally random guessing.</returns>
+		static double CalculateMCC(const Classifications& classifications)
+		{
+			const double n = (double)classifications.truePositive * classifications.trueNegative - (double)classifications.falsePositive * classifications.falseNegative;
+			const double d =
+				((double)classifications.truePositive + classifications.falsePositive) *
+				((double)classifications.truePositive + classifications.falseNegative) *
+				((double)classifications.trueNegative + classifications.falsePositive) *
+				((double)classifications.trueNegative + classifications.falseNegative);
+
+			// If undefined, return 0 to show highlight the issue.
+			return d == 0 ? 0 : n / std::sqrt(d);
 		}
 
 		static double CalculateNRM(const Classifications& classifications)

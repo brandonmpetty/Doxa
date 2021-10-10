@@ -175,7 +175,8 @@ namespace Doxa::UnitTests
 			// Execute - Read
 			PNMTestharness pnm;
 			Image output;
-			pnm.ReadPNM(std::istringstream(stream.str()), output);
+			std::istringstream iss(stream.str());
+			pnm.ReadPNM(iss, output);
 
 			// Assert
 			Assert::AreEqual(3, output.width);
@@ -202,7 +203,8 @@ namespace Doxa::UnitTests
 			// Execute - Read
 			PNMTestharness pnm;
 			Image output;
-			pnm.ReadPNM(std::istringstream(stream.str()), output);
+			std::istringstream iss(stream.str());
+			pnm.ReadPNM(iss, output);
 
 			// Assert
 			Assert::AreEqual(3, output.width);

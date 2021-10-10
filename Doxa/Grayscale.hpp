@@ -170,7 +170,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T Lightness(T r, T g, T b)
 		{
-			auto addGamma = [&](double y)
+			const auto addGamma = [&](double y)
 			{
 				return y > 0.00885 ? Gamma(y, 3) : 7.78703 * y + 0.13793;
 			};

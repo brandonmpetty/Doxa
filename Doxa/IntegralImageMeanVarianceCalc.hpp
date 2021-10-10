@@ -6,6 +6,7 @@
 #include <vector>
 #include "Image.hpp"
 #include "Region.hpp"
+#include "LocalWindow.hpp"
 
 
 namespace Doxa

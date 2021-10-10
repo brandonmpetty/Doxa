@@ -23,16 +23,18 @@ void DisplayPerformance(const Doxa::Image& groundTruthImage, const Doxa::Image& 
 
 	double scoreAccuracy = Doxa::ClassifiedPerformance::CalculateAccuracy(classifications);
 	double scoreFM = Doxa::ClassifiedPerformance::CalculateFMeasure(classifications);
+	double scoreMCC = Doxa::ClassifiedPerformance::CalculateMCC(classifications);
 	double scorePSNR = Doxa::ClassifiedPerformance::CalculatePSNR(classifications);
 	double scoreNRM = Doxa::ClassifiedPerformance::CalculateNRM(classifications);
 	double scoreDRDM = Doxa::DRDM::CalculateDRDM(groundTruthImage, binaryImage);
 
 	std::cout << std::endl
-		<< "Accuracy:\t" << scoreAccuracy << std::endl
-		<< "F-Measure:\t" << scoreFM << std::endl
-		<< "PSNR:\t\t" << scorePSNR << std::endl
-		<< "NRM:\t\t" << scoreNRM << std::endl
-		<< "DRDM:\t\t" << scoreDRDM << std::endl
+		<< "Accuracy:\t"	<< scoreAccuracy << std::endl
+		<< "F-Measure:\t"	<< scoreFM << std::endl
+		<< "MCC:\t\t"		<< scoreMCC << std::endl
+		<< "PSNR:\t\t"		<< scorePSNR << std::endl
+		<< "NRM:\t\t"		<< scoreNRM << std::endl
+		<< "DRDM:\t\t"		<< scoreDRDM << std::endl
 		<< std::endl;
 }
 

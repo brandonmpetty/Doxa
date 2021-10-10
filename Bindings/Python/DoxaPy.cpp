@@ -29,6 +29,7 @@ py::dict CalculatePerformance(const py::array_t<Pixel8>& groundTruthImageArray, 
 	auto dict = py::dict();
 	dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);
 	dict["fm"] = ClassifiedPerformance::CalculateFMeasure(classifications);
+	dict["mcc"] = ClassifiedPerformance::CalculateMCC(classifications);
 	dict["psnr"] = ClassifiedPerformance::CalculatePSNR(classifications);
 	dict["nrm"] = ClassifiedPerformance::CalculateNRM(classifications);
 	dict["drdm"] = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
@@ -72,7 +73,7 @@ public:
 	{
 		Binarization binAlg(algorithm);
 		binAlg.Initialize(imageArray);
-		binAlg.ToBinary(imageArray);
+		binAlg.ToBinary(imageArray, parameters);
 	}
 
 	Algorithms CurrentAlgorithm() { return algorithm; }

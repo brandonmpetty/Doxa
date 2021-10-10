@@ -34,6 +34,7 @@ It is written in C++ but supports multiple language bindings.
 * F-Measure
 * Peak Signal-To-Noise Ratio (PSNR)
 * Negative Rate Metric (NRM)
+* Matthews Correlation Coefficient (MCC)
 * Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
 
 **Native Image Support**
