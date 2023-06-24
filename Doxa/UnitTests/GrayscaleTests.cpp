@@ -21,6 +21,8 @@ namespace Doxa::UnitTests
 
 			Assert::AreEqual(125, Grayscale::Luster(50, 100, 200));
 
+			Assert::AreEqual(150, Grayscale::MinAvg(100, 200, 300));
+
 			// Assert that all weights sum to exactly 1
 			Assert::AreEqual(1.0, Grayscale::BT601(1.0, 1.0, 1.0), 0.001);
 			Assert::AreEqual(1.0, Grayscale::BT709(1.0, 1.0, 1.0), 0.001);

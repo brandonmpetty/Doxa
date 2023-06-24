@@ -1,6 +1,7 @@
 #include "TestUtilities.hpp"
 #include "../PNM.hpp"
 #include "../Otsu.hpp"
+#include "../AdOtsu.hpp"
 #include "../Bernsen.hpp"
 #include "../Niblack.hpp"
 #include "../Sauvola.hpp"
@@ -170,6 +171,30 @@ namespace Doxa::UnitTests
 
 			TestUtilities::AssertImages(imageOtsu, imageOtsu2);
 			TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
+		}
+
+		TEST_METHOD(AlgorithmsAdOtsuTest)
+		{
+			Image imageAdOtsu = AdOtsu::ToBinaryImage(image);
+			PNM::Write(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsu.pbm");
+
+			//Image imageAdOtsu2(image);
+			//AdOtsu::UpdateToBinary(imageAdOtsu2);
+
+			//TestUtilities::AssertImages(imageAdOtsu, imageAdOtsu2);
+			//TestUtilities::AssertImageFile(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsu.pbm");
+		}
+
+		TEST_METHOD(AlgorithmsAdOtsuMSGTest)
+		{
+			Image imageAdOtsuMSG = AdOtsuMS::ToBinaryImage(image);
+			PNM::Write(imageAdOtsuMSG, projFolder + "2JohnC1V3-AdOtsuMS2.pbm");
+
+			//Image imageAdOtsu2(image);
+			//AdOtsu::UpdateToBinary(imageAdOtsu2);
+
+			//TestUtilities::AssertImages(imageAdOtsu, imageAdOtsu2);
+			//TestUtilities::AssertImageFile(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsuMSG.pbm");
 		}
 
 		TEST_METHOD(AlgorithmsBatainehTest)

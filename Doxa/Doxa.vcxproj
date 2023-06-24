@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AdOtsu.hpp" />
     <ClInclude Include="Algorithm.hpp" />
     <ClInclude Include="Bataineh.hpp" />
     <ClInclude Include="Bernsen.hpp" />
@@ -95,6 +96,7 @@
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="ISauvola.hpp" />
     <ClInclude Include="Morphology.hpp" />
+    <ClInclude Include="MultiScale.hpp" />
     <ClInclude Include="Parameters.hpp" />
     <ClInclude Include="LocalWindow.hpp" />
     <ClInclude Include="Niblack.hpp" />

@@ -77,6 +77,12 @@
       <Filter>Processors</Filter>
     </ClInclude>
     <ClInclude Include="BinarizationFactory.hpp" />
+    <ClInclude Include="AdOtsu.hpp">
+      <Filter>Binarization</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiScale.hpp">
+      <Filter>Processors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Binarization">

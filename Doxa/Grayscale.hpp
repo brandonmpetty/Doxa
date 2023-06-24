@@ -161,6 +161,17 @@ namespace Doxa
 		}
 
 		/// <summary>
+		/// The purpose of MinAvg is to produce a grayscale image whose values are less sensitive to multi color text.
+		/// It was introduced for the first AdOtsu algorithm.
+		/// </summary>
+		/// <remarks>"A multi-scale framework for adaptive binarization of degraded document images", 2010</remarks>
+		template<typename T>
+		static inline constexpr T MinAvg(T r, T g, T b)
+		{
+			return (Mean(r, g, b) + std::min({ r, g, b })) / 2;
+		}
+
+		/// <summary>
 		/// CIELAB & CIELUV L Value.  Calculates Lightness when RGB are Linear.
 		/// Notice that this has built in gamma correction.
 		/// Note: BT709 has a White Point of D65.  The ICC calls for D50.
