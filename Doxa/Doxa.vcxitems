@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{d81f2737-6340-49c1-ae65-8d217415c67e}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Algorithm.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Bataineh.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Bernsen.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BinarizationFactory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanCalc.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanVarianceCalc.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ClassifiedPerformance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ContrastImage.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DRDM.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Gatos.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Grayscale.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Image.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)IntegralImageMeanVarianceCalc.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ISauvola.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)LocalWindow.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Morphology.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Niblack.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Nick.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Otsu.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Palette.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Parameters.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PNM.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Region.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sauvola.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Su.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TRSingh.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Types.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Wan.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WienerFilter.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Wolf.hpp" />
+  </ItemGroup>
+</Project>

@@ -14,7 +14,7 @@ namespace Doxa
 	/// <summary>
 	/// Wiener Filter - Implementation based on the wiener2 MathWorks algorithm.
 	/// 
-	/// TODO: This is slow because I not estimating the local variance, but calculating it.
+	/// TODO: Improve performance
 	/// </summary>
 	/// <remarks>Resource: https://www.mathworks.com/help/images/ref/wiener2.html </remarks>
 	class WienerFilter

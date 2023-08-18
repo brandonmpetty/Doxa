@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AlgorithmTests.cpp" />
+    <ClCompile Include="BatainehTests.cpp" />
+    <ClCompile Include="BinarizationTests.cpp" />
+    <ClCompile Include="CalculatorTests.cpp" />
+    <ClCompile Include="ContrastImageTests.cpp" />
+    <ClCompile Include="GrayscaleTests.cpp" />
+    <ClCompile Include="ImageTests.cpp" />
+    <ClCompile Include="ISauvolaTests.cpp" />
+    <ClCompile Include="LocalWindowTests.cpp" />
+    <ClCompile Include="MorphologyTests.cpp" />
+    <ClCompile Include="PaletteTests.cpp" />
+    <ClCompile Include="ParametersTests.cpp" />
+    <ClCompile Include="PerformanceTests.cpp" />
+    <ClCompile Include="PNMTests.cpp" />
+    <ClCompile Include="RegionTests.cpp" />
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImageFixture.hpp" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="TestUtilities.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

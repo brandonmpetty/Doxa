@@ -23,12 +23,12 @@ namespace Doxa
 			int falsePositive = 0;	// An incorrectly chosen black pixel
 			int falseNegative = 0;	// An incorrectly chosen white pixel
 
-			int Total() const
+			int Total() const noexcept
 			{
 				return truePositive + trueNegative + falsePositive + falseNegative;
 			}
 
-			void Clear()
+			void Clear() noexcept
 			{
 				truePositive = trueNegative = falsePositive = falseNegative = 0;
 			}
@@ -68,6 +68,9 @@ namespace Doxa
 
 		static double CalculateFMeasure(const Classifications& classifications)
 		{
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (classifications.truePositive == 0) return 0.0;
+
 			const double recall = (double)classifications.truePositive / (classifications.truePositive + classifications.falseNegative);
 			const double precision = (double)classifications.truePositive / (classifications.truePositive + classifications.falsePositive);
 
@@ -78,6 +81,9 @@ namespace Doxa
 		{
 			// Calculate MSE
 			const double mse = ((double)classifications.falsePositive + classifications.falseNegative) / classifications.Total();
+
+			// Perfect match.  Prevent divide by zero error.
+			if (mse == 0) return std::numeric_limits<double>::max();
 
 			// Calculate Peak Signal to Noise Ratio
 			return 10 * log10(1 / mse);
@@ -98,20 +104,25 @@ namespace Doxa
 				((double)classifications.trueNegative + classifications.falsePositive) *
 				((double)classifications.trueNegative + classifications.falseNegative);
 
-			// If undefined, return 0 to show highlight the issue.
+			// If undefined, return 0 to highlight the issue.
 			return d == 0 ? 0 : n / std::sqrt(d);
 		}
 
 		static double CalculateNRM(const Classifications& classifications)
 		{
-			const double nrfn = (double)classifications.falseNegative / (classifications.falseNegative + classifications.truePositive);
-			const double nrfp = (double)classifications.falsePositive / (classifications.falsePositive + classifications.trueNegative);
+			const int fntp = classifications.falseNegative + classifications.truePositive;
+			const int fptn = classifications.falsePositive + classifications.trueNegative;
+
+			// Prevent divide by zero error
+			if (fntp == 0 || fptn == 0) return std::numeric_limits<double>::max();
+
+			const double nrfn = (double)classifications.falseNegative / fntp;
+			const double nrfp = (double)classifications.falsePositive / fptn;
 
 			// Calculate Negative Rate Metric
 			return (nrfn + nrfp) / 2;
 		}
 
-		// 
 		// Convenience Method
 		template<typename CalcFunc>
 		static double Calculate(const Image& controlImage, const Image& expirementImage, CalcFunc calcFunc)

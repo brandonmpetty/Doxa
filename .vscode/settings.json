@@ -1,0 +1,12 @@
+{
+    "jasmineExplorer.cwd": "./Bindings/WebAssembly/",
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./Bindings/Python/test",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false
+}
