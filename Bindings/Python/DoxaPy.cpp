@@ -16,23 +16,71 @@ Image ArrayToImage(const py::array_t<Doxa::Pixel8>& imageArray)
 	return Image::Reference(imageArray.shape(1), imageArray.shape(0), reinterpret_cast<Pixel8*>(imageArray.request().ptr));
 }
 
-
-py::dict CalculatePerformance(const py::array_t<Pixel8>& groundTruthImageArray, const py::array_t<Pixel8>& binaryImageArray)
+py::dict CalculatePerformance(
+	const py::array_t<Pixel8>& groundTruthImageArray, 
+	const py::array_t<Pixel8>& binaryImageArray)
 {
 	Image groundTruthImage = ArrayToImage(groundTruthImageArray);
 	Image binaryImage = ArrayToImage(binaryImageArray);
+
+	auto dict = py::dict();
 
 	ClassifiedPerformance::Classifications classifications;
 	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
 	// TODO: If this fails, we may want to 0 out the return values
 
-	auto dict = py::dict();
 	dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);
 	dict["fm"] = ClassifiedPerformance::CalculateFMeasure(classifications);
 	dict["mcc"] = ClassifiedPerformance::CalculateMCC(classifications);
 	dict["psnr"] = ClassifiedPerformance::CalculatePSNR(classifications);
 	dict["nrm"] = ClassifiedPerformance::CalculateNRM(classifications);
+
 	dict["drdm"] = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
+
+	return dict;
+}
+
+py::dict CalculatePerformanceEx(
+	const py::array_t<Pixel8>& groundTruthImageArray, 
+	const py::array_t<Pixel8>& binaryImageArray,
+	bool accuracy = false,
+	bool fm = false,
+	bool mcc = false,
+	bool psnr = false,
+	bool nrm = false,
+	bool drdm = false)
+{
+	Image groundTruthImage = ArrayToImage(groundTruthImageArray);
+	Image binaryImage = ArrayToImage(binaryImageArray);
+
+	auto dict = py::dict();
+
+	if (accuracy || fm || mcc || psnr || nrm) 
+	{
+		ClassifiedPerformance::Classifications classifications;
+		ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
+		// TODO: If this fails, we may want to 0 out the return values
+
+		if (accuracy)
+			dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);
+
+		if (fm)
+			dict["fm"] = ClassifiedPerformance::CalculateFMeasure(classifications);
+
+		if (mcc)
+			dict["mcc"] = ClassifiedPerformance::CalculateMCC(classifications);
+
+		if (psnr)
+			dict["psnr"] = ClassifiedPerformance::CalculatePSNR(classifications);
+
+		if (nrm)
+			dict["nrm"] = ClassifiedPerformance::CalculateNRM(classifications);
+	}
+
+	if (drdm)
+	{
+		dict["drdm"] = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
+	}
 
 	return dict;
 }
@@ -88,15 +136,33 @@ protected:
 PYBIND11_MODULE(doxapy, m) {
 	m.doc() = "DoxaPy: Python bindings for the Doxa image binarization framework";
 
-	m.def("calculate_performance", &CalculatePerformance, "Obtain binarization performance information based on a Ground Truth.");
+	m.def("calculate_performance", &CalculatePerformance, 
+		"Obtain binarization performance information based on a Ground Truth.");
+	
+	m.def("calculate_performance_ex", &CalculatePerformanceEx, 
+		py::arg("groundTruthImageArray"), 
+		py::arg("binaryImageArray"),
+		py::kw_only(),
+		py::arg("accuracy") = false,
+		py::arg("fm") = false,
+		py::arg("mcc") = false,
+		py::arg("psnr") = false,
+		py::arg("nrm") = false,
+		py::arg("drdm") = false,
+		"Obtain specific binarization performance information based on a Ground Truth.");
 
 	py::class_<Binarization> binarization(m, "Binarization");
 
 	binarization.def(py::init<const Algorithms>())
 		.def("initialize", &Binarization::Initialize)
-		.def("to_binary", &Binarization::ToBinary, py::arg("binaryImageArray"), py::arg("parameters") = ParameterMap())
+		.def("to_binary", &Binarization::ToBinary, 
+			py::arg("binaryImageArray"), 
+			py::arg("parameters") = ParameterMap())
 		.def("algorithm", &Binarization::CurrentAlgorithm)
-		.def_static("update_to_binary", &Binarization::UpdateToBinary, py::arg("algorithm"), py::arg("imageArray"), py::arg("parameters") = ParameterMap());
+		.def_static("update_to_binary", &Binarization::UpdateToBinary, 
+			py::arg("algorithm"), 
+			py::arg("imageArray"), 
+			py::arg("parameters") = ParameterMap());
 
 	py::enum_<Algorithms>(binarization, "Algorithms")
 		.value("OTSU", Algorithms::OTSU)

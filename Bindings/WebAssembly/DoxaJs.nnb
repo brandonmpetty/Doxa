@@ -1,0 +1,109 @@
+{
+    "cells": [
+        {
+            "language": "markdown",
+            "source": [
+                "# DoxaJs Notebook\r\n\r\nhttps://github.com/brandonmpetty/Doxa\r\n\r\nDoxaJs is an image binarization library focused on local adaptive algorithms and metrics.\r\nThis notebook will document the API while allowing you to interact with it.\r\nIt was designed in VS Code using the \"Node.js Notebooks (REPL)\" notebook kernel.\r\n\r\n## Setup\r\nDoxaJs does not currently have an NPM package you can download, but distributables are packaged in this repo.  To run the notebook, you first need to install dev dependencies like'sharp'.\r\n\r\n```\r\nnpm install\r\n```\r\n\r\nThe next thing you should do is to load the **doxa.js** module.  It is actually a wrapper around WASM assets built with EMScripten and the C++ based Doxa binarization framework."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const { Doxa } = require('./dist/doxa.js');\r\nconst { display }  = require('node-kernel');\r\nconst sharp = require('sharp');"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "While this demo highlights NodeJs with *sharp*, a Web demo is also available leveraging the standard HTML5 canvas.\r\nBelow are two helper functions leveraging *sharp*.  Unlike other language targets of Doxa, DoxaJs will actually take in a 32 RGBA image and convert it to grayscale automatically.  This approach was prefered due to the demands of 32b images when working with web technologies."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "// Read an image file and convert it to an 8-bit grayscale Doxa Image\r\nasync function readImage(file) {\r\n\treturn sharp(file)\r\n\t\t.raw()\r\n\t\t.toBuffer({ resolveWithObject: true })\r\n\t\t.then(content => {\r\n\t\t\treturn new Doxa.Image(content.info.width, content.info.height, content.data);\r\n\t\t});\r\n}\r\n\r\n// Add Notebook display support for Doxa Images\r\ndisplay.dimage = (image) => {\r\n\treturn sharp(image.data(), {\r\n\t\traw: {\r\n\t\t\twidth: image.width,\r\n\t\t\theight: image.height,\r\n\t\t\tchannels: 1\r\n\t\t}\r\n\t})\r\n\t.png()\r\n\t.toBuffer()\r\n\t.then((buf) => {\r\n\t\tdisplay.image(buf);\r\n\t});\r\n}"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "Because the JS bindings are leveraging WASM for portability and speed, the library must be initialized to register the WASM.  Once initialized it will return back an enum object that represents all of the binarization algorithms available in the library."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const Algorithms = await Doxa.initialize();"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Reading an Image\r\nThe next step is to read in an image.  At the heart of a Doxa Image is an 8-bit byte array.  Your 32-bit color or grayscale image will be converted to an 8-bit image using the mean of the R-G-B channels."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "// A snippet from a 1500 year Greek codex, hand written on velum.\r\nconst image = await readImage('../../README/2JohnC1V3.png');\r\n\r\ndisplay.dimage(image);"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Converting the Image to Binary\r\nConverting an image into black and white may seem easy, but it has been the focus of much research spanning decades.  Doxa was designed to expose this research, traditionally mired by PHD technical jargon, in a very easy to consume fashion.  A lot of work was put into ensuring these algorithms were implemented correctly and effeciently.  Many of these algorithms were first made public by this project and many of them leverage state of the art enhacements to reduce memory utilization and increase speed of operation, found nowhere else.  For more information on an individual algorithm, click one of the links below.\r\n\r\n### Algorithms\r\nThe Doxa library implements a large number of popular and unique local adaptive binarization algorithms.  Each algorithm has a set of parameters that are required for it to operate.  These parameters can vary from algorithm to algorithm.  Doxa provides sensible defaults that are applied automatically unless you supply your own.  Below is a list of algorithms and their defaults:\r\n\r\n* **OTSU**\r\n* **BERNSEN** - {\"window\": 75, \"threshold\": 100, \"contrast-limit\": 25}\r\n* **NIBLACK** - {\"window\": 75, \"k\": 0.2}\r\n* **SAUVOLA** - {\"window\": 75, \"k\": 0.2}\r\n* **WOLF** - {\"window\": 75, \"k\": 0.2}\r\n* **NICK** - {\"window\": 75, \"k\": -0.2}\r\n* **SU** - {\"window\": 9, \"minN\": 9}\r\n* **TRSINGH** - {\"window\": 75, \"k\": 0.2}\r\n* **BATAINEH**\r\n* **ISAUVOLA** - {\"window\": 75, \"k\": 0.2}\r\n* **WAN** - {\"window\": 75, \"k\": 0.2}\r\n* **GATOS** - {\"window\": 75, \"k\": 0.2, \"glyph\": 60}"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const binaryImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 27, k: 0.12 });\r\n\r\ndisplay.dimage(binaryImage);"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Performance Metrics\r\nIn order to analyze the performance of an algorithm, Doxa provides a set of common metrics that can all be calculated with one function.  To start that process you need an exemplar binary image, or \"ground truth.\"  By comparing the ground truth to the resulting image of the binarization algorithm, you can start to compare the affects of different algorithms and algorithm parameters."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');\r\n\r\ndisplay.dimage(groundTruthImage);"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const perf = Doxa.Binarization.calculatePerformance(groundTruthImage, binaryImage);\r\n\r\nconsole.dir(perf);"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Freeing Resources\r\nUnlike Javascript, Web Assembly (WASM) is not as forgiving when it comes to resource management.  When memory is allocated in the WASM system it must be freed, much like traditional C/C++ code.  While this may not be critical for short lived executions, it is best practice to free the image resources when you are finished with them."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "groundTruthImage.free();\r\nimage.free();"
+            ],
+            "outputs": []
+        }
+    ]
+}

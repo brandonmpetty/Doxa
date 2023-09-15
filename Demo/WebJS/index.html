@@ -12,8 +12,8 @@
 			Sorry. Your browser does not support HTML5 canvas element.
 		</canvas>
 
-        <script type="text/javascript" src="doxaWasm.js"></script>
-        <script type="text/javascript" src="doxa.js"></script>
+        <script type="text/javascript" src="../../Bindings/WebAssembly/dist/doxaWasm.js"></script>
+        <script type="text/javascript" src="../../Bindings/WebAssembly/dist/doxa.js"></script>
         <script>
 
             async function loadCanvas(canvas, src) {
@@ -50,7 +50,7 @@
 
                 // Load an image into the Canvas
                 const canvas = document.getElementById('democanvas');
-                await loadCanvas(canvas, '2JohnC1V3.png');
+                await loadCanvas(canvas, '../../README/2JohnC1V3.png');
 
                 // Initialize the Doxa framework
                 const Algorithms = await Doxa.initialize();

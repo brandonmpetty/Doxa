@@ -76,7 +76,7 @@ Experimental WASM support has been added in order to expose ΔBF to the web, as 
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
 ## License
-CC0 - Brandon M. Petty, 2021
+CC0 - Brandon M. Petty, 2023
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

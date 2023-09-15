@@ -1,10 +1,11 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa", "Doxa\Doxa.vcxproj", "{AA3B4CE4-0031-47F5-AD4B-933D9E912DFB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa", "Doxa\Doxa.vcxitems", "{D81F2737-6340-49C1-AE65-8D217415C67E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa.UnitTests", "Doxa\UnitTests\UnitTests.vcxproj", "{3F5B603C-C917-47FA-AB92-66E4E31E8061}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxa.Test", "Doxa.Test\Doxa.Test.vcxproj", "{5723F19A-A7AB-45D0-A78C-B04FE035865F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,19 +13,19 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AA3B4CE4-0031-47F5-AD4B-933D9E912DFB}.Debug|x64.ActiveCfg = Debug|x64
-		{AA3B4CE4-0031-47F5-AD4B-933D9E912DFB}.Debug|x64.Build.0 = Debug|x64
-		{AA3B4CE4-0031-47F5-AD4B-933D9E912DFB}.Release|x64.ActiveCfg = Release|x64
-		{AA3B4CE4-0031-47F5-AD4B-933D9E912DFB}.Release|x64.Build.0 = Release|x64
-		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Debug|x64.ActiveCfg = Debug|x64
-		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Debug|x64.Build.0 = Debug|x64
-		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Release|x64.ActiveCfg = Release|x64
-		{3F5B603C-C917-47FA-AB92-66E4E31E8061}.Release|x64.Build.0 = Release|x64
+		{5723F19A-A7AB-45D0-A78C-B04FE035865F}.Debug|x64.ActiveCfg = Debug|x64
+		{5723F19A-A7AB-45D0-A78C-B04FE035865F}.Debug|x64.Build.0 = Debug|x64
+		{5723F19A-A7AB-45D0-A78C-B04FE035865F}.Release|x64.ActiveCfg = Release|x64
+		{5723F19A-A7AB-45D0-A78C-B04FE035865F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {00944196-F4F8-4F87-BB27-46C9460DA5C1}
+		SolutionGuid = {148C3EB0-D413-43A2-A7CD-B8BD21321540}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Doxa\Doxa.vcxitems*{5723f19a-a7ab-45d0-a78c-b04fe035865f}*SharedItemsImports = 4
+		Doxa\Doxa.vcxitems*{d81f2737-6340-49c1-ae65-8d217415c67e}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

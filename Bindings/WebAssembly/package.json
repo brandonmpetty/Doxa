@@ -1,0 +1,18 @@
+{
+  "name": "doxajs",
+  "version": "1.0.0",
+  "description": "Doxa Binarization Framework for JavaScript",
+  "main": "doxa.js",
+  "scripts": {
+    "test": "jasmine",
+    "build": "node build.js",
+    "build:debug": "node build.js -d"
+  },
+  "author": "Brandon M. Petty",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "canvas": "^2.11.2",
+    "jasmine": "^5.1.0",
+    "sharp": "^0.32.5"
+  }
+}

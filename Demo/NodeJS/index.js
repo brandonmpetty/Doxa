@@ -4,7 +4,7 @@
  * The code below gives an example of how to read an image, convert it to binary, and get performance stats.
  * We are using the image processing library Sharp to show how to read and write images in NodeJS.
  */
-const { Doxa } = require('./doxa.js');
+const { Doxa } = require('../../Bindings/WebAssembly/dist/doxa.js');
 const sharp = require('sharp');
 
 /**
@@ -41,8 +41,8 @@ async function demo() {
 	const Algorithms = await Doxa.initialize();
 
 	// Read local image files to process
-	const gtImage = await readImage('2JohnC1V3-GroundTruth.png');
-	const image = await readImage('2JohnC1V3.png');
+	const gtImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
+	const image = await readImage('../../README/2JohnC1V3.png');
 
 	// Generate a binary image
 	const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
