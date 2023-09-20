@@ -16,6 +16,7 @@
 #include <Wolf.hpp>
 #include <Gatos.hpp>
 #include <Nick.hpp>
+#include <AdOtsu.hpp>
 #include <TRSingh.hpp>
 #include <Wan.hpp>
 #include <Su.hpp>
