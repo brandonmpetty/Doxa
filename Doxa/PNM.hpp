@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
 #ifndef PNM_HPP
 #define PNM_HPP
 
@@ -53,7 +53,8 @@ namespace Doxa
 			BT2100,
 			Value,
 			Luster,
-			Lightness
+			Lightness,
+			MinAvg
 		};
 
 		/// <summary>
@@ -387,6 +388,9 @@ namespace Doxa
 			case GrayscaleConversion::Lightness:
 				// This requires a change in colorspace.  sRGB is assumed.
 				algorithm = Grayscale::sRgbToLightness;
+				break;
+			case GrayscaleConversion::MinAvg:
+				algorithm = Grayscale::MinAvg<Pixel8>;
 				break;
 			}
 

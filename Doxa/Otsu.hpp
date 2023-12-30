@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
 #ifndef OTSU_HPP
 #define OTSU_HPP
 
@@ -24,34 +24,23 @@ namespace Doxa
 	public:
 		static const int HISTOGRAM_SIZE = 256;
 
-		Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters = Parameters())
+		Pixel8 Algorithm(const unsigned int* histogram, const int N) const
 		{
-			// Compute number of pixels
-			long int N = grayScaleImage.size;
 			Pixel8 threshold = 0;
 
-			// Compute threshold
 			// Init variables
 			int sum = 0;
 			int sumB = 0;
 			int q1 = 0;
 			double max = 0;
 
-			// Create Histogram
-			unsigned int histogram[HISTOGRAM_SIZE]; // Placed on stack for performance.  This shouldn't be too large.
-			memset(histogram, 0, (HISTOGRAM_SIZE) * sizeof(unsigned int));
-			for (int idx = 0; idx < grayScaleImage.size; ++idx)
-			{
-				++histogram[grayScaleImage.data[idx]];
-			}
-
 			// Calculate sum
-			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx) 
+			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx)
 			{
 				sum += idx * histogram[idx];
 			}
 
-			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx) 
+			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx)
 			{
 				// q1 = Weighted Background
 				q1 += histogram[idx];
@@ -65,7 +54,7 @@ namespace Doxa
 
 				sumB += (idx * histogram[idx]);
 
-				const double m1m2 = 
+				const double m1m2 =
 					(double)sumB / q1 -			// Mean Background
 					(double)(sum - sumB) / q2;	// Mean Forground
 
@@ -73,7 +62,7 @@ namespace Doxa
 				// If one were to multiple by q1 or q2 first, an explicit cast would be required!
 				const double between = m1m2 * m1m2 * q1 * q2;
 
-				if (between > max) 
+				if (between > max)
 				{
 					threshold = idx;
 					max = between;
@@ -81,6 +70,26 @@ namespace Doxa
 			}
 
 			return threshold;
+		}
+
+		/// <summary>
+		/// Get the Global Threshold for an image using the Otsu algorithm
+		/// </summary>
+		/// <param name="grayScaleImage">Grayscale input image</param>
+		/// <param name="parameters">This algorithm does not take parameters</param>
+		/// <returns>Global Threshold</returns>
+		Pixel8 Threshold(const Image& grayScaleImage, const Parameters& parameters = Parameters())
+		{
+			const int N = grayScaleImage.size;
+			unsigned int histogram[HISTOGRAM_SIZE]; // Placed on stack for performance.  This shouldn't be too large.
+			memset(histogram, 0, (HISTOGRAM_SIZE) * sizeof(unsigned int));
+
+			for (int idx = 0; idx < N; ++idx)
+			{
+				++histogram[grayScaleImage.data[idx]];
+			}
+
+			return Algorithm(histogram, N);
 		}
 	};
 }

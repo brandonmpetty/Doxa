@@ -14,6 +14,8 @@ namespace Doxa::UnitTests
 
 		EXPECT_EQ(125, Grayscale::Luster(50, 100, 200));
 
+		EXPECT_EQ(150, Grayscale::MinAvg(100, 200, 300));
+
 		// Assert that all weights sum to exactly 1
 		EXPECT_NEAR(1.0, Grayscale::BT601(1.0, 1.0, 1.0), 0.001);
 		EXPECT_NEAR(1.0, Grayscale::BT709(1.0, 1.0, 1.0), 0.001);

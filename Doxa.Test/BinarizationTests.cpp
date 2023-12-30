@@ -146,6 +146,17 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageFile(imageOtsu, projFolder + "2JohnC1V3-Otsu.pbm");
 	}
 
+	TEST_F(BinarizationTests, BinarizationAdOtsuTest)
+	{
+		// DEMO!  Raw AdOtsu
+		Image imageAdOtsu = AdOtsu::ToBinaryImage(image);
+		PNM::Write(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsu.pbm");
+
+		// DEMO! AdOtsu /w Multi-Scale
+		Image imageAdOtsuMSG = AdOtsuMS::ToBinaryImage(image);
+		PNM::Write(imageAdOtsuMSG, projFolder + "2JohnC1V3-AdOtsuMS.pbm");
+	}
+
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{
 		Image imageBataineh = Bataineh::ToBinaryImage(image);

@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2021, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
 #ifndef BINARIZATIONFACTORY_HPP
 #define BINARIZATIONFACTORY_HPP
 
@@ -16,6 +16,7 @@
 #include "Wolf.hpp"
 #include "Su.hpp"
 #include "Gatos.hpp"
+#include "AdOtsu.hpp"
 
 
 namespace Doxa
@@ -33,7 +34,8 @@ namespace Doxa
 		BATAINEH = 8,
 		ISAUVOLA = 9,
 		WAN = 10,
-		GATOS = 11
+		GATOS = 11,
+		ADOTSU = 12
 	};
 
 
@@ -84,6 +86,9 @@ namespace Doxa
 				break;
 			case GATOS:
 				algorithmPtr = new Gatos();
+				break;
+			case ADOTSU:
+				algorithmPtr = new AdOtsuMS();
 				break;
 			}
 
