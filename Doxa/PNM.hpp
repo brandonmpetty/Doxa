@@ -122,7 +122,8 @@ namespace Doxa
 
 		void Read1BitBinary(std::istream& inputStream, Image& image)
 		{
-			const int paddedWidth = image.width + 8 - (image.width % 8);
+			const int delta = image.width % 8;
+			const int paddedWidth = delta == 0 ? image.width : image.width + 8 - delta;
 
 			for (int y = 0; y < image.height; ++y)
 			{
@@ -284,7 +285,8 @@ namespace Doxa
 				<< "P4" << std::endl
 				<< image.width << " " << image.height << std::endl;
 			
-			const int paddedWidth = image.width + 8 - (image.width % 8);
+			const int delta = image.width % 8;
+			const int paddedWidth = delta == 0 ? image.width : image.width + 8 - delta;
 
 			for (int y = 0; y < image.height; ++y)
 			{
