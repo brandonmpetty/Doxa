@@ -39,48 +39,71 @@ namespace Doxa::UnitTests
 			input.data[4] = 125;
 			input.data[5] = 200;
 
-			// Execute - Write
-			std::ostringstream stream;
-			writeFunc(stream, input);
-
-			// Execute - Read
-			PNMTestharness pnm;
-			Image output;
-			std::istringstream iss(stream.str());
-			pnm.ReadPNM(iss, output);
-
-			// Assert
-			EXPECT_EQ(3, output.width);
-			EXPECT_EQ(2, output.height);
-			TestUtilities::AssertImages(input, output);
+			// Test
+			TestWriteAndRead(input, writeFunc);
 		}
 
 		void TestWriteAndReadBinary(std::function<void(std::ostream& outputStream, const Image& image)> writeFunc)
 		{
-			// Setup
-			Image input(3, 2);
+			// Setup - Image will require padding
+			Image input1(3, 2);
 
-			input.data[0] = 255;
-			input.data[1] = 0;
-			input.data[2] = 255;
-			input.data[3] = 0;
-			input.data[4] = 255;
-			input.data[5] = 255;
+			// Row 1
+			input1.data[0] = 255;
+			input1.data[1] = 0;
+			input1.data[2] = 255;
 
+			// Row 2
+			input1.data[3] = 0;
+			input1.data[4] = 255;
+			input1.data[5] = 255;
+
+			// Test Padded Image
+			TestWriteAndRead(input1, writeFunc);
+
+			// Setup - Image will NOT require padding
+			Image input2(8, 2);
+
+			// Row 1
+			input2.data[0] = 255;
+			input2.data[1] = 0;
+			input2.data[2] = 255;
+			input2.data[3] = 0;
+			input2.data[4] = 255;
+			input2.data[5] = 255;
+			input2.data[6] = 255;
+			input2.data[7] = 255;
+
+			// Row 2
+			input2.data[8] = 0;
+			input2.data[9] = 0;
+			input2.data[10] = 0;
+			input2.data[11] = 0;
+			input2.data[12] = 255;
+			input2.data[13] = 0;
+			input2.data[14] = 0;
+			input2.data[15] = 0;
+
+			// Test Padded Image
+			TestWriteAndRead(input2, writeFunc);
+		}
+
+		void TestWriteAndRead(const Image& inputImage, std::function<void(std::ostream& outputStream, const Image& image)> writeFunc)
+		{
 			// Execute - Write
 			std::ostringstream stream;
-			writeFunc(stream, input);
+			writeFunc(stream, inputImage);
 
 			// Execute - Read
 			PNMTestharness pnm;
-			Image output;
+			Image outputImage;
 			std::istringstream iss(stream.str());
-			pnm.ReadPNM(iss, output);
+			pnm.ReadPNM(iss, outputImage);
 
 			// Assert
-			EXPECT_EQ(3, output.width);
-			EXPECT_EQ(2, output.height);
-			TestUtilities::AssertImages(input, output);
+			EXPECT_EQ(inputImage.width, outputImage.width);
+			EXPECT_EQ(inputImage.height, outputImage.height);
+			TestUtilities::AssertImages(inputImage, outputImage);
 		}
 	};
 
