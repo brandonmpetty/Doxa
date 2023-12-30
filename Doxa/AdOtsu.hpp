@@ -43,12 +43,12 @@ namespace Doxa
 
 			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
 
-				const Pixel8 localThreshold = LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
+				const double localThreshold = k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
 
-				const double u = (std::abs((double)globalThreshold - k * localThreshold) / R) - 255;
+				const double u = (std::abs((double)globalThreshold - localThreshold) / R);
 				
 				// Apply the Unit Step Function
-				return (u < 0) ? localThreshold : -1;
+				return (u < 255) ? localThreshold : -1;
 			});	
 		}
 
