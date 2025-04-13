@@ -1,5 +1,5 @@
 ﻿// Δoxa Binarization Framework
-// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2025, "Freely you have received; freely give." - Matt 10:8
 #ifndef ADOTSU_HPP
 #define ADOTSU_HPP
 
@@ -7,6 +7,7 @@
 #include "LocalWindow.hpp"
 #include "Otsu.hpp"
 #include "MultiScale.hpp"
+#include "GridCalc.hpp"
 #include <cmath>
 
 
@@ -37,10 +38,12 @@ namespace Doxa
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 1.0);
 			const double R = parameters.Get("R", 0.1);
+			const int distance = parameters.Get("distance", windowSize / 2);
 
 			Otsu otsu;
 			const Pixel8 globalThreshold = otsu.Threshold(Algorithm::grayScaleImageIn);
 
+/*
 			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
 
 				const double localThreshold = k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
@@ -49,7 +52,34 @@ namespace Doxa
 				
 				// Apply the Unit Step Function
 				return (u < 255) ? localThreshold : -1;
-			});	
+			});
+*/
+
+			GridCalc gridCalc;
+
+			// Calculate all thresholds through interpolation
+			gridCalc.Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, distance, [&](const Region& window, const int&) {
+
+				const Pixel8 localThreshold = 0.5 + k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
+
+				return localThreshold;
+			});
+
+			// Turn the image into a binary image using the Unit Step Function
+			for (int idx = 0; idx < binaryImageOut.size; ++idx)
+			{
+				const Pixel8 localThreshold = binaryImageOut.data[idx];
+				const Pixel8 localPixel = Algorithm::grayScaleImageIn.data[idx];
+
+				const double u = (std::abs((double)globalThreshold - localThreshold) / R);
+
+				// Apply the Unit Step Function
+				const int unitStep = (u < 255) ? localThreshold : -1;
+
+				// Binarize the pixel
+				binaryImageOut.data[idx] = localPixel <= unitStep ?
+					Palette::Black : Palette::White;
+			}
 		}
 
 		Pixel8 LocalThreshold(const Otsu& otsu, const Image& grayScaleImage, const Region& window)

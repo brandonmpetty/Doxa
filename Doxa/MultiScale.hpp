@@ -50,11 +50,16 @@ namespace Doxa
 			// Create our first binarized mask
 			Morphology::Erode(binarizedMask, binaryImageOut, Shigh / 4);
 
+			// Copy parameters and only change 'windows' and 'k', keeping all others
+			Parameters msParams(parameters);
+
 			// Iterate over multiple window scales
 			for (int S = Shigh / 2; S >= Slow; S = S / 2, k = k / 2)
 			{
 				// Get scaled map
-				algorithm.ToBinary(binarizedMap, Parameters({ {"window", S}, {"k", k } }));
+				msParams.Set("window", S);
+				msParams.Set("k", k);
+				algorithm.ToBinary(binarizedMap, msParams);
 
 				// Apply mask
 				for (int idx = 0; idx < binarizedMask.size; ++idx)

@@ -16,6 +16,7 @@
 #include <Wolf.hpp>
 #include <Gatos.hpp>
 #include <Nick.hpp>
+#include <GridCalc.hpp>
 #include <AdOtsu.hpp>
 #include <TRSingh.hpp>
 #include <Wan.hpp>

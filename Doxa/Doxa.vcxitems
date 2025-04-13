@@ -26,6 +26,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)DRDM.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Gatos.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Grayscale.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GridCalc.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Image.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IntegralImageMeanVarianceCalc.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ISauvola.hpp" />

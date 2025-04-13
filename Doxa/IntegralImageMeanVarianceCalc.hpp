@@ -164,7 +164,7 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// This is "low memory" version of BuildIntralImages(...).
+		/// This is a "low memory" version of BuildIntralImages(...).
 		/// It achieves this by removing the need for two temporary integral images.
 		/// Warning: The speed performance compared to the reference may be slower depending on image size.
 		/// </summary>
