@@ -177,5 +177,6 @@ PYBIND11_MODULE(doxapy, m) {
 		.value("ISAUVOLA", Algorithms::ISAUVOLA)
 		.value("WAN", Algorithms::WAN)
 		.value("GATOS", Algorithms::GATOS)
+		.value("ADOTSU", Algorithms::ADOTSU)
 		.export_values();
 }

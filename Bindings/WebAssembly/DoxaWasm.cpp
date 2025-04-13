@@ -127,7 +127,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("BATAINEH", Algorithms::BATAINEH)
 		.value("ISAUVOLA", Algorithms::ISAUVOLA)
 		.value("WAN", Algorithms::WAN)
-		.value("GATOS", Algorithms::GATOS);
+		.value("GATOS", Algorithms::GATOS)
+		.value("ADOTSU", Algorithms::ADOTSU);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];
