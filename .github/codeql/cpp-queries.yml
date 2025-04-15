@@ -1,0 +1,44 @@
+name: "Doxa C++ Queries"
+
+# This file defines custom queries for the Doxa project
+# It extends the default security-and-quality queries with project-specific ones
+
+# Include the default security and quality queries
+include:
+  - security-and-quality
+
+# Define custom queries for the Doxa project
+queries:
+  # Memory safety queries
+  - name: "Memory Safety"
+    description: "Checks for memory safety issues in the Doxa codebase"
+    queries:
+      - cpp/memory-safety
+      - cpp/use-after-free
+      - cpp/double-free
+      - cpp/buffer-overflow
+  
+  # Performance queries
+  - name: "Performance"
+    description: "Checks for performance issues in the Doxa codebase"
+    queries:
+      - cpp/performance
+      - cpp/unnecessary-copy
+      - cpp/inefficient-string-concatenation
+  
+  # Code quality queries
+  - name: "Code Quality"
+    description: "Checks for code quality issues in the Doxa codebase"
+    queries:
+      - cpp/conditionally-uninitialized-variable
+      - cpp/constant-condition
+      - cpp/dead-code
+      - cpp/redundant-condition
+  
+  # Algorithm-specific queries
+  - name: "Algorithm Correctness"
+    description: "Checks for correctness issues in the binarization algorithms"
+    queries:
+      - cpp/division-by-zero
+      - cpp/integer-overflow
+      - cpp/array-index-out-of-bounds 

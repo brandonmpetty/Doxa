@@ -1,0 +1,60 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp', 'python', 'javascript' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        queries: |
+          security-and-quality
+          .github/codeql/cpp-queries.yml
+        paths: |
+          Doxa
+          Doxa.Test
+          Bindings
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+      with:
+        language: ${{ matrix.language }}
+        # For C++ specifically, we need to build the Doxa.Test project
+        command: |
+          if [ "${{ matrix.language }}" = "cpp" ]; then
+            # Install dependencies
+            sudo apt-get update
+            sudo apt-get install -y cmake build-essential libgtest-dev
+            
+            # Build the Doxa.Test project
+            mkdir -p build
+            cd build
+            cmake ../Doxa.Test
+            make -j$(nproc)
+          fi
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{ matrix.language }}" 

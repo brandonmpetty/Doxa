@@ -1,0 +1,39 @@
+name: "C++ CodeQL Configuration"
+
+# This configuration file helps CodeQL understand how to build the C++ project
+# It's used by the GitHub Actions workflow to properly analyze the codebase
+
+# Define the build commands for the C++ project
+build:
+  # The main build command for the Doxa.Test project
+  command: |
+    mkdir -p build
+    cd build
+    cmake ../Doxa.Test
+    make -j$(nproc)
+  
+  # The directory where the build will take place
+  directory: build
+  
+  # The language of the project
+  language: cpp
+  
+  # The build system used
+  build_system: cmake
+  
+  # Additional build flags
+  flags:
+    - "-std=c++17"
+    - "-Wall"
+    - "-Wextra"
+  
+  # Dependencies that need to be installed
+  dependencies:
+    - cmake
+    - build-essential
+    - libgtest-dev
+  
+  # Environment variables
+  env:
+    CXX: g++
+    CC: gcc 
