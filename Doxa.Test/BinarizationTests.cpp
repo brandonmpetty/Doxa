@@ -148,13 +148,29 @@ namespace Doxa::UnitTests
 
 	TEST_F(BinarizationTests, BinarizationAdOtsuTest)
 	{
-		// DEMO!  Raw AdOtsu
+		// AdOtsu
+		Parameters param({ {"distance", 0} });
 		Image imageAdOtsu = AdOtsu::ToBinaryImage(image);
-		PNM::Write(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsu.pbm");
 
-		// DEMO! AdOtsu /w Multi-Scale
-		Image imageAdOtsuMSG = AdOtsuMS::ToBinaryImage(image);
-		PNM::Write(imageAdOtsuMSG, projFolder + "2JohnC1V3-AdOtsuMS.pbm");
+		// AdOtsu /w Grid optimization
+		Image imageAdOtsuG = AdOtsu::ToBinaryImage(image);
+
+		Image imageAdOtsuG2(image);
+		AdOtsu::UpdateToBinary(imageAdOtsuG2);
+
+		TestUtilities::AssertImages(imageAdOtsu, imageAdOtsuG);
+		TestUtilities::AssertImages(imageAdOtsuG, imageAdOtsuG2);
+		TestUtilities::AssertImageFile(imageAdOtsuG, projFolder + "2JohnC1V3-AdOtsu.pbm");
+
+
+		// AdOtsu /w Multi-Scale
+		Image imageAdOtsuMS = AdOtsuMS::ToBinaryImage(image);
+
+		Image imageAdOtsuMS2(image);
+		AdOtsuMS::UpdateToBinary(imageAdOtsuMS2);
+
+		TestUtilities::AssertImages(imageAdOtsuMS, imageAdOtsuMS2);
+		TestUtilities::AssertImageFile(imageAdOtsuMS, projFolder + "2JohnC1V3-AdOtsuMS.pbm");
 	}
 
 	TEST_F(BinarizationTests, BinarizationBatainehTest)

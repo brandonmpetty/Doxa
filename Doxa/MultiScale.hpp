@@ -36,8 +36,8 @@ namespace Doxa
 			const int Slow = 9;
 			double k = parameters.Get("k", 1.0);
 
-			// TODO: Ensure binaryImageOut is not the same as grayScaleImageIn!!!
-			
+			// Input and Output cannot be the same
+			assert(MultiScale::grayScaleImageIn.data != binaryImageOut.data);
 
 			Image binarizedMap(MultiScale::grayScaleImageIn.width, MultiScale::grayScaleImageIn.height);
 			Image binarizedMask(MultiScale::grayScaleImageIn.width, MultiScale::grayScaleImageIn.height);

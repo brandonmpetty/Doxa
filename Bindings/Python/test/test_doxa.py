@@ -1,21 +1,27 @@
 import unittest
 from PIL import Image
 import numpy as np
+import os
 
-# NOTE Depending on you OS and version of Python, this path will change.
 import sys
-sys.path.append('../build/lib.win-amd64-cpython-311')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'build', 'Release')))
+
 import doxapy
 
+# Get the absolute path to the README directory (at project root)
+README_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'README'))
+
 def read_image(file):
-    return np.array(Image.open(file).convert('L'))
+    # Use the absolute path to the README directory
+    full_path = os.path.join(README_DIR, os.path.basename(file))
+    return np.array(Image.open(full_path).convert('L'))
 
 
 class DoxaPyTests(unittest.TestCase):
     def test_binarization(self):
 
         # Read a PNG as a grayscale image
-        image = read_image("README/2JohnC1V3.png")
+        image = read_image("2JohnC1V3.png")
 
         # Create a new binary image
         binary_image = np.empty(image.shape, image.dtype)
@@ -32,8 +38,8 @@ class DoxaPyTests(unittest.TestCase):
     def test_performance(self):
 
         # Setup
-        image = read_image("README/2JohnC1V3.png")
-        groundtruth_image = read_image("README/2JohnC1V3-GroundTruth.png")
+        image = read_image("2JohnC1V3.png")
+        groundtruth_image = read_image("2JohnC1V3-GroundTruth.png")
         doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.SAUVOLA, image)
 
         # Functions under test

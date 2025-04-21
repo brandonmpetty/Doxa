@@ -43,43 +43,47 @@ namespace Doxa
 			Otsu otsu;
 			const Pixel8 globalThreshold = otsu.Threshold(Algorithm::grayScaleImageIn);
 
-/*
-			LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
-
-				const double localThreshold = k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
-
-				const double u = (std::abs((double)globalThreshold - localThreshold) / R);
-				
-				// Apply the Unit Step Function
-				return (u < 255) ? localThreshold : -1;
-			});
-*/
-
-			GridCalc gridCalc;
-
-			// Calculate all thresholds through interpolation
-			gridCalc.Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, distance, [&](const Region& window, const int&) {
-
-				const Pixel8 localThreshold = 0.5 + k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
-
-				return localThreshold;
-			});
-
-			// Turn the image into a binary image using the Unit Step Function
-			for (int idx = 0; idx < binaryImageOut.size; ++idx)
+			// Bypass the "Grid" optimization.  There is nothing to interpolate.
+			if (distance < 2)
 			{
-				const Pixel8 localThreshold = binaryImageOut.data[idx];
-				const Pixel8 localPixel = Algorithm::grayScaleImageIn.data[idx];
+				LocalWindow::Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const Region& window, const int&) {
 
-				const double u = (std::abs((double)globalThreshold - localThreshold) / R);
+					const double localThreshold = k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
 
-				// Apply the Unit Step Function
-				const int unitStep = (u < 255) ? localThreshold : -1;
+					const double u = (std::abs((double)globalThreshold - localThreshold) / R);
 
-				// Binarize the pixel
-				binaryImageOut.data[idx] = localPixel <= unitStep ?
-					Palette::Black : Palette::White;
+					// Apply the Unit Step Function
+					return (u < 255) ? localThreshold : -1;
+				});
 			}
+			else // Use the "Grid" optimization
+			{
+				GridCalc gridCalc;
+
+				// Calculate all thresholds through interpolation
+				gridCalc.Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, distance, [&](const Region& window, const int&) {
+
+					const Pixel8 localThreshold = 0.5 + k * LocalThreshold(otsu, Algorithm::grayScaleImageIn, window);
+
+					return localThreshold;
+				});
+
+				// Turn the image into a binary image using the Unit Step Function
+				for (int idx = 0; idx < binaryImageOut.size; ++idx)
+				{
+					const Pixel8 localThreshold = binaryImageOut.data[idx];
+					const Pixel8 localPixel = Algorithm::grayScaleImageIn.data[idx];
+
+					const double u = (std::abs((double)globalThreshold - localThreshold) / R);
+
+					// Apply the Unit Step Function
+					const int unitStep = (u < 255) ? localThreshold : -1;
+
+					// Binarize the pixel
+					binaryImageOut.data[idx] = localPixel <= unitStep ?
+						Palette::Black : Palette::White;
+				}
+			} // Use grid interpolation?
 		}
 
 		Pixel8 LocalThreshold(const Otsu& otsu, const Image& grayScaleImage, const Region& window)
@@ -99,10 +103,7 @@ namespace Doxa
 	};
 
 	/// <summary>
-	/// A multi-scale local adaptive Otsu binarization algorithm
-	/// 
-	/// TODO: Change this so AdOtsuMSG when Grid support is available.
-	/// This should greatly improve performance.
+	/// A multi-scale local adaptive Otsu varient
 	/// </summary>
 	typedef MultiScale<AdOtsu> AdOtsuMS;
 }

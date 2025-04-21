@@ -47,10 +47,6 @@ jobs:
         # For C++ specifically, we need to build the Doxa.Test project
         command: |
           if [ "${{ matrix.language }}" = "cpp" ]; then
-            # Install dependencies
-            sudo apt-get update
-            sudo apt-get install -y cmake build-essential libgtest-dev
-            
             # Build the Doxa.Test project
             mkdir -p build
             cd build
