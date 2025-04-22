@@ -7,12 +7,11 @@ on:
       - published
 
 jobs:
-  build-wheels:
-
+  build-and-test:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.8]
+        python-version: [3.12]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -25,36 +24,45 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install -U pip setuptools wheel cibuildwheel
-    - name: Build
+        pip install -r requirements.txt
+    - name: Build and install
       run: |
         cd Bindings/Python
         python copy-cpp-files.py
-        python -m cibuildwheel
+        python setup.py develop
       env:
-        CIBW_ARCHS: auto64
+        # C++17 support started in MacOS 10.13, full support in 10.14+
+        MACOSX_DEPLOYMENT_TARGET: 10.14
+    - name: Run tests
+      run: |
+        cd Bindings/Python
+        python test/test_doxa.py
+    - name: Build wheels
+      run: |
+        cd Bindings/Python
+        python setup.py bdist_wheel
+      env:
         # C++17 support started in MacOS 10.13, full support in 10.14+
         MACOSX_DEPLOYMENT_TARGET: 10.14
     - uses: actions/upload-artifact@v2
       with:
-        path: Bindings/Python/wheelhouse/*.whl
+        path: Bindings/Python/dist/*.whl
 
   build-sdist:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: true
-    - name: Set up Python 3.8
+    - name: Set up Python 3.12
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.12
     - name: Install dependencies
       run: |
-        python -m pip install -U pip setuptools pybind11
-    - name: Build dists
+        python -m pip install -U pip setuptools
+    - name: Build sdist
       run: |
         cd Bindings/Python
         python copy-cpp-files.py
@@ -65,7 +73,7 @@ jobs:
 
   upload-pypi:
     if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [build-wheels, build-sdist]
+    needs: [build-and-test, build-sdist]
     runs-on: ubuntu-latest
 
     steps:
