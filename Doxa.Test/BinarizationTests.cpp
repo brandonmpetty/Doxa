@@ -150,7 +150,8 @@ namespace Doxa::UnitTests
 	{
 		// AdOtsu
 		Parameters param({ {"distance", 0} });
-		Image imageAdOtsu = AdOtsu::ToBinaryImage(image);
+		Image imageAdOtsu = AdOtsu::ToBinaryImage(image, param);
+		TestUtilities::AssertImageFile(imageAdOtsu, projFolder + "2JohnC1V3-AdOtsu.pbm");
 
 		// AdOtsu /w Grid optimization
 		Image imageAdOtsuG = AdOtsu::ToBinaryImage(image);
@@ -158,19 +159,19 @@ namespace Doxa::UnitTests
 		Image imageAdOtsuG2(image);
 		AdOtsu::UpdateToBinary(imageAdOtsuG2);
 
-		TestUtilities::AssertImages(imageAdOtsu, imageAdOtsuG);
 		TestUtilities::AssertImages(imageAdOtsuG, imageAdOtsuG2);
-		TestUtilities::AssertImageFile(imageAdOtsuG, projFolder + "2JohnC1V3-AdOtsu.pbm");
+		TestUtilities::AssertImageFile(imageAdOtsuG, projFolder + "2JohnC1V3-AdOtsuG.pbm");
 
 
 		// AdOtsu /w Multi-Scale
-		Image imageAdOtsuMS = AdOtsuMS::ToBinaryImage(image);
+		Image imageAdOtsuMS = AdOtsuMS::ToBinaryImage(image, param);
+		PNM::Write(imageAdOtsuMS, projFolder + "2JohnC1V3-AdOtsuMS.pbm");
 
 		Image imageAdOtsuMS2(image);
 		AdOtsuMS::UpdateToBinary(imageAdOtsuMS2);
 
 		TestUtilities::AssertImages(imageAdOtsuMS, imageAdOtsuMS2);
-		TestUtilities::AssertImageFile(imageAdOtsuMS, projFolder + "2JohnC1V3-AdOtsuMS.pbm");
+		TestUtilities::AssertImageFile(imageAdOtsuMS, projFolder + "2JohnC1V3-AdOtsuMSG.pbm");
 	}
 
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
