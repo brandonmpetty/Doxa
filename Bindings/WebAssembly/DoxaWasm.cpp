@@ -122,6 +122,7 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("SAUVOLA", Algorithms::SAUVOLA)
 		.value("WOLF", Algorithms::WOLF)
 		.value("NICK", Algorithms::NICK)
+		.value("ADOTSU", Algorithms::ADOTSU)
 		.value("SU", Algorithms::SU)
 		.value("TRSINGH", Algorithms::TRSINGH)
 		.value("BATAINEH", Algorithms::BATAINEH)

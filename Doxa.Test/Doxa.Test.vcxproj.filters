@@ -17,6 +17,7 @@
     <ClCompile Include="PNMTests.cpp" />
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="GridCalcTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageFixture.hpp" />

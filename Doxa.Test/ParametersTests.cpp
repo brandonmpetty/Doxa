@@ -20,6 +20,19 @@ namespace Doxa::UnitTests
 		EXPECT_EQ(4, z);
 	}
 
+	TEST(ParametersTests, ParametersGetCastTest)
+	{
+		Parameters param({ {"intVal", 1}, {"doubleVal", 1.0 } });
+
+		// Cast Double to Int
+		int x = param.Get("doubleVal", 4);
+		EXPECT_EQ(1, x);
+
+		// Cast Int to Double
+		double y = param.Get("intVal", 4.4);
+		EXPECT_EQ(1.0, y);
+	}
+
 	TEST(ParametersTests, ParametersSetTest)
 	{
 		Parameters param({ { "z", 4 } });

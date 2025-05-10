@@ -56,6 +56,7 @@ const exec = promisify(require('child_process').exec);
         '-s NO_EXIT_RUNTIME=1',
         '-s ALLOW_MEMORY_GROWTH=1',
         `-s EXPORTED_FUNCTIONS="['_malloc','_free']"`,
+        `-s EXPORTED_RUNTIME_METHODS="['HEAPU8']"`,
         '--bind'
     ]
     : // Debug
@@ -69,6 +70,9 @@ const exec = promisify(require('child_process').exec);
         '-s NO_EXIT_RUNTIME=1',
         '-s ALLOW_MEMORY_GROWTH=1',
         `-s EXPORTED_FUNCTIONS="['_malloc','_free']"`,
+        `-s EXPORTED_RUNTIME_METHODS="['HEAPU8']"`,
+        '-s EXCEPTION_DEBUG',
+        '-s NO_DISABLE_EXCEPTION_CATCHING',
         '--bind',
         '-g4 ',
         '--source-map-base http://localhost:8080/'

@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
 #ifndef GRAYSCALE_HPP
 #define GRAYSCALE_HPP
 
@@ -158,6 +158,17 @@ namespace Doxa
 		static inline constexpr T Luster(T r, T g, T b)
 		{
 			return (std::max({ r, g, b }) + std::min({ r, g, b })) / 2;
+		}
+
+		/// <summary>
+		/// The purpose of MinAvg is to produce a grayscale image whose values are less sensitive to multi color text.
+		/// It was introduced for the first AdOtsu algorithm.
+		/// </summary>
+		/// <remarks>"A multi-scale framework for adaptive binarization of degraded document images", 2010</remarks>
+		template<typename T>
+		static inline constexpr T MinAvg(T r, T g, T b)
+		{
+			return (Mean(r, g, b) + std::min({ r, g, b })) / 2;
 		}
 
 		/// <summary>

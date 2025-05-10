@@ -1,8 +1,7 @@
 # DoxaPy
 
 ## Introduction
-DoxaPy is an image binarization library focussing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
-
+DoxaPy is an image binarization library focussing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image. 
 
 **Algorithms**
 * Otsu - "A threshold selection method from gray-level histograms", 1979.
@@ -12,10 +11,11 @@ DoxaPy is an image binarization library focussing on local adaptive thresholding
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
+* AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
-* ISauvola - "ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization", 2016.
+* ISauvola - "ISauvola: Improved Sauvola's Algorithm for Document Image Binarization", 2016.
 * WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
 
 **Optimizations**
@@ -74,17 +74,20 @@ doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.NICK, graysc
 ```
 
 
-## Building with Pybind11
-Release Build - Requires: NumPy, Pybind11
+## Building and Test
+DoxaPy supports 64b Linux, Windows, and Mac OSX on Python 3.x. Starting with DoxaPy 0.9.4, Python 3.12 and above are supported with full ABI compatibility. This means that new versions of DoxaPy will only be published due to feature enhancements, not Python version support.
+
 ```
 clone https://github.com/brandonmpetty/Doxa
 cd Doxa/Bindings/Python
+pip install -r requirements.txt
 python copy-cpp-files.py
-python setup.py install
+python setup.py develop
+python test/test_doxa.py
 ```
 
 ## License
-CC0 - Brandon M. Petty, 2023
+CC0 - Brandon M. Petty, 2025
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

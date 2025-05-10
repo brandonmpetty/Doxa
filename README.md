@@ -1,5 +1,7 @@
 # Δoxa Binarization Framework
 
+[![codecov](https://codecov.io/gh/brandonmpetty/Doxa/graph/badge.svg?token=XMG2X9KQKJ)](https://codecov.io/gh/brandonmpetty/Doxa)
+
 <p align="center">
 	<img src="/README/2JohnC1V3.png" width="45%" height="45%"/>
 	<img src="/README/2JohnC1V3-GroundTruth.png" width="45%" height="45%"/>
@@ -18,6 +20,7 @@ It is written in C++ but supports multiple language bindings.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
+* AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)

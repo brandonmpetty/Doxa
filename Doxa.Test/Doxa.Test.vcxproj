@@ -38,6 +38,7 @@
     <ClCompile Include="CalculatorTests.cpp" />
     <ClCompile Include="ContrastImageTests.cpp" />
     <ClCompile Include="GrayscaleTests.cpp" />
+    <ClCompile Include="GridCalcTests.cpp" />
     <ClCompile Include="ImageTests.cpp" />
     <ClCompile Include="ISauvolaTests.cpp" />
     <ClCompile Include="LocalWindowTests.cpp" />

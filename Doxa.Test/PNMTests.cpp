@@ -110,7 +110,7 @@ namespace Doxa::UnitTests
 	TEST_F(PNMTests, PNMRead1BitBinaryTest)
 	{
 		// Setup - 1-bit Binary Data
-		char buffer[] = { 0xA0, 0x40, 0xA0 }; // 10100000 01000000 10100000
+		char buffer[] = { static_cast<char>(0xA0), static_cast<char>(0x40), static_cast<char>(0xA0) }; // 10100000 01000000 10100000
 		std::istringstream stream(buffer);
 
 		// Execute - Will convert to 8-bit Gray Scale
@@ -132,9 +132,9 @@ namespace Doxa::UnitTests
 	{
 		// Setup - 8-bit Gray Scale Data (0 to 255)
 		const char buffer[] = { 
-			0xFF, 0x01, 0xFF, 
-			0x01, 0x7C, 0x7B, 
-			0x7A, 0x79, 0x78 
+			static_cast<char>(0xFF), static_cast<char>(0x01), static_cast<char>(0xFF), 
+			static_cast<char>(0x01), static_cast<char>(0x7C), static_cast<char>(0x7B), 
+			static_cast<char>(0x7A), static_cast<char>(0x79), static_cast<char>(0x78) 
 		};
 		std::istringstream stream(buffer);
 
@@ -151,8 +151,8 @@ namespace Doxa::UnitTests
 	{
 		// Setup - 24-bit RGB Data
 		const char buffer[] = { 
-			0xFF, 0x01, 0x01,	0x01, 0xFF, 0x01,	0x01, 0x01, 0xFF, 
-			0xFF, 0xFF, 0xFF,	0x78, 0x78, 0x78,	0x01, 0x01, 0x01 
+			static_cast<char>(0xFF), static_cast<char>(0x01), static_cast<char>(0x01),	static_cast<char>(0x01), static_cast<char>(0xFF), static_cast<char>(0x01),	static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0xFF), 
+			static_cast<char>(0xFF), static_cast<char>(0xFF), static_cast<char>(0xFF),	static_cast<char>(0x78), static_cast<char>(0x78), static_cast<char>(0x78),	static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0x01) 
 		};
 		std::istringstream stream(buffer);
 
@@ -174,8 +174,8 @@ namespace Doxa::UnitTests
 	{
 		// Setup - 32-bit RGBA
 		const char buffer[] = {
-			0xFF, 0x01, 0x01, 0x01,		0x01, 0xFF, 0x01, 0x01,		0x01, 0x01, 0xFF, 0x01,
-			0xFF, 0xFF, 0xFF, 0x01,		0x78, 0x78, 0x78, 0x01,		0x01, 0x01, 0x01, 0x01
+			static_cast<char>(0xFF), static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0x01),		static_cast<char>(0x01), static_cast<char>(0xFF), static_cast<char>(0x01), static_cast<char>(0x01),		static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0xFF), static_cast<char>(0x01),
+			static_cast<char>(0xFF), static_cast<char>(0xFF), static_cast<char>(0xFF), static_cast<char>(0x01),		static_cast<char>(0x78), static_cast<char>(0x78), static_cast<char>(0x78), static_cast<char>(0x01),		static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0x01), static_cast<char>(0x01)
 		};
 		std::istringstream stream(buffer);
 

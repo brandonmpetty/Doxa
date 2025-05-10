@@ -17,7 +17,7 @@ const Doxa = {
 			const algorithms = {}
 			for (const key in Doxa.Wasm.Binarization.Algorithms) {
 				const alg = Doxa.Wasm.Binarization.Algorithms[key];
-				if (alg.value === undefined) continue;
+				if (alg?.value === undefined) continue;
 
 				algorithms[key] = alg.value;
 			}
