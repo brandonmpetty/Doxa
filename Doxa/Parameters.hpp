@@ -33,7 +33,15 @@ namespace Doxa
 			}
 			else
 			{
-				return std::get<Type>(pos->second);
+				return std::visit(
+					[](auto&& value) -> Type {
+						// Some languages, like Javascript, store 1 and 1.0 identically.
+						// std::get<Type>(pos->second), in this situation, will throw a std::bad_variant_access
+						// exception due to its inability to implicitly cast Int to a Float/Double.
+						return static_cast<Type>(value);
+					},
+					pos->second
+				);
 			}
 		}
 

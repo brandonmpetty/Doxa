@@ -14,14 +14,15 @@ RESOURCES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 def read_image(file):
     # Use the absolute path to the README directory
     full_path = os.path.join(RESOURCES_DIR, os.path.basename(file))
-    #return np.array(Image.open(full_path).convert('L'))
+    # Grayscale Conversion: Qt
     return (np.dot(np.array(Image.open(full_path).convert('RGB')), [11, 16, 5]).astype(np.uint16) // 32).astype(np.uint8)
+    #return np.array(Image.open(full_path).convert('L'))
 
 
 class DoxaPyTests(unittest.TestCase):
     def test_binarization(self):
 
-        # Read a color image as a grayscale image
+        # Read in a color image, transforming it into a grayscale image
         image = read_image("2JohnC1V3.ppm")
 
         # Create a new binary image
@@ -41,7 +42,7 @@ class DoxaPyTests(unittest.TestCase):
         # Compare againts our control
         expected_image_path = os.path.join(RESOURCES_DIR, os.path.basename("2JohnC1V3-Sauvola.pbm"))
         expected_image = Image.open(expected_image_path)
-        #expected_image.save("image.png")
+        #expected_image.save("expected_image.png")
         output_image = Image.fromarray(binary_image)
         #output_image.save('output_image.png')
 

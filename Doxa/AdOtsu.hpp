@@ -16,7 +16,7 @@ namespace Doxa
 	/// <summary>
 	/// The AdOtsu Algorithm, v2010: Reza Farrahi Moghaddam, Mohamed Cheriet
 	/// 
-	/// This is the core, non-multi-scale grid based, AdOtsu algorithm referenced in (5) of their paper.
+	/// This is the core, non-multi-scale, AdOtsu algorithm referenced in (5) of their paper.
 	/// It should be noted that the paper uses a special color to grayscale algorithm in order to create a
 	/// "non-sensitive gray-value image."  This would be "GrayscaleConversion::MinAvg".
 	/// 
@@ -38,7 +38,7 @@ namespace Doxa
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 1.0);
 			const double R = parameters.Get("R", 0.1);
-			const int distance = parameters.Get("distance", windowSize / 2);
+			const int distance = parameters.Get("distance", (int)(windowSize / 2));
 
 			Otsu otsu;
 			const Pixel8 globalThreshold = otsu.Threshold(Algorithm::grayScaleImageIn);

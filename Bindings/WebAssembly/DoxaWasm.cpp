@@ -122,13 +122,13 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("SAUVOLA", Algorithms::SAUVOLA)
 		.value("WOLF", Algorithms::WOLF)
 		.value("NICK", Algorithms::NICK)
+		.value("ADOTSU", Algorithms::ADOTSU)
 		.value("SU", Algorithms::SU)
 		.value("TRSINGH", Algorithms::TRSINGH)
 		.value("BATAINEH", Algorithms::BATAINEH)
 		.value("ISAUVOLA", Algorithms::ISAUVOLA)
 		.value("WAN", Algorithms::WAN)
-		.value("GATOS", Algorithms::GATOS)
-		.value("ADOTSU", Algorithms::ADOTSU);
+		.value("GATOS", Algorithms::GATOS);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];

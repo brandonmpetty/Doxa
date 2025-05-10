@@ -1,5 +1,5 @@
-﻿// Δoxa Binarization Framework
-// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
+// Δoxa Binarization Framework
+// License: CC0 2025, "Freely you have received; freely give." - Matt 10:8
 #ifndef MULTISCALE_HPP
 #define MULTISCALE_HPP
 
@@ -31,9 +31,9 @@ namespace Doxa
 
 		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
 		{
+			const int Slow = 9;
 			const int Shigh = parameters.Get("window", 75);
 
-			const int Slow = 9;
 			double k = parameters.Get("k", 1.0);
 
 			// Input and Output cannot be the same

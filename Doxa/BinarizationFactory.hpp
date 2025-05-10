@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2022, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2025, "Freely you have received; freely give." - Matt 10:8
 #ifndef BINARIZATIONFACTORY_HPP
 #define BINARIZATIONFACTORY_HPP
 
