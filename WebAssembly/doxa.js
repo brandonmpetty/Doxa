@@ -17,7 +17,7 @@ const Doxa = {
 			const algorithms = {}
 			for (const key in Doxa.Wasm.Binarization.Algorithms) {
 				const alg = Doxa.Wasm.Binarization.Algorithms[key];
-				if (alg.value === undefined) continue;
+				if (alg?.value === undefined) continue;
 
 				algorithms[key] = alg.value;
 			}
@@ -37,7 +37,7 @@ const Doxa = {
 	},
 
 	Image: class {
-		
+
 		size = 0;
 
 		/**
@@ -49,7 +49,7 @@ const Doxa = {
 		 * @param {*} data Raw 32bit RGBA.  Optional.
 		 */
 		constructor (width, height, data) {
-			this.initialize(width, height);
+			this.initialize(width || 0, height || 0);
 			
 			if (data) {
 				this.to8BitImage(this.data(), { width, height, data } );	
@@ -131,7 +131,7 @@ const Doxa = {
 			}
 			
 			const algEnum = Doxa.Wasm.Binarization.Algorithms.values[algorithm];
-			const paramString = JSON.stringify(parameters);
+			const paramString = JSON.stringify(parameters || {});
 			const binarization = new Doxa.Wasm.Binarization(algEnum);
 			
 			binarization.initialize(imageIn.heapPtr, imageIn.width, imageIn.height);

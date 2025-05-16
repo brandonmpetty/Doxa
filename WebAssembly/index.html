@@ -93,6 +93,16 @@
 				<input type="number" id="contrast-limit-el" name="contrastLimit"
 					min="0" max="255" value="25" step="1" style="width: 4em">
 			</label>
+
+			<label for="minN" class="algInput">Min. High-Contrast Pixels:
+				<input type="number" id="minN-el" name="minN"
+					min="1" max="500" value="75" step="1" style="width: 4em">
+			</label>
+
+			<label for="RValue" class="algInput">R Value:
+				<input type="number" id="R-el" name="RValue"
+					min="-5.00" max="5.00" value="1.00" step="0.01" style="width: 5em">
+			</label>
 			
 			<button id="apply" type="button" onclick="canvasToBinary();">Apply</button>
 		</div>
@@ -202,13 +212,18 @@
 			// Performance speed test
 			const timer = performance.now();
 		
-			// Convert to Binary
-			dstImage = Doxa.Binarization.toBinary(
-				currentAlgorithm.enum, 
-				srcImage, 
-				currentAlgorithm.params, 
-				dstImage); // If the first call, allocate memory.  All other calls use the allocated memory.
-			
+			try {
+				// Convert to Binary
+				dstImage = Doxa.Binarization.toBinary(
+					currentAlgorithm.enum, 
+					srcImage, 
+					currentAlgorithm.params, 
+					dstImage); // If the first call, allocate memory.  All other calls use the allocated memory.
+			}
+			catch(ex) {
+				console.dir(ex);
+			}
+
 			// Calculate time in milliseconds
 			time = performance.now() - timer;
 			
@@ -307,8 +322,11 @@
 			algorithms[algorithEnums.NICK] =	{
 				name: 'N.I.C.K.', 	params: { window: 44, k:-0.10 }, enum: algorithEnums.NICK,
 				date: 2009, title: 'Comparison of Niblack inspired Binarization methods for ancient documents', authors: 'Khurram Khurshid, Imran Siddiqi, Claudie Faure, Nicole Vincent'};
+			algorithms[algorithEnums.ADOTSU] =	{
+				name: 'AdOtsu', 		params: { window: 30, k: 1.02, R: 0.1 }, enum: algorithEnums.ADOTSU,
+				date: 2010, title: 'A multi-scale framework for adaptive binarization of degraded document images', authors: 'Reza Farrahi Moghaddam, Mohamed Cheriet'};
 			algorithms[algorithEnums.SU] =	{
-				name: 'Su', 		params: { window: 26, k: 0.10 }, enum: algorithEnums.SU,
+				name: 'Su', 		params: { window: 9, minN: 9 }, enum: algorithEnums.SU,
 				date: 2010, title: 'Binarization of Historical Document Images Using the Local Maximum and Minimum', authors: 'Bolan Su, Shijian Lu, and Chew Lim Tan'};
 			algorithms[algorithEnums.TRSINGH] =	{
 				name: 'T.R. Singh', params: { window: 75, k: 0.20 }, enum: algorithEnums.TRSINGH,
