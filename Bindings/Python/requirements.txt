@@ -1,6 +1,3 @@
-nanobind>=1.9.0
-cmake>=3.16.0
 numpy>=1.20.0
 Pillow>=8.0.0
-setuptools>=61.0.0
-wheel>=0.38.0
+build>=1.2.0

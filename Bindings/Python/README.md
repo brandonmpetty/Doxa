@@ -77,13 +77,20 @@ doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.NICK, graysc
 ## Building and Test
 DoxaPy supports 64b Linux, Windows, and Mac OSX on Python 3.x. Starting with DoxaPy 0.9.4, Python 3.12 and above are supported with full ABI compatibility. This means that new versions of DoxaPy will only be published due to feature enhancements, not Python version support.
 
+**Local Test Setup**
 ```
 clone https://github.com/brandonmpetty/Doxa
 cd Doxa/Bindings/Python
 pip install -r requirements.txt
 python copy-cpp-files.py
-python setup.py develop
+cmake -S . -B ./build
+cmake --build ./build --config Release
 python test/test_doxa.py
+```
+
+**Local Package Build**
+```
+python -m build
 ```
 
 ## License

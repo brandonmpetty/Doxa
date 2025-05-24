@@ -1,3 +1,35 @@
 [build-system]
-requires = ["setuptools>=61", "wheel", "cmake>=3.16", "nanobind>=1.9.0"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core >=0.11.3", "nanobind>=2.7.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "doxapy"
+version = "0.9.4"
+description = "An image binarization library focussing on local adaptive thresholding"
+readme = "README.md"
+authors = [
+    {name = "Brandon M. Petty", email = "brandonpetty1981@gmail.com"}
+]
+license = {text = "CC0-1.0"}
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.20.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/brandonmpetty/doxa"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+minimum-version = "0.4"
+build-dir = "build/{wheel_tag}"
+wheel.py-api = "cp312"
+sdist.include = [
+    "src/Doxa"  # Include all files in the Doxa directory
+]
+sdist.exclude = [
+    "copy-cpp-files.py",
+    "DoxaPy.ipynb",
+    ".gitignore",
+    "test"
+]

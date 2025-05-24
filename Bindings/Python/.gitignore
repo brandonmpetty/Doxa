@@ -1,5 +1,4 @@
 build
 dist
-*.egg-info
-Doxa
+src/Doxa
 __pycache__

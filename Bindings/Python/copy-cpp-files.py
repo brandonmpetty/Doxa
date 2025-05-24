@@ -1,7 +1,7 @@
 import glob, os, shutil
 
 src_dir=os.path.join("..", "..", "Doxa")
-dst_dir="Doxa"
+dst_dir=os.path.join("src", "Doxa")
 
 os.makedirs(dst_dir, exist_ok=True)
 
