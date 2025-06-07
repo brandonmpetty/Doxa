@@ -1,4 +1,4 @@
-# Δoxa Binarization Framework - Python
+# Matlab POC - !!Completely Unstable!!!
 
 ## Introduction
 Doxa is an image binarization library focussing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image. 
@@ -33,64 +33,34 @@ Doxa is an image binarization library focussing on local adaptive thresholding a
 
 
 ## Overview
-This Doxa Python library uses the Δoxa Binarization Framework for quickly processing images in Python.
+This Doxa Matlab library uses the Δoxa Binarization Framework for quickly processing images in Matlab.
 
-### Example
-This short demo uses DoxaPy to read in a color image, converts it to binary, and then compares it to a Ground Truth image in order to calculate performance.
-
-```python
-from PIL import Image
-import numpy as np
-import doxapy
-
-def read_image(file):
-    return np.array(Image.open(file).convert('L'))
-
-
-# Read our target image and setup an output image buffer
-grayscale_image = read_image("2JohnC1V3.png")
-binary_image = np.empty(grayscale_image.shape, grayscale_image.dtype)
-
-# Pick an algorithm from the DoxaPy library and convert the image to binary
-sauvola = doxapy.Binarization(doxapy.Binarization.Algorithms.SAUVOLA)
-sauvola.initialize(grayscale_image)
-sauvola.to_binary(binary_image, {"window": 75, "k": 0.2})
-
-# Calculate the binarization performance using a Ground Truth image
-groundtruth_image = read_image("2JohnC1V3-GroundTruth.png")
-performance = doxapy.calculate_performance(groundtruth_image, binary_image)
-print(performance)
-
-# Display our resulting image
-Image.fromarray(binary_image).show()
+**Build & Test**
 ```
-
-### Alternative Calls
-DoxaPy can very efficiently reuse the same memory buffer for converting a grayscale image to binary.  Unless you are constantly changing algorithm parameters for the same image, it is recommended that you call this method.
-
-```python
-# Transforms the grayscale image buffer into binary with a single call
-doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.NICK, grayscale_image)
-```
-
-
-## Building and Test
-DoxaPy supports 64b Linux, Windows, and Mac OSX on Python 3.x. Starting with DoxaPy 0.9.4, Python 3.12 and above are supported with full ABI compatibility. This means that new versions of DoxaPy will only be published due to feature enhancements, not Python version support.
-
-**Local Test Setup**
-```
-clone https://github.com/brandonmpetty/Doxa
-cd Doxa/Bindings/Python
-pip install -r requirements.txt
-python copy-cpp-files.py
 cmake -S . -B ./build
 cmake --build ./build --config Release
-python test/test_doxa.py
+ctest
 ```
 
-**Local Package Build**
-```
-python -m build
+**Matlab Example**
+```matlab
+% Example grayscale image
+originalImage = imread('example.jpg');
+outputImage = rgb2gray(originalImage);
+
+% Optional parameters
+params.windowSize = 74
+params.k = 0.25;
+
+% Perform the binarization
+ImageBinarization.updateToBinary(
+    outputImage, 
+    ImageBinarization.SAUVOLA, 
+    params
+);
+
+% Display the result
+imshow(binaryImage);
 ```
 
 ## License

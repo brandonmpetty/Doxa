@@ -3,6 +3,7 @@
 #ifndef MULTISCALE_HPP
 #define MULTISCALE_HPP
 
+#include <cassert>
 #include "Algorithm.hpp"
 #include "Morphology.hpp"
 

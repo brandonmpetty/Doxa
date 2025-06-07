@@ -73,8 +73,9 @@ Another thing that sets ΔBF apart is its focus on binarization performance.  Th
 ### Language Bindings
 * Javascript / WASM
 * Python
+* Matlab
 
-Experimental WASM support has been added in order to expose ΔBF to the web, as well as NodeJs.  For Python, an experimental DoxaPy library has been developed.  Examples of how to use each binding are provided in the Demo folder.
+Experimental **WASM** support has been added in order to expose ΔBF to the web, as well as NodeJs.  For **Python**, an experimental DoxaPy library has been developed and publish on PyPi. Experimental **Matlab** bindings can also be built.  Examples of how to use each binding are provided in the Demo folder.
 
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
