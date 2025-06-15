@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core >=0.11.3", "nanobind>=2.7.0"]
+requires = ["cibuildwheel >= 2.22.0","scikit-build-core >= 0.11.3", "nanobind >= 2.7.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -33,3 +33,12 @@ sdist.exclude = [
     ".gitignore",
     "test"
 ]
+
+[tool.cibuildwheel]
+# Necessary to see build output from the actual compilation
+build-verbosity = 1
+
+# Run tests to ensure correct builds
+#test-command = "python test/test_doxa.py"
+
+archs = ["auto64"]          # Only target 64 bit architectures
