@@ -41,6 +41,7 @@ add_executable(
   ParametersTests.cpp
   PerformanceTests.cpp
   PNMTests.cpp
+  DIBCOUtilsTests.cpp
   RegionTests.cpp
 )
 
