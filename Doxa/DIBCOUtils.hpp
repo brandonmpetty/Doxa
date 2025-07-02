@@ -34,19 +34,19 @@ namespace Doxa
 		/// <summary>
 		/// Read DIBCO Weighted content from either a file or string stream.
 		/// </summary>
-        static std::vector<double> ReadWeights(std::istream& stream, size_t allocatedSize = 0)
-        {
+		static std::vector<double> ReadWeights(std::istream& stream, size_t allocatedSize = 0)
+		{
 			std::vector<double> values;
 			values.reserve(allocatedSize);
 
-            double value;
-            while (stream >> value)
-            {
-                values.push_back(value);
-            }
+			double value;
+			while (stream >> value)
+			{
+				values.push_back(value);
+			}
 
-            return values;
-        }
+			return values;
+		}
 	};
 }
 

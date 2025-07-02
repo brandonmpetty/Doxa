@@ -193,6 +193,9 @@ namespace Doxa
 			const double pseudoTruePositiveRecall = classifications.wrTruePositive;
 			const double pseudoFalseNegativeRecall = classifications.wrFalseNegative;
 
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (pseudoTruePositivePrecision == 0 || pseudoTruePositiveRecall == 0) return 0.0;
+
 			const double pseudoPrecision = pseudoTruePositivePrecision / (pseudoTruePositivePrecision + pseudoFalsePositivePrecision);
 			const double pseudoRecall = pseudoTruePositiveRecall / (pseudoTruePositiveRecall + pseudoFalseNegativeRecall);
 
