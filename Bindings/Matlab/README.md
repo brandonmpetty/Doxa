@@ -1,66 +1,60 @@
-# Matlab POC - !!Completely Unstable!!!
+# Δoxa Binarization Framework - Matlab
 
 ## Introduction
-Doxa is an image binarization library focussing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image. 
+Doxa is an image binarization library focusing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
 
-**Algorithms**
-* Otsu - "A threshold selection method from gray-level histograms", 1979.
-* Bernsen - "Dynamic thresholding of gray-level images", 1986.
-* Niblack - "An Introduction to Digital Image Processing", 1986.
-* Sauvola - "Adaptive document image binarization", 1999.
-* Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
-* Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
-* NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
-* AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
-* Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
-* T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
-* Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
-* ISauvola - "ISauvola: Improved Sauvola's Algorithm for Document Image Binarization", 2016.
-* WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
+This binding provides a simple, high-level interface for using the Doxa C++ framework directly within Matlab.
 
-**Optimizations**
-* Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
-* Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
+## Build & Test
+Building the Matlab bindings requires CMake and a C++ compiler. Ensure that Matlab is correctly configured for MEX compilation (`mex -setup`).
 
-**Performance Metrics**
-* Overall Accuracy
-* F-Measure
-* Peak Signal-To-Noise Ratio (PSNR)
-* Negative Rate Metric (NRM)
-* Matthews Correlation Coefficient (MCC)
-* Distance-Reciprocal Distortion Measure (DRDM) - "An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.
+```sh
+# From the Bindings/Matlab directory
+mkdir build
+cd build
 
+# Configure the build
+cmake ..
 
-## Overview
-This Doxa Matlab library uses the Δoxa Binarization Framework for quickly processing images in Matlab.
+# Build the MEX files
+cmake --build . --config Release
 
-**Build & Test**
-```
-cmake -S . -B ./build
-cmake --build ./build --config Release
-ctest
+# Run the tests
+ctest -C Release
 ```
 
-**Matlab Example**
+## Matlab Example
+Using the Doxa framework in Matlab is straightforward. First, add the build output directory to your Matlab path. Then, you can use the static methods on the `Doxa` class.
+
 ```matlab
-% Example grayscale image
-originalImage = imread('example.jpg');
-outputImage = rgb2gray(originalImage);
+% Add the build directory (e.g., Bindings/Matlab/build/mex) to the path
+addpath('path/to/your/build/mex');
 
-% Optional parameters
-params.windowSize = 74
-params.k = 0.25;
+% 1. Read a grayscale image
+originalImage = imread('peppers.png');
+grayscaleImage = rgb2gray(originalImage);
 
-% Perform the binarization
-ImageBinarization.updateToBinary(
-    outputImage, 
-    ImageBinarization.SAUVOLA, 
-    params
-);
+% 2. Select an algorithm and define parameters
+% Parameters are optional and will use library defaults if not provided.
+params.window = 25;
+params.k = 0.1;
 
-% Display the result
-imshow(binaryImage);
+% 3. Binarize the image
+% This creates a new binary image, leaving the original unchanged.
+binaryImage = Doxa.to_binary(Doxa.SAUVOLA, grayscaleImage, params);
+
+% Or, for maximum efficiency, update the image in-place
+% Doxa.update_to_binary(Doxa.SAUVOLA, grayscaleImage, params);
+
+% 4. Display the result
+figure;
+subplot(1, 2, 1), imshow(originalImage), title('Original');
+subplot(1, 2, 2), imshow(binaryImage), title('Binarized (Sauvola)');
+
+% 5. Calculate performance against a ground truth
+groundTruthImage = imread('ground_truth.png');
+metrics = Doxa.calculate_performance(groundTruthImage, binaryImage);
+disp(metrics);
 ```
 
 ## License
