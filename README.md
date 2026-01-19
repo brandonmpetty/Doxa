@@ -31,6 +31,7 @@ It is written in C++ but supports multiple language bindings.
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
 * Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
+* SIMD - Supporting: SSE2, ARM NEON, WASM SIMD128
 
 **Performance Metrics**
 * Overall Accuracy
@@ -66,6 +67,36 @@ PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 ```
 
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party C++ frameworks like OpenCV and Qt.  Examples can be found under the Demo folder.
+
+### Building
+
+The core library is header-only and requires no build. For bindings and tests, use CMake presets:
+
+```bash
+# Build and run C++ unit tests
+cmake --preset release
+cmake --build build --config Release
+ctest --test-dir build -C Release
+
+# Build and test Python bindings (requires Python 3.12+, nanobind)
+cmake --preset python
+cmake --build build-python --config Release
+ctest --test-dir build-python -C Release
+
+# Build and test WebAssembly (requires Emscripten in PATH)
+cmake --preset wasm
+cmake --build build-wasm --config Release
+ctest --test-dir build-wasm -C Release
+
+# Build everything (C++, Python, WASM)
+cmake --preset all
+cmake --build build --config Release
+ctest --test-dir build -C Release
+```
+
+**Note:** On Windows with Visual Studio, `--config Release` and `-C Release` are required. On Linux/Mac with single-config generators (Make, Ninja), these flags are optional.
+
+See [Bindings/Python/README.md](Bindings/Python/README.md) and [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md) for detailed instructions.
 
 ### Performance Analysis
 Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.

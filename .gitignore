@@ -19,6 +19,8 @@ x64/
 x86/
 bld/
 build/
+build-python/
+build-wasm/
 [Bb]in/
 [Oo]bj/
 [Ll]og/

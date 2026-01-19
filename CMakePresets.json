@@ -1,0 +1,66 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "C++ Tests (Release)",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "C++ Tests (Debug)",
+      "binaryDir": "${sourceDir}/build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "DOXA_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "python",
+      "displayName": "Python Bindings",
+      "binaryDir": "${sourceDir}/build-python",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_PYTHON": "ON"
+      }
+    },
+    {
+      "name": "wasm",
+      "displayName": "WebAssembly Bindings",
+      "binaryDir": "${sourceDir}/build-wasm",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_WASM": "ON"
+      }
+    },
+    {
+      "name": "all",
+      "displayName": "All Components (C++, Python, WASM)",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_TESTS": "ON",
+        "DOXA_BUILD_PYTHON": "ON",
+        "DOXA_BUILD_WASM": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release" },
+    { "name": "debug", "configurePreset": "debug" },
+    { "name": "python", "configurePreset": "python" },
+    { "name": "wasm", "configurePreset": "wasm" },
+    { "name": "all", "configurePreset": "all" }
+  ],
+  "testPresets": [
+    { "name": "release", "configurePreset": "release", "configuration": "Release" },
+    { "name": "debug", "configurePreset": "debug", "configuration": "Debug" },
+    { "name": "python", "configurePreset": "python", "configuration": "Release" },
+    { "name": "wasm", "configurePreset": "wasm", "configuration": "Release" },
+    { "name": "all", "configurePreset": "all", "configuration": "Release" }
+  ]
+}

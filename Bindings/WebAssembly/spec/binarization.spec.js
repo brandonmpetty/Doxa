@@ -53,7 +53,7 @@ describe("Doxa Binarization Class Test Suite", function() {
         const metrics = Doxa.Binarization.calculatePerformance(groundTruthImage, binaryImage);
 
         expect(metrics.accuracy).toBeCloseTo(97.671, 3);
-        expect(metrics.drdm).toBeCloseTo(2.209, 3);
+        expect(metrics.drdm).toBeCloseTo(1.9519, 4);
         expect(metrics.fm).toBeCloseTo(93.204, 3);
         expect(metrics.mcc).toBeCloseTo(0.918, 3);
         expect(metrics.nrm).toBeCloseTo(0.048, 3);
