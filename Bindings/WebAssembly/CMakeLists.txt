@@ -40,7 +40,6 @@ target_link_options(doxaWasm PRIVATE
 # SIMD support
 if(DOXAJS_ENABLE_SIMD)
     target_compile_options(doxaWasm PRIVATE -msimd128)
-    target_compile_definitions(doxaWasm PRIVATE DOXA_SIMD_ENABLED DOXA_HAS_WASM_SIMD)
     message(STATUS "DoxaJs SIMD: ENABLED (SIMD128)")
 else()
     message(STATUS "DoxaJs SIMD: DISABLED")

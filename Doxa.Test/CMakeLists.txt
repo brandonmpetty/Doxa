@@ -79,8 +79,6 @@ if(DOXA_ENABLE_SIMD)
         message(STATUS "SIMD: Unknown platform, will use scalar fallback")
     endif()
 
-    target_compile_definitions(doxa_test PRIVATE DOXA_SIMD_ENABLED)
-
 else()
     message(STATUS "SIMD optimizations: DISABLED (scalar only)")
 endif()

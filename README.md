@@ -74,7 +74,7 @@ The core library is header-only and requires no build. For bindings and tests, u
 
 ```bash
 # Build and run C++ unit tests
-cmake --preset release
+cmake --preset cpp-tests
 cmake --build build --config Release
 ctest --test-dir build -C Release
 

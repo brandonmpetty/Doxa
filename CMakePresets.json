@@ -2,21 +2,21 @@
   "version": 6,
   "configurePresets": [
     {
-      "name": "release",
-      "displayName": "C++ Tests (Release)",
+      "name": "cpp-tests",
+      "displayName": "C++ Tests",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "DOXA_BUILD_TESTS": "ON"
+        "DOXA_BUILD_CPP_TESTS": "ON"
       }
     },
     {
-      "name": "debug",
+      "name": "cpp-tests-debug",
       "displayName": "C++ Tests (Debug)",
       "binaryDir": "${sourceDir}/build-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "DOXA_BUILD_TESTS": "ON"
+        "DOXA_BUILD_CPP_TESTS": "ON"
       }
     },
     {
@@ -25,6 +25,7 @@
       "binaryDir": "${sourceDir}/build-python",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_CPP_TESTS": "OFF",
         "DOXA_BUILD_PYTHON": "ON"
       }
     },
@@ -34,6 +35,7 @@
       "binaryDir": "${sourceDir}/build-wasm",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_CPP_TESTS": "OFF",
         "DOXA_BUILD_WASM": "ON"
       }
     },
@@ -43,22 +45,22 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "DOXA_BUILD_TESTS": "ON",
+        "DOXA_BUILD_CPP_TESTS": "ON",
         "DOXA_BUILD_PYTHON": "ON",
         "DOXA_BUILD_WASM": "ON"
       }
     }
   ],
   "buildPresets": [
-    { "name": "release", "configurePreset": "release" },
-    { "name": "debug", "configurePreset": "debug" },
+    { "name": "cpp-tests", "configurePreset": "cpp-tests" },
+    { "name": "cpp-tests-debug", "configurePreset": "cpp-tests-debug" },
     { "name": "python", "configurePreset": "python" },
     { "name": "wasm", "configurePreset": "wasm" },
     { "name": "all", "configurePreset": "all" }
   ],
   "testPresets": [
-    { "name": "release", "configurePreset": "release", "configuration": "Release" },
-    { "name": "debug", "configurePreset": "debug", "configuration": "Debug" },
+    { "name": "cpp-tests", "configurePreset": "cpp-tests", "configuration": "Release" },
+    { "name": "cpp-tests-debug", "configurePreset": "cpp-tests-debug", "configuration": "Debug" },
     { "name": "python", "configurePreset": "python", "configuration": "Release" },
     { "name": "wasm", "configurePreset": "wasm", "configuration": "Release" },
     { "name": "all", "configurePreset": "all", "configuration": "Release" }

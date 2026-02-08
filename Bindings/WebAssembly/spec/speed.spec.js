@@ -110,21 +110,13 @@ describe("Doxa Speed Test Suite", function() {
         // Load test images
         console.log('\nLoading test images...');
         grayscaleImage = await readImage('../../README/2JohnC1V3.png');
+        binaryImage = await readImage('../../README/2JohnC1V3-Sauvola.png');
         groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
 
         imageWidth = grayscaleImage.width;
         imageHeight = grayscaleImage.height;
 
-        console.log(`Grayscale image: ${imageWidth}x${imageHeight}`);
-        console.log(`Ground truth: ${groundTruthImage.width}x${groundTruthImage.height}`);
-
-        // Create binary image for performance metric tests
-        binaryImage = Doxa.Binarization.toBinary(
-            Algorithms.SAUVOLA,
-            grayscaleImage,
-            { window: 27, k: 0.10 }
-        );
-
+        console.log(`Image: ${imageWidth}x${imageHeight}`);
         console.log('\n' + '-'.repeat(60));
         console.log('BINARIZATION ALGORITHMS');
         console.log('-'.repeat(60));

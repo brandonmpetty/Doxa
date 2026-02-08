@@ -63,8 +63,11 @@ namespace Doxa
 					// This is really just a fancy mathematical trick to say this:
 					//     For all of the cells in your control block (B) that do not match the different pixel (g),
 					//     take the values at those cooridates in the Weighted Matrix (Wm) and sum them up.  You're welcome.
-					const unsigned int Dk = (controlImage.Pixel(upperLeftPoint.x + x, upperLeftPoint.y + y, g) - g) == 0 ? 0 : 1;
-					sumDRDkBlock +=  Dk * Wm[x][y];
+					const bool addMatrix = controlImage.Pixel(upperLeftPoint.x + x, upperLeftPoint.y + y, g) != g;
+					if (addMatrix)
+                    {
+                        sumDRDkBlock += Wm[x][y];
+                    }
 				}
 			}
 

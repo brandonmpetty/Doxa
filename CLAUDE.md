@@ -14,7 +14,7 @@ The project uses CMake presets for unified builds. All commands run from the pro
 
 ```bash
 # Build and run C++ unit tests
-cmake --preset release
+cmake --preset cpp-tests
 cmake --build build --config Release
 ctest --test-dir build -C Release
 
@@ -42,7 +42,7 @@ The C++ test suite uses Google Test (fetched automatically via CMake).
 
 ```bash
 # Using preset (recommended)
-cmake --preset release
+cmake --preset cpp-tests
 cmake --build build --config Release
 ctest --test-dir build -C Release
 

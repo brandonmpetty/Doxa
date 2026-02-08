@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Build options
-option(DOXA_BUILD_TESTS "Build C++ unit tests" OFF)
+option(DOXA_BUILD_CPP_TESTS "Build C++ unit tests" ON)
 option(DOXA_BUILD_PYTHON "Build Python bindings" OFF)
 option(DOXA_BUILD_WASM "Build WebAssembly bindings (requires emcmake)" OFF)
 option(DOXA_ENABLE_SIMD "Enable SIMD optimizations" ON)
@@ -19,7 +19,7 @@ set(DOXA_ENABLE_SIMD ${DOXA_ENABLE_SIMD} CACHE BOOL "" FORCE)
 set(DOXAPY_ENABLE_SIMD ${DOXA_ENABLE_SIMD} CACHE BOOL "" FORCE)
 
 # C++ Tests (native build only)
-if(DOXA_BUILD_TESTS AND NOT EMSCRIPTEN)
+if(DOXA_BUILD_CPP_TESTS AND NOT EMSCRIPTEN)
     add_subdirectory(Doxa.Test)
 endif()
 
