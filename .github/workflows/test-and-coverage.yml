@@ -64,8 +64,8 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip cmake
-        pip3 install gcovr
+        sudo apt-get install -y cmake
+        pipx install gcovr
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
@@ -92,7 +92,7 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
 
     - name: Generate Coverage Report
       if: runner.os == 'Linux'
