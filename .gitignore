@@ -21,6 +21,7 @@ bld/
 build/
 build-python/
 build-wasm/
+build-bench/
 [Bb]in/
 [Oo]bj/
 [Ll]og/

@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(DOXA_BUILD_CPP_TESTS "Build C++ unit tests" ON)
 option(DOXA_BUILD_PYTHON "Build Python bindings" OFF)
 option(DOXA_BUILD_WASM "Build WebAssembly bindings (requires emcmake)" OFF)
+option(DOXA_BUILD_BENCHMARKS "Build performance benchmarks (Google Benchmark)" OFF)
 option(DOXA_ENABLE_SIMD "Enable SIMD optimizations" ON)
 
 # Enable CTest for all test types
@@ -21,6 +22,11 @@ set(DOXAPY_ENABLE_SIMD ${DOXA_ENABLE_SIMD} CACHE BOOL "" FORCE)
 # C++ Tests (native build only)
 if(DOXA_BUILD_CPP_TESTS AND NOT EMSCRIPTEN)
     add_subdirectory(Doxa.Test)
+endif()
+
+# Performance Benchmarks (native build only, always Release)
+if(DOXA_BUILD_BENCHMARKS AND NOT EMSCRIPTEN)
+    add_subdirectory(Doxa.Bench)
 endif()
 
 # Python Bindings (native build only)

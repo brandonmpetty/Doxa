@@ -1,5 +1,5 @@
 // Δoxa Binarization Framework
-// License: CC0 2018, "Freely you have received; freely give." - Matt 10:8
+// License: CC0 2026, "Freely you have received; freely give." - Matt 10:8
 #ifndef DRDM_HPP
 #define DRDM_HPP
 
@@ -29,78 +29,96 @@ namespace Doxa
 		}
 
 	protected:
+        static constexpr int N = 5;
+        static constexpr int R = N / 2;
 
-		static unsigned int DRDk(const Region::Point& point, const Image& controlImage, const Pixel32& g)
-		{
-			const int N = 5; // Hard coded for now.
-			const int NPadding = N / 2; // Ammount of padding around the pixel based on an NxN matrix with that pixel in the center.
+        // Normalized Weighted Matrix
+        // Values have been multiplied by 1000000 in order to avoid slight rounding errors with doubles.
+        // These values are more granular than the example matrix given in the research paper.
+        // If you use those values, you will hit rounding problems with their sample data because they are actually using more
+        // precise Normalized Matrix values when calculating DRD than what is provided in that example.
+        static constexpr uint32_t Wm[N * N] = {
+            25582, 32359, 36179, 32359, 25582,
+            32359, 51164, 72357, 51164, 32359,
+            36179, 72357,     0, 72357, 36179,
+            32359, 51164, 72357, 51164, 32359,
+            25582, 32359, 36179, 32359, 25582
+        };
 
-			// Normalized Weighted Matrix
-			// Values have been multiplied by 1000000 in order to avoid slight rounding errors with doubles.
-			// These values are more granular than the example matrix given in the research paper.
-			// If you use those values, you will hit rounding problems with their sample data because they are actually using more
-			// precise Normalized Matrix values when calculating DRD than what is provided in that example.
-			const unsigned int Wm[N][N] = {
-				{ 25582, 32359, 36179, 32359, 25582 },
-				{ 32359, 51164, 72357, 51164, 32359 },
-				{ 36179, 72357,     0, 72357, 36179 },
-				{ 32359, 51164, 72357, 51164, 32359 },
-				{ 25582, 32359, 36179, 32359, 25582 }
-			};
-
-			unsigned int sumDRDkBlock = 0;
-
-			// Create a point in the upper left of our window.  We will traverse it differently below.
-			Region::Point upperLeftPoint(point.x - NPadding, point.y - NPadding);
-
-			// Move from the upper left to the bottom right of our window, pixel by pixel
-            for (int y = 0; y < N; ++y)
-			{
-                for (int x = 0; x < N; ++x)
-				{
-					// If we are out of bounds, defaulting to g will essentially void the cell
-					// The original paper *assumed* the data was literally binary, 1 or 0.
-					// This is really just a fancy mathematical trick to say this:
-					//     For all of the cells in your control block (B) that do not match the different pixel (g),
-					//     take the values at those cooridates in the Weighted Matrix (Wm) and sum them up.  You're welcome.
-					const bool addMatrix = controlImage.Pixel(upperLeftPoint.x + x, upperLeftPoint.y + y, g) != g;
-					if (addMatrix)
-                    {
-                        sumDRDkBlock += Wm[x][y];
-                    }
-				}
-			}
-
-			return sumDRDkBlock;
-		}
-
-		/// <summary>
+        /// <summary>
 		/// Sum DRDk for all mismatched pixels between control and experiment images.
+        /// This is an optimized algorithm,
 		/// </summary>
-		static uint64_t SumDRDkForMismatchedPixels(const Image& controlImage, const Image& experimentImage)
-		{
-			uint64_t sumDRDk = 0;
+        static uint64_t SumDRDkForMismatchedPixels(const Image& control, const Image& experiment)
+        {
+            uint64_t sum = 0;
+            const int w = control.width;
+            const int h = control.height;
 
-			// S - Get a list of all points that differ between the two images
-			for (int y = 0; y < controlImage.height; ++y)
-			{
-				const unsigned int row = y * controlImage.width;
+            const Pixel8* ctl = control.data;
+            const Pixel8* exp = experiment.data;
 
-				for (int x = 0; x < controlImage.width; ++x)
-				{
-					const Pixel8 ctlPixel = controlImage.data[row + x];
-					const Pixel8 expPixel = experimentImage.data[row + x];
-					if (ctlPixel != expPixel)
-					{
-						// DRDk - For every difference, get its DRDk value and sum them all
-						const Region::Point point(x, y);
-						sumDRDk += DRDk(point, controlImage, expPixel);
-					}
-				}
-			}
+            for (int y = 0; y < h; ++y)
+            {
+                const int row = y * w;
 
-			return sumDRDk;
-		}
+                // Clamp region - Y
+                const int y0 = (y - R < 0) ? 0 : y - R;
+                const int y1 = (y + R >= h) ? h - 1 : y + R;
+
+                for (int x = 0; x < w; ++x)
+                {
+                    /* TODO: Validate that this is truly better on a wide range of images
+                    // Compare 16 pixels at once for a ~20% speedup
+                    // This is only beneficial if your images are very similar
+                    if (x + 15 < w) // Read X + 15 More = 16
+                    {
+                        //if (VEC_ALL_EQ_U8(VEC_LOAD(ctl + row + x), VEC_LOAD(exp + row + x)))
+                        if (memcmp(ctl + row + x, exp + row + x, 16) == 0) // No SIMD necessary
+                        {
+                            x += 15;
+                            continue;
+                        }
+                    }
+                    */
+
+                    const Pixel8 g = exp[row + x];
+
+                    if (ctl[row + x] == g)
+                        continue;
+
+                    uint32_t localSum = 0;
+
+                    // Clamp region - X
+                    const int x0 = (x - R < 0) ? 0 : x - R;
+                    const int x1 = (x + R >= w) ? w - 1 : x + R;
+
+                    // Walk neighborhood
+                    for (int ny = y0; ny <= y1; ++ny)
+                    {
+                        const int base = ny * w;
+                        const int wy = ny - (y - R);
+                        const int wyRow = wy * 5;
+
+                        for (int nx = x0; nx <= x1; ++nx)
+                        {                    
+                            const int wx = nx - (x - R);
+
+                            // Compute weight index
+                            const uint32_t weight = Wm[wyRow + wx];
+
+                            // Branchless add:
+                            localSum += weight * (ctl[base + nx] != g);
+                        }
+                    }
+
+                    sum += localSum;
+                }
+            }
+
+            return sum;
+        }
+
 
         /// <summary>
         /// Calculate the number of non-uniform MxM windows (both white and black pixels).
@@ -111,12 +129,6 @@ namespace Doxa
         /// 
         /// NOTE: DIBCO Metrics do not process partial windows
         /// NOTE: DRDM defaults to 8x8 windows, which DIBCO Metrics uses
-        /// 
-        /// Performance Notes:
-        /// STD:  0.0006188 ms
-        /// STD 8x8 : 0.000345 ms
-        /// SIMD 8x8 : 0.0001324 ms
-        /// 8x8 Speedup : 2.60574x
         /// 
         /// </summary>
 		static unsigned int NUBN(const Image& controlImage, const int M = 8)

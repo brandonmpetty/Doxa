@@ -40,6 +40,16 @@
       }
     },
     {
+      "name": "benchmarks",
+      "displayName": "Performance Benchmarks",
+      "binaryDir": "${sourceDir}/build-bench",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_CPP_TESTS": "OFF",
+        "DOXA_BUILD_BENCHMARKS": "ON"
+      }
+    },
+    {
       "name": "all",
       "displayName": "All Components (C++, Python, WASM)",
       "binaryDir": "${sourceDir}/build",
@@ -56,6 +66,7 @@
     { "name": "cpp-tests-debug", "configurePreset": "cpp-tests-debug" },
     { "name": "python", "configurePreset": "python" },
     { "name": "wasm", "configurePreset": "wasm" },
+    { "name": "benchmarks", "configurePreset": "benchmarks" },
     { "name": "all", "configurePreset": "all" }
   ],
   "testPresets": [

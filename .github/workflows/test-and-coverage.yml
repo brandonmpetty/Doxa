@@ -99,7 +99,8 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         # Use gcovr to generate XML coverage report for GCC
-        gcovr --xml --xml-pretty --gcov-ignore-parse-errors=suspicious_hits.warn --root .. > coverage.xml
+        # Filter to only the core library headers - exclude test files and build artifacts
+        gcovr --xml --xml-pretty --gcov-ignore-parse-errors=suspicious_hits.warn --root .. --filter '../Doxa/' > coverage.xml
 
     - name: Upload Coverage Report
       if: runner.os == 'Linux'

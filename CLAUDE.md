@@ -28,6 +28,12 @@ cmake --preset wasm
 cmake --build build-wasm --config Release
 ctest --test-dir build-wasm -C Release
 
+# Build and run performance benchmarks (Google Benchmark)
+cmake --preset benchmarks
+cmake --build build-bench --config Release
+./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
+./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
+
 # Build everything (C++, Python, WASM)
 cmake --preset all
 cmake --build build --config Release
@@ -179,6 +185,33 @@ The `Image` class supports external memory management via `Image::Reference()`, 
 - `ImageFixture.hpp` provides test utilities and sample images
 - `Resources/` contains ground truth images for validation
 - Requires C++17 standard
+- Tests focus on **correctness only** - no timing assertions
+
+**Performance Benchmarks (`Doxa.Bench/`):**
+- Uses Google Benchmark framework (fetched via CMake FetchContent)
+- Separate from unit tests - measures runtime performance with statistical rigor
+- Benchmark files: `GlobalThresholdBenchmarks.cpp`, `ClassifiedPerformanceBenchmarks.cpp`, `DRDMBenchmarks.cpp`, `CalculatorBenchmarks.cpp`
+- `BenchmarkHarness.hpp` exposes internal methods for benchmarking
+- Resource path is baked in at build time via `configure_file` (works from any working directory)
+- Always built in Release mode (benchmarks in Debug are meaningless)
+- Output formats: console table (default) or JSON (`--benchmark_out=file.json --benchmark_out_format=json`)
+
+**Comparing Benchmark Runs:**
+```bash
+# Save JSON output from two runs (e.g., before/after a change, or different platforms)
+./doxa_bench --benchmark_out=before.json --benchmark_out_format=json
+# ... make changes, rebuild ...
+./doxa_bench --benchmark_out=after.json --benchmark_out_format=json
+
+# Compare all benchmarks
+python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarks before.json after.json
+
+# Compare only specific benchmarks
+python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarksfiltered before.json after.json BM_ToBinary
+
+# Compare two benchmarks within the same run (e.g., scalar vs SIMD)
+python build-bench/_deps/googlebenchmark-src/tools/compare.py filters results.json BM_ToBinary_Scalar BM_ToBinary_SIMD
+```
 
 **Python Tests:**
 - `Bindings/Python/test/test_doxa.py` - Basic functionality and performance tests
@@ -222,6 +255,18 @@ The `Image` class supports external memory management via `Image::Reference()`, 
 3. Rebuild: `emcmake cmake -S . -B build-wasm && cmake --build build-wasm`
 4. Test: `cd Bindings/WebAssembly && npm test`
 
+### Adding or Modifying Benchmarks
+
+1. Edit or create benchmark files in `Doxa.Bench/` (e.g., `SIMDBenchmarks.cpp`)
+2. Use `BenchmarkHarness.hpp` for test harness classes that expose internal methods
+3. Setup code goes **before** the `for (auto _ : state)` loop (not timed)
+4. Only the loop body is measured; use `benchmark::DoNotOptimize()` to prevent dead code elimination
+5. Add new `.cpp` files to `Doxa.Bench/CMakeLists.txt`
+6. Build: `cmake --build build-bench --config Release`
+7. Run: `./build-bench/Doxa.Bench/doxa_bench` (or with `--benchmark_filter=BM_MyBench` to run specific benchmarks)
+
+**CI Integration:** The `benchmarks.yml` workflow runs on all 3 platforms (Linux, Windows, macOS). Each platform has its own independent baseline tracked via `benchmark-action/github-action-benchmark` in the `gh-pages` branch. PR comments alert on regressions >20%.
+
 ## Performance Metrics
 
 The framework includes comprehensive performance evaluation tools:
@@ -243,4 +288,5 @@ ClassifiedPerformance performance = ClassifiedPerformance::CalculatePerformance(
 - **WebAssembly**: CMake + Emscripten toolchain (use `emcmake cmake`)
 - **Standard**: C++17
 - **Architecture**: 64-bit only (enforced in cibuildwheel config)
-- **CMake Presets**: `default` (C++), `python`, `all` (everything)
+- **Performance Benchmarks**: CMake + Google Benchmark (fetched via FetchContent)
+- **CMake Presets**: `cpp-tests`, `cpp-tests-debug`, `python`, `wasm`, `benchmarks`, `all`

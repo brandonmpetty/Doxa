@@ -58,37 +58,18 @@ namespace Doxa::UnitTests
 
     TEST_F(SIMDTests, SIMDGlobalThresholdToBinaryTest)
     {
-        // Setup
         const Pixel8 threshold = 128;
         Image binarySTD(image.width, image.height);
         Image binarySIMD(image.width, image.height);
 
-        // Methods under Test
-        const double stdTime = TestUtilities::Time([&]() {
-		    GlobalThresholdTestHarness::ToBinary_STD(image.data, binarySTD.data, image.size, threshold);
-        });
+        GlobalThresholdTestHarness::ToBinary_STD(image.data, binarySTD.data, image.size, threshold);
+        GlobalThresholdTestHarness::ToBinary_SIMD(image.data, binarySIMD.data, image.size, threshold);
 
-        const double simdTime = TestUtilities::Time([&]() {
-		    GlobalThresholdTestHarness::ToBinary_SIMD(image.data, binarySIMD.data, image.size, threshold);
-        });
-
-        // Verify
         TestUtilities::AssertImages(binarySTD, binarySIMD);
-
-        // Performance
-        const double speedup = stdTime / simdTime;
-        std::cout << "\n=== ToBinary Performance ===" << std::endl;
-        std::cout << "STD:  " << stdTime << " ms" << std::endl;
-        std::cout << "SIMD: " << simdTime << " ms" << std::endl;
-        std::cout << "Speedup: " << speedup << "x" << std::endl;
-
-        // SIMD should be faster
-        EXPECT_GT(speedup, 1.5) << "SIMD should provide significant speedup";
     }
 
     TEST_F(SIMDTests, SIMDClassifiedPerformanceCompareImagesTest)
     {
-        // Setup
 		std::string projFolder = TestUtilities::ProjectFolder();
 
 		const std::string filePathBinary = projFolder + "2JohnC1V3-Sauvola.pbm";
@@ -100,62 +81,24 @@ namespace Doxa::UnitTests
 		Image binaryImage = PNM::Read(filePathBinary);
 		Image groundTruthImage = PNM::Read(filePathGT);
 
-		// Methods under Test
-        const double stdTime = TestUtilities::Time([&]() {
-		    ClassifiedPerformance::CompareImages_STD(classificationsSTD, groundTruthImage.data, binaryImage.data, groundTruthImage.size);
-        });
+		ClassifiedPerformance::CompareImages_STD(classificationsSTD, groundTruthImage.data, binaryImage.data, groundTruthImage.size);
+		ClassifiedPerformance::CompareImages_SIMD(classificationsSIMD, groundTruthImage.data, binaryImage.data, groundTruthImage.size);
 
-        double simdTime = TestUtilities::Time([&]() {
-		    ClassifiedPerformance::CompareImages_SIMD(classificationsSIMD, groundTruthImage.data, binaryImage.data, groundTruthImage.size);
-        });
-
-        // Verify
         EXPECT_EQ(classificationsSTD.truePositive, classificationsSIMD.truePositive);
         EXPECT_EQ(classificationsSTD.trueNegative, classificationsSIMD.trueNegative);
         EXPECT_EQ(classificationsSTD.falsePositive, classificationsSIMD.falsePositive);
         EXPECT_EQ(classificationsSTD.falseNegative, classificationsSIMD.falseNegative);
-
-        // Performance
-        const double speedup = stdTime / simdTime;
-        std::cout << "\n=== CompareImages Performance ===" << std::endl;
-        std::cout << "STD:  " << stdTime << " ms" << std::endl;
-        std::cout << "SIMD: " << simdTime << " ms" << std::endl;
-        std::cout << "Speedup: " << speedup << "x" << std::endl;
-
-        // SIMD should be faster
-        EXPECT_GT(speedup, 1.5) << "SIMD should provide significant speedup";
     }
 
     TEST_F(SIMDTests, SIMDDrdmNubnTest)
     {
-        // Setup
         const std::string filePathBinary = projFolder + "2JohnC1V3-GroundTruth.pbm";
         Image binaryImage = PNM::Read(filePathBinary);
 
-        // Methods under Test
-        unsigned int nubnSTD = 0;
-        unsigned int nubnSIMD = 0;
+        const unsigned int nubnSTD = DRDMTestHarness::NUBN_STD(binaryImage, 8);
+        const unsigned int nubnSIMD = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
 
-        const double stdTime = TestUtilities::Time([&]() {
-		    nubnSTD = DRDMTestHarness::NUBN_STD(binaryImage, 8);
-        });
-
-        const double simdTime = TestUtilities::Time([&]() {
-		    nubnSIMD = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
-        });
-
-        // Verify
         EXPECT_EQ(nubnSTD, nubnSIMD);
-
-        // Performance
-        const double speedup = stdTime / simdTime;
-        std::cout << "\n=== NUBN Performance ===" << std::endl;
-        std::cout << "STD:  " << stdTime << " ms" << std::endl;
-        std::cout << "SIMD: " << simdTime << " ms" << std::endl;
-        std::cout << "Speedup: " << speedup << "x" << std::endl;
-
-        // SIMD should be faster
-        EXPECT_GT(speedup, 1.5) << "SIMD should provide significant speedup";
     }
 
 #endif // DOXA_SIMD

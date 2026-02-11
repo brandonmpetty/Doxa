@@ -116,22 +116,6 @@ namespace Doxa::UnitTests
 		}
 	}
 
-	TEST_F(CalculatorTests, CalculatorSpeedTest)
-	{
-		const Parameters parameters({ { "window", 223 }, { "k", -0.61 } });
-
-		double niblackChanSpeed = TestUtilities::Time([&]() {
-			Image imageNiblackChan = NiblackBase<ChanMeanVarianceCalc>::ToBinaryImage(image, parameters);
-		});
-
-		double niblackIISpeed = TestUtilities::Time([&]() {
-			Image imageNiblackII = NiblackBase<IntegralImageMeanVarianceCalc>::ToBinaryImage(image, parameters);
-		});
-
-		SUCCEED() << "Niblack-Chan Speed: " << niblackChanSpeed;
-		SUCCEED() << "Niblack-Integral Image Speed: " << niblackIISpeed;
-	}
-
 	TEST_F(CalculatorTests, CalculatorAlgorithmTest)
 	{
 		const Parameters parameters({ { "window", 223 }, { "k", -0.61 } });

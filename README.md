@@ -88,15 +88,34 @@ cmake --preset wasm
 cmake --build build-wasm --config Release
 ctest --test-dir build-wasm -C Release
 
+# Build and run performance benchmarks (Google Benchmark)
+cmake --preset benchmarks
+cmake --build build-bench --config Release
+./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
+./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
+
 # Build everything (C++, Python, WASM)
 cmake --preset all
 cmake --build build --config Release
 ctest --test-dir build -C Release
 ```
 
-**Note:** On Windows with Visual Studio, `--config Release` and `-C Release` are required. On Linux/Mac with single-config generators (Make, Ninja), these flags are optional.
 
 See [Bindings/Python/README.md](Bindings/Python/README.md) and [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md) for detailed instructions.
+
+### Performance Benchmarks
+The project uses [Google Benchmark](https://github.com/google/benchmark) for measuring runtime performance of SIMD optimizations, calculator backends, and core operations. Benchmarks are separate from unit tests to keep correctness and performance concerns independent.
+
+```bash
+# Run benchmarks long enough to lower CV %
+./build-bench/Doxa.Bench/doxa_bench --benchmark_min_time=1s --benchmark_repetitions=10 --benchmark_report_aggregates_only=true
+
+# Compare two runs (e.g., before/after a change, or across platforms)
+# Requires running doxa_bench with: --benchmark_out=results.json --benchmark_out_format=json
+python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarks before.json after.json
+```
+
+CI automatically tracks benchmark results per platform (Linux, Windows, macOS) and alerts on regressions in pull requests.
 
 ### Performance Analysis
 Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
@@ -110,7 +129,7 @@ Experimental WASM support has been added in order to expose ΔBF to the web, as 
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
 ## License
-CC0 - Brandon M. Petty, 2023
+CC0 - Brandon M. Petty, 2026
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

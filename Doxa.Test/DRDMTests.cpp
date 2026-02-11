@@ -215,11 +215,15 @@ namespace Doxa::UnitTests
 
 		const unsigned int countStd = DRDMTestHarness::NUBN_STD(binaryImage, 8);
 		const unsigned int countStd8x8 = DRDMTestHarness::NUBN_STD_8x8(binaryImage);
-		const unsigned int countSimd8x8 = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
-
+		
 		EXPECT_EQ(countStd, 5);
 		EXPECT_EQ(countStd8x8, 5);
-		EXPECT_EQ(countSimd8x8, 5);
+
+
+		#if defined(DOXA_SIMD)
+			const unsigned int countSimd8x8 = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
+			EXPECT_EQ(countSimd8x8, 5);
+		#endif
 	}
 
 	TEST(DRDMTests, NUBNVariousWindowSizesTest)
@@ -246,40 +250,21 @@ namespace Doxa::UnitTests
 		EXPECT_EQ(count3, 0); // Window 25x25
 	}
 
-    TEST(DRDMTests, NUBNPerformanceTest)
+    TEST(DRDMTests, NUBNImplementationConsistencyTest)
     {
-        // Setup
 		std::string projFolder = TestUtilities::ProjectFolder();
         const std::string filePathGT = projFolder + "2JohnC1V3-GroundTruth.pbm";
 		Image binaryImage = PNM::Read(filePathGT);
 
-        // Methods under Test
-		unsigned int count1 = 0, count2 = 0, count3 = 0;
+		const unsigned int countSTD = DRDMTestHarness::NUBN_STD(binaryImage, 8);
+		const unsigned int countSTD8x8 = DRDMTestHarness::NUBN_STD_8x8(binaryImage);
+		
+		EXPECT_EQ(countSTD, countSTD8x8);
 
-        const double stdTime = TestUtilities::Time([&]() {
-			count1 = DRDMTestHarness::NUBN_STD(binaryImage, 8);
-		});
-
-		const double stdTime2 = TestUtilities::Time([&]() {
-			count2 = DRDMTestHarness::NUBN_STD_8x8(binaryImage);
-		});
-
-        const double simdTime = TestUtilities::Time([&]() {
-			count3 = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
-		});	
-
-        // Verify
-        EXPECT_TRUE(count1 == count2 && count2 == count3);
-
-        // Performance
-        const double speedup = stdTime2 / simdTime;
-        std::cout << "\n=== ToBinary Performance ===" << std::endl;
-        std::cout << "STD:  " << stdTime << " ms" << std::endl;
-		std::cout << "STD 8x8: " << stdTime2 << " ms" << std::endl;
-        std::cout << "SIMD 8x8: " << simdTime << " ms" << std::endl;
-        std::cout << "8x8 Speedup: " << speedup << "x" << std::endl;
-
-        // SIMD should be faster
-        EXPECT_GT(speedup, 1.5) << "SIMD should provide significant speedup";
+		
+		#if defined(DOXA_SIMD)
+			const unsigned int countSimd8x8 = DRDMTestHarness::NUBN_SIMD_8x8(binaryImage);
+			EXPECT_EQ(countSTD8x8, countSimd8x8);
+		#endif
     }
 }
