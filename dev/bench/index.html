@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes" />
     <style>
       html {
-        font-family: BlinkMacSystemFont,-apple-system,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
-        background-color: #fff;
+        background-color: #0d1117;
         font-size: 16px;
+        color: #e6edf3;
       }
       body {
-        color: #4a4a4a;
-        margin: 8px;
+        margin: 0;
+        padding: 24px 32px;
         font-size: 1em;
         font-weight: 400;
       }
       header {
-        margin-bottom: 8px;
+        margin-bottom: 24px;
         display: flex;
         flex-direction: column;
+        gap: 6px;
       }
       main {
         width: 100%;
@@ -27,49 +29,131 @@
         flex-direction: column;
       }
       a {
-        color: #3273dc;
+        color: #58a6ff;
         cursor: pointer;
         text-decoration: none;
       }
       a:hover {
-        color: #000;
-      }
-      button {
-        color: #fff;
-        background-color: #3298dc;
-        border-color: transparent;
-        cursor: pointer;
-        text-align: center;
-      }
-      button:hover {
-        background-color: #2793da;
-        flex: none;
-      }
-      .spacer {
-        flex: auto;
-      }
-      .small {
-        font-size: 0.75rem;
-      }
-      footer {
-        margin-top: 16px;
-        display: flex;
-        align-items: center;
+        color: #79c0ff;
+        text-decoration: underline;
       }
       .header-label {
+        color: #8b949e;
         margin-right: 4px;
       }
+      .header-item {
+        font-size: 0.85rem;
+      }
+
+      /* OS Toggle Buttons */
+      .os-toggles {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+      .os-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid #30363d;
+        background-color: #161b22;
+        color: #e6edf3;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+      }
+      .os-toggle:hover {
+        border-color: #484f58;
+        cursor: pointer;
+      }
+      .os-toggle.active {
+        border-color: var(--os-color);
+        background-color: color-mix(in srgb, var(--os-color) 12%, #161b22);
+      }
+      .os-toggle .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #30363d;
+        transition: background-color 0.15s ease;
+      }
+      .os-toggle.active .indicator {
+        background-color: var(--os-color);
+        box-shadow: 0 0 6px var(--os-color);
+      }
+
+      /* Algorithm Toggle Pills */
+      .algo-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .algo-controls-label {
+        font-size: 0.75rem;
+        color: #8b949e;
+        margin-right: 4px;
+      }
+      .algo-pill {
+        padding: 3px 10px;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+        background-color: #161b22;
+        color: #8b949e;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+      }
+      .algo-pill:hover {
+        border-color: #484f58;
+      }
+      .algo-pill.active {
+        border-color: #58a6ff;
+        color: #e6edf3;
+        background-color: #58a6ff1a;
+      }
+      .scale-toggle {
+        padding: 3px 10px;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+        background-color: #161b22;
+        color: #8b949e;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+        margin-left: auto;
+      }
+      .scale-toggle:hover {
+        border-color: #484f58;
+      }
+      .scale-toggle.active {
+        border-color: #d29922;
+        color: #e6edf3;
+        background-color: #d299221a;
+      }
+
+      /* Benchmark Sections */
       .benchmark-set {
-        margin: 8px 0;
+        margin: 24px 0;
         width: 100%;
         display: flex;
         flex-direction: column;
       }
       .benchmark-title {
-        font-size: 3rem;
+        font-size: 1.8rem;
         font-weight: 600;
         word-break: break-word;
         text-align: center;
+        color: #e6edf3;
+        margin: 16px 0;
       }
       .benchmark-graphs {
         display: flex;
@@ -78,12 +162,48 @@
         align-items: center;
         flex-wrap: wrap;
         width: 100%;
+        gap: 16px;
       }
-      .benchmark-chart {
+      .benchmark-chart-container {
+        background-color: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 8px;
+        padding: 16px;
         max-width: 1000px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #21262d;
+        display: flex;
+        align-items: center;
+      }
+      .spacer {
+        flex: auto;
+      }
+      .small {
+        font-size: 0.75rem;
+        color: #8b949e;
+      }
+      button#dl-button {
+        color: #e6edf3;
+        background-color: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 6px 14px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background-color 0.15s ease;
+      }
+      button#dl-button:hover {
+        background-color: #30363d;
       }
     </style>
-    <title>Benchmarks</title>
+    <title>Doxa Benchmarks</title>
   </head>
 
   <body>
@@ -96,6 +216,7 @@
         <strong class="header-label">Repository:</strong>
         <a id="repository-link" rel="noopener"></a>
       </div>
+      <div class="os-toggles" id="os-toggles"></div>
     </header>
     <main id="main"></main>
     <footer>
@@ -109,41 +230,26 @@
     <script id="main-script">
       'use strict';
       (function() {
-        // Colors from https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
-        const toolColors = {
-          cargo: '#dea584',
-          go: '#00add8',
-          benchmarkjs: '#f1e05a',
-          benchmarkluau: '#000080',
-          pytest: '#3572a5',
-          googlecpp: '#f34b7d',
-          catch2: '#f34b7d',
-          julia: '#a270ba',
-          jmh: '#b07219',
-          benchmarkdotnet: '#178600',
-          customBiggerIsBetter: '#38ff38',
-          customSmallerIsBetter: '#ff3838',
-          _: '#333333'
-        };
+
+        // OS configuration: label, color, and the key to match in data.entries
+        const osConfig = [
+          { key: 'Linux',   label: 'Linux',   color: '#3fb950' },
+          { key: 'macOS',   label: 'macOS',   color: '#f0883e' },
+          { key: 'Windows', label: 'Windows', color: '#58a6ff' },
+        ];
+
+        // Track all chart instances for global toggling
+        const allCharts = [];
+
+        // Track which OS are currently visible
+        const osVisibility = {};
+        osConfig.forEach(os => osVisibility[os.key] = true);
+
+        // Chart.js global defaults for dark theme
+        Chart.defaults.global.defaultFontColor = '#8b949e';
+        Chart.defaults.global.defaultFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
         function init() {
-          function collectBenchesPerTestCase(entries) {
-            const map = new Map();
-            for (const entry of entries) {
-              const {commit, date, tool, benches} = entry;
-              for (const bench of benches) {
-                const result = { commit, date, tool, bench };
-                const arr = map.get(bench.name);
-                if (arr === undefined) {
-                  map.set(bench.name, [result]);
-                } else {
-                  arr.push(result);
-                }
-              }
-            }
-            return map;
-          }
-
           const data = window.BENCHMARK_DATA;
 
           // Render header
@@ -152,7 +258,7 @@
           repoLink.href = data.repoUrl;
           repoLink.textContent = data.repoUrl;
 
-          // Render footer
+          // Render download button
           document.getElementById('dl-button').onclick = () => {
             const dataUrl = 'data:,' + JSON.stringify(data, null, 2);
             const a = document.createElement('a');
@@ -161,120 +267,587 @@
             a.click();
           };
 
-          // Prepare data points for charts
-          return Object.keys(data.entries).map(name => ({
-            name,
-            dataSet: collectBenchesPerTestCase(data.entries[name]),
-          }));
-        }
-
-        function renderAllChars(dataSets) {
-
-          function renderGraph(parent, name, dataset) {
-            const canvas = document.createElement('canvas');
-            canvas.className = 'benchmark-chart';
-            parent.appendChild(canvas);
-
-            const color = toolColors[dataset.length > 0 ? dataset[0].tool : '_'];
-            const data = {
-              labels: dataset.map(d => d.commit.id.slice(0, 7)),
-              datasets: [
-                {
-                  label: name,
-                  data: dataset.map(d => d.bench.value),
-                  borderColor: color,
-                  backgroundColor: color + '60', // Add alpha for #rrggbbaa
-                }
-              ],
-            };
-            const options = {
-              scales: {
-                xAxes: [
-                  {
-                    scaleLabel: {
-                      display: true,
-                      labelString: 'commit',
-                    },
-                  }
-                ],
-                yAxes: [
-                  {
-                    scaleLabel: {
-                      display: true,
-                      labelString: dataset.length > 0 ? dataset[0].bench.unit : '',
-                    },
-                    ticks: {
-                      beginAtZero: true,
-                    }
-                  }
-                ],
-              },
-              tooltips: {
-                callbacks: {
-                  afterTitle: items => {
-                    const {index} = items[0];
-                    const data = dataset[index];
-                    return '\n' + data.commit.message + '\n\n' + data.commit.timestamp + ' committed by @' + data.commit.committer.username + '\n';
-                  },
-                  label: item => {
-                    let label = item.value;
-                    const { range, unit } = dataset[item.index].bench;
-                    label += ' ' + unit;
-                    if (range) {
-                      label += ' (' + range + ')';
-                    }
-                    return label;
-                  },
-                  afterLabel: item => {
-                    const { extra } = dataset[item.index].bench;
-                    return extra ? '\n' + extra : '';
-                  }
-                }
-              },
-              onClick: (_mouseEvent, activeElems) => {
-                if (activeElems.length === 0) {
-                  return;
-                }
-                // XXX: Undocumented. How can we know the index?
-                const index = activeElems[0]._index;
-                const url = dataset[index].commit.url;
-                window.open(url, '_blank');
-              },
-            };
-
-            new Chart(canvas, {
-              type: 'line',
-              data,
-              options,
-            });
-          }
-
-          function renderBenchSet(name, benchSet, main) {
-            const setElem = document.createElement('div');
-            setElem.className = 'benchmark-set';
-            main.appendChild(setElem);
-
-            const nameElem = document.createElement('h1');
-            nameElem.className = 'benchmark-title';
-            nameElem.textContent = name;
-            setElem.appendChild(nameElem);
-
-            const graphsElem = document.createElement('div');
-            graphsElem.className = 'benchmark-graphs';
-            setElem.appendChild(graphsElem);
-
-            for (const [benchName, benches] of benchSet.entries()) {
-              renderGraph(graphsElem, benchName, benches)
+          // Find which entry keys exist and map them to OS
+          // Entry keys look like "Doxa Benchmarks (Linux)" etc.
+          const osEntryMap = {};
+          for (const os of osConfig) {
+            const matchingKey = Object.keys(data.entries).find(k => k.includes('(' + os.key + ')'));
+            if (matchingKey) {
+              osEntryMap[os.key] = data.entries[matchingKey];
             }
           }
 
+          // Collect all unique benchmark names across all OS
+          const allBenchNames = new Set();
+          for (const os of osConfig) {
+            const entries = osEntryMap[os.key];
+            if (!entries) continue;
+            for (const entry of entries) {
+              for (const bench of entry.benches) {
+                allBenchNames.add(bench.name);
+              }
+            }
+          }
+
+          // For each benchmark name, collect data points per OS
+          // Result: Map<benchName, Map<osKey, dataPoints[]>>
+          const unifiedMap = new Map();
+          for (const benchName of allBenchNames) {
+            const osMap = new Map();
+            for (const os of osConfig) {
+              const entries = osEntryMap[os.key];
+              if (!entries) continue;
+              const points = [];
+              for (const entry of entries) {
+                const { commit, date, tool } = entry;
+                const bench = entry.benches.find(b => b.name === benchName);
+                if (bench) {
+                  points.push({ commit, date, tool, bench });
+                }
+              }
+              if (points.length > 0) {
+                osMap.set(os.key, points);
+              }
+            }
+            unifiedMap.set(benchName, osMap);
+          }
+
+          // Derive a section title from the entry keys (strip OS suffix)
+          const firstKey = Object.keys(data.entries)[0] || 'Benchmarks';
+          const sectionTitle = firstKey.replace(/\s*\(.*?\)\s*$/, '');
+
+          // Filter to only _mean benchmarks; keep full map for stddev/cv lookups
+          const meanMap = new Map();
+          for (const [benchName, osMap] of unifiedMap.entries()) {
+            if (benchName.endsWith('_mean')) {
+              meanMap.set(benchName, osMap);
+            }
+          }
+
+          return { unifiedMap, meanMap, sectionTitle };
+        }
+
+        // Look up a sibling benchmark value (e.g. _stddev, _cv) for a given
+        // mean benchmark name, OS key, and commit ID from the full unified map
+        function lookupSibling(unifiedMap, meanBenchName, suffix, osKey, commitId) {
+          const siblingName = meanBenchName.replace(/_mean$/, suffix);
+          const siblingOsMap = unifiedMap.get(siblingName);
+          if (!siblingOsMap) return null;
+          const points = siblingOsMap.get(osKey);
+          if (!points) return null;
+          const match = points.find(p => p.commit.id === commitId);
+          return match ? match.bench.value : null;
+        }
+
+        // Benchmark names that are NOT binarization algorithms
+        const nonBinarizationPrefixes = [
+          'BM_GlobalThreshold', 'BM_CompareImages', 'BM_NUBN', 'BM_SumDRDk',
+          'BM_Niblack_Chan', 'BM_Niblack_IntegralImage'
+        ];
+
+        function isBinarization(benchName) {
+          return !nonBinarizationPrefixes.some(prefix => benchName.startsWith(prefix));
+        }
+
+        function renderSummaryBarChart(unifiedMap, meanMap) {
           const main = document.getElementById('main');
-          for (const {name, dataSet} of dataSets) {
-            renderBenchSet(name, dataSet, main);
+
+          // Collect all binarization _mean benchmarks
+          const allBinarizationNames = [];
+          for (const benchName of meanMap.keys()) {
+            if (isBinarization(benchName)) {
+              allBinarizationNames.push(benchName);
+            }
+          }
+          if (allBinarizationNames.length === 0) return;
+
+          // Track which algorithms are visible
+          const algoVisibility = {};
+          allBinarizationNames.forEach(n => algoVisibility[n] = true);
+
+          // Track log scale state
+          let useLogScale = false;
+
+          // Precompute all data for all algorithms (we filter at render time)
+          const allBarPoints = {}; // osKey -> { benchName -> point }
+          let latestDate = 0;
+          for (const os of osConfig) {
+            allBarPoints[os.key] = {};
+            for (const benchName of allBinarizationNames) {
+              const osMap = meanMap.get(benchName);
+              const points = osMap ? osMap.get(os.key) : null;
+              if (points && points.length > 0) {
+                const lastPoint = points[points.length - 1];
+                allBarPoints[os.key][benchName] = { benchName, point: lastPoint };
+                if (lastPoint.date > latestDate) {
+                  latestDate = lastPoint.date;
+                }
+              }
+            }
+          }
+
+          const runDateStr = latestDate ? new Date(latestDate).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          }) : 'Unknown';
+
+          // Determine unit
+          let unit = '';
+          for (const os of osConfig) {
+            const first = Object.values(allBarPoints[os.key])[0];
+            if (first) { unit = first.point.bench.unit; break; }
+          }
+
+          // Build outer container
+          const wrapper = document.createElement('div');
+          wrapper.style.marginBottom = '32px';
+          wrapper.style.display = 'flex';
+          wrapper.style.flexDirection = 'column';
+          wrapper.style.alignItems = 'center';
+          main.appendChild(wrapper);
+
+          // Chart container (first, above controls)
+          const container = document.createElement('div');
+          container.className = 'benchmark-chart-container';
+          wrapper.appendChild(container);
+
+          // Controls row (below chart)
+          const controls = document.createElement('div');
+          controls.className = 'algo-controls';
+          controls.style.marginTop = '12px';
+          controls.style.marginBottom = '0';
+          controls.style.maxWidth = '1000px';
+          wrapper.appendChild(controls);
+
+          const label = document.createElement('span');
+          label.className = 'algo-controls-label';
+          label.textContent = 'Algorithms:';
+          controls.appendChild(label);
+
+          // Algorithm pills
+          const pills = [];
+          for (const benchName of allBinarizationNames) {
+            const displayName = benchName.replace(/^BM_/, '').replace(/_mean$/, '');
+            const pill = document.createElement('button');
+            pill.className = 'algo-pill active';
+            pill.textContent = displayName;
+            pill.addEventListener('click', () => {
+              algoVisibility[benchName] = !algoVisibility[benchName];
+              pill.classList.toggle('active', algoVisibility[benchName]);
+              rebuildBarChart();
+            });
+            controls.appendChild(pill);
+            pills.push({ benchName, pill });
+          }
+
+          // Log scale toggle (pushed to right via margin-left: auto in CSS)
+          const logBtn = document.createElement('button');
+          logBtn.className = 'scale-toggle';
+          logBtn.textContent = 'Log Scale';
+          logBtn.addEventListener('click', () => {
+            useLogScale = !useLogScale;
+            logBtn.classList.toggle('active', useLogScale);
+            rebuildBarChart();
+          });
+          controls.appendChild(logBtn);
+
+          let currentChart = null;
+          let currentChartEntry = null;
+
+          function rebuildBarChart() {
+            // Remove old chart from allCharts tracking
+            if (currentChartEntry) {
+              const idx = allCharts.indexOf(currentChartEntry);
+              if (idx !== -1) allCharts.splice(idx, 1);
+            }
+            if (currentChart) currentChart.destroy();
+
+            // Filter to visible algorithms
+            const visibleNames = allBinarizationNames.filter(n => algoVisibility[n]);
+            const displayNames = visibleNames.map(n =>
+              n.replace(/^BM_/, '').replace(/_mean$/, '')
+            );
+
+            // Build datasets for visible algorithms
+            const datasets = [];
+            const osDatasetIndices = {};
+            let datasetIdx = 0;
+            for (const os of osConfig) {
+              const values = [];
+              const points = [];
+              for (const benchName of visibleNames) {
+                const bp = allBarPoints[os.key][benchName];
+                if (bp) {
+                  values.push(bp.point.bench.value);
+                  points.push(bp);
+                } else {
+                  values.push(null);
+                  points.push(null);
+                }
+              }
+              datasets.push({
+                label: os.label,
+                data: values,
+                backgroundColor: os.color + 'cc',
+                borderColor: os.color,
+                borderWidth: 1,
+                _osKey: os.key,
+                _barPoints: points,
+              });
+              osDatasetIndices[os.key] = datasetIdx;
+              datasetIdx++;
+            }
+
+            // Clear and recreate canvas
+            container.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.style.minHeight = '400px';
+            container.appendChild(canvas);
+
+            const yAxesConfig = useLogScale ? {
+              type: 'logarithmic',
+              scaleLabel: { display: true, labelString: unit + ' (log)', fontColor: '#8b949e' },
+              gridLines: { color: '#21262d', zeroLineColor: '#30363d' },
+              ticks: {
+                fontColor: '#8b949e',
+                callback: function(value) {
+                  if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                  if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                  return value;
+                },
+              },
+            } : {
+              scaleLabel: { display: true, labelString: unit, fontColor: '#8b949e' },
+              gridLines: { color: '#21262d', zeroLineColor: '#30363d' },
+              ticks: { fontColor: '#8b949e', beginAtZero: true },
+            };
+
+            currentChart = new Chart(canvas, {
+              type: 'bar',
+              data: { labels: displayNames, datasets },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                  labels: { fontColor: '#8b949e', padding: 16, usePointStyle: true },
+                  onHover: function(e) { e.target.style.cursor = 'pointer'; },
+                  onLeave: function(e) { e.target.style.cursor = 'default'; },
+                },
+                title: {
+                  display: true,
+                  text: ['Binarization Algorithm Comparison — Latest Run', runDateStr],
+                  fontColor: '#e6edf3',
+                  fontSize: 16,
+                  fontStyle: 'normal',
+                  padding: 16,
+                },
+                scales: {
+                  xAxes: [{
+                    gridLines: { color: '#21262d', zeroLineColor: '#30363d' },
+                    ticks: { fontColor: '#e6edf3', fontSize: 12 },
+                  }],
+                  yAxes: [yAxesConfig],
+                },
+                tooltips: {
+                  backgroundColor: '#1c2128',
+                  titleFontColor: '#e6edf3',
+                  bodyFontColor: '#e6edf3',
+                  borderColor: '#30363d',
+                  borderWidth: 1,
+                  cornerRadius: 6,
+                  callbacks: {
+                    label: function(item) {
+                      const ds = datasets[item.datasetIndex];
+                      const bp = ds._barPoints[item.index];
+                      if (!bp) return ds.label + ': N/A';
+                      return ds.label + ': ' + Number(item.value).toFixed(2) + ' ' + bp.point.bench.unit;
+                    },
+                    afterLabel: function(item) {
+                      const ds = datasets[item.datasetIndex];
+                      const bp = ds._barPoints[item.index];
+                      if (!bp) return '';
+                      let result = bp.point.bench.extra ? '\n' + bp.point.bench.extra : '';
+                      const stddev = lookupSibling(unifiedMap, bp.benchName, '_stddev', ds._osKey, bp.point.commit.id);
+                      const cv = lookupSibling(unifiedMap, bp.benchName, '_cv', ds._osKey, bp.point.commit.id);
+                      if (stddev !== null) {
+                        result += '\nstddev: ' + stddev.toFixed(2) + ' ' + bp.point.bench.unit;
+                      }
+                      if (cv !== null) {
+                        result += '\ncv: ' + (cv * 100).toFixed(2) + '%';
+                      }
+                      return result;
+                    },
+                  },
+                },
+              },
+            });
+
+            // Apply OS visibility
+            for (const [osKey, idx] of Object.entries(osDatasetIndices)) {
+              const meta = currentChart.getDatasetMeta(idx);
+              meta.hidden = !osVisibility[osKey];
+            }
+            currentChart.update();
+
+            currentChartEntry = { chart: currentChart, osDatasetIndices };
+            allCharts.push(currentChartEntry);
+          }
+
+          // Initial render
+          rebuildBarChart();
+        }
+
+        function renderOsToggles() {
+          const container = document.getElementById('os-toggles');
+          for (const os of osConfig) {
+            const btn = document.createElement('button');
+            btn.className = 'os-toggle active';
+            btn.style.setProperty('--os-color', os.color);
+            btn.innerHTML = '<span class="indicator"></span>' + os.label;
+            btn.addEventListener('click', () => {
+              osVisibility[os.key] = !osVisibility[os.key];
+              btn.classList.toggle('active', osVisibility[os.key]);
+              updateAllCharts();
+            });
+            container.appendChild(btn);
           }
         }
 
-        renderAllChars(init()); // Start
+        function updateAllCharts() {
+          for (const { chart, osDatasetIndices } of allCharts) {
+            for (const [osKey, idx] of Object.entries(osDatasetIndices)) {
+              const meta = chart.getDatasetMeta(idx);
+              meta.hidden = !osVisibility[osKey];
+            }
+            chart.update();
+          }
+        }
+
+        function renderSectionTitle(sectionTitle) {
+          const main = document.getElementById('main');
+          const nameElem = document.createElement('h1');
+          nameElem.className = 'benchmark-title';
+          nameElem.textContent = sectionTitle;
+          main.appendChild(nameElem);
+        }
+
+        function renderAllCharts({ unifiedMap, meanMap, sectionTitle }) {
+          const main = document.getElementById('main');
+
+          const setElem = document.createElement('div');
+          setElem.className = 'benchmark-set';
+          main.appendChild(setElem);
+
+          const graphsElem = document.createElement('div');
+          graphsElem.className = 'benchmark-graphs';
+          setElem.appendChild(graphsElem);
+
+          for (const [benchName, osMap] of meanMap.entries()) {
+            renderGraph(graphsElem, benchName, osMap, unifiedMap);
+          }
+        }
+
+        function renderGraph(parent, benchName, osMap, unifiedMap) {
+          const container = document.createElement('div');
+          container.className = 'benchmark-chart-container';
+          parent.appendChild(container);
+
+          const canvas = document.createElement('canvas');
+          container.appendChild(canvas);
+
+          // Build datasets — one per OS
+          const datasets = [];
+          const osDatasetIndices = {};
+
+          // Collect all commit IDs across all OS for a unified x-axis
+          const allCommitIds = [];
+          const commitIdSet = new Set();
+          for (const os of osConfig) {
+            const points = osMap.get(os.key);
+            if (!points) continue;
+            for (const p of points) {
+              if (!commitIdSet.has(p.commit.id)) {
+                commitIdSet.add(p.commit.id);
+                allCommitIds.push(p.commit.id);
+              }
+            }
+          }
+
+          // Build label array from unified commits
+          const labels = allCommitIds.map(id => id.slice(0, 7));
+
+          let datasetIdx = 0;
+          for (const os of osConfig) {
+            const points = osMap.get(os.key);
+            if (!points) continue;
+
+            // Create a lookup from commit id to data point
+            const pointMap = new Map();
+            for (const p of points) {
+              pointMap.set(p.commit.id, p);
+            }
+
+            // Map data to the unified x-axis (null for missing commits)
+            const values = allCommitIds.map(id => {
+              const p = pointMap.get(id);
+              return p ? p.bench.value : null;
+            });
+
+            // Store full data points aligned to x-axis for tooltips
+            const alignedPoints = allCommitIds.map(id => pointMap.get(id) || null);
+
+            datasets.push({
+              label: os.label,
+              data: values,
+              borderColor: os.color,
+              backgroundColor: os.color + '26',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: os.color,
+              fill: true,
+              spanGaps: false,
+              _alignedPoints: alignedPoints,
+              _osKey: os.key,
+            });
+
+            osDatasetIndices[os.key] = datasetIdx;
+            datasetIdx++;
+          }
+
+          // Determine unit from first available data point
+          let unit = '';
+          for (const os of osConfig) {
+            const points = osMap.get(os.key);
+            if (points && points.length > 0) {
+              unit = points[0].bench.unit;
+              break;
+            }
+          }
+
+          const chart = new Chart(canvas, {
+            type: 'line',
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              legend: {
+                labels: {
+                  fontColor: '#8b949e',
+                  padding: 16,
+                  usePointStyle: true,
+                },
+                onHover: function(e) {
+                  e.target.style.cursor = 'pointer';
+                },
+                onLeave: function(e) {
+                  e.target.style.cursor = 'default';
+                },
+              },
+              title: {
+                display: true,
+                text: benchName.replace(/_mean$/, ''),
+                fontColor: '#e6edf3',
+                fontSize: 14,
+                fontStyle: 'normal',
+                padding: 12,
+              },
+              scales: {
+                xAxes: [{
+                  scaleLabel: {
+                    display: true,
+                    labelString: 'commit',
+                    fontColor: '#8b949e',
+                  },
+                  gridLines: {
+                    color: '#21262d',
+                    zeroLineColor: '#30363d',
+                  },
+                  ticks: {
+                    fontColor: '#8b949e',
+                  },
+                }],
+                yAxes: [{
+                  scaleLabel: {
+                    display: true,
+                    labelString: unit,
+                    fontColor: '#8b949e',
+                  },
+                  gridLines: {
+                    color: '#21262d',
+                    zeroLineColor: '#30363d',
+                  },
+                  ticks: {
+                    fontColor: '#8b949e',
+                    beginAtZero: true,
+                  },
+                }],
+              },
+              tooltips: {
+                backgroundColor: '#1c2128',
+                titleFontColor: '#e6edf3',
+                bodyFontColor: '#e6edf3',
+                borderColor: '#30363d',
+                borderWidth: 1,
+                cornerRadius: 6,
+                callbacks: {
+                  afterTitle: function(items) {
+                    const { datasetIndex, index } = items[0];
+                    const ds = datasets[datasetIndex];
+                    const point = ds._alignedPoints[index];
+                    if (!point) return '';
+                    return '\n' + point.commit.message + '\n\n' + point.commit.timestamp + ' committed by @' + point.commit.committer.username + '\n';
+                  },
+                  label: function(item) {
+                    const ds = datasets[item.datasetIndex];
+                    const point = ds._alignedPoints[item.index];
+                    if (!point) return ds.label + ': N/A';
+                    let label = ds.label + ': ' + item.value + ' ' + point.bench.unit;
+                    if (point.bench.range) {
+                      label += ' (' + point.bench.range + ')';
+                    }
+                    return label;
+                  },
+                  afterLabel: function(item) {
+                    const ds = datasets[item.datasetIndex];
+                    const point = ds._alignedPoints[item.index];
+                    if (!point) return '';
+                    let result = point.bench.extra ? '\n' + point.bench.extra : '';
+                    // Append stddev and CV from sibling benchmarks
+                    const stddev = lookupSibling(unifiedMap, benchName, '_stddev', ds._osKey, point.commit.id);
+                    const cv = lookupSibling(unifiedMap, benchName, '_cv', ds._osKey, point.commit.id);
+                    if (stddev !== null) {
+                      result += '\nstddev: ' + stddev.toFixed(2) + ' ' + point.bench.unit;
+                    }
+                    if (cv !== null) {
+                      result += '\ncv: ' + (cv * 100).toFixed(2) + '%';
+                    }
+                    return result;
+                  },
+                },
+              },
+              onClick: function(_mouseEvent, activeElems) {
+                if (activeElems.length === 0) return;
+                const elem = activeElems[0];
+                const dsIndex = elem._datasetIndex;
+                const index = elem._index;
+                const point = datasets[dsIndex]._alignedPoints[index];
+                if (point) {
+                  window.open(point.commit.url, '_blank');
+                }
+              },
+            },
+          });
+
+          allCharts.push({ chart, osDatasetIndices });
+        }
+
+        // Boot
+        renderOsToggles();
+        const initData = init();
+        renderSectionTitle(initData.sectionTitle);
+        renderSummaryBarChart(initData.unifiedMap, initData.meanMap);
+        renderAllCharts(initData);
+
       })();
     </script>
   </body>
