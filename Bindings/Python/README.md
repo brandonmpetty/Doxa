@@ -22,6 +22,7 @@ DoxaPy is an image binarization library focussing on local adaptive thresholding
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
 * Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
+* SIMD - SSE2, ARM NEON
 
 **Performance Metrics**
 * Overall Accuracy
@@ -77,9 +78,17 @@ doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.NICK, graysc
 ## Building and Test
 DoxaPy supports 64b Linux, Windows, and Mac OSX on Python 3.x. Starting with DoxaPy 0.9.4, Python 3.12 and above are supported with full ABI compatibility. This means that new versions of DoxaPy will only be published due to feature enhancements, not Python version support.
 
-**Local Test Setup**
+**Build from Project Root (Recommended)**
+```bash
+# From the Doxa project root
+cmake --preset python
+cmake --build build-python --config Release
+ctest --test-dir build-python -C Release
 ```
-clone https://github.com/brandonmpetty/Doxa
+
+**Build from this Directory**
+```bash
+git clone https://github.com/brandonmpetty/Doxa
 cd Doxa/Bindings/Python
 pip install -r requirements.txt
 python copy-cpp-files.py
@@ -89,7 +98,7 @@ python test/test_doxa.py
 ```
 
 **Local Package Build**
-```
+```bash
 python -m build
 ```
 

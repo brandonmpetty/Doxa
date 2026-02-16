@@ -1,0 +1,68 @@
+name: Performance Benchmarks
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  benchmark:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+            bench_exe: ./build-bench/Doxa.Bench/doxa_bench
+          - os: windows-latest
+            platform: Windows
+            bench_exe: ./build-bench/Doxa.Bench/Release/doxa_bench.exe
+          - os: macos-latest
+            platform: macOS
+            bench_exe: ./build-bench/Doxa.Bench/doxa_bench
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake --preset benchmarks
+
+    - name: Build
+      run: cmake --build build-bench --config Release
+
+    - name: Run Benchmarks
+      run: ${{ matrix.bench_exe }}
+           --benchmark_out=benchmark_results.json
+           --benchmark_out_format=json
+           --benchmark_min_time=1s
+           --benchmark_repetitions=5
+           --benchmark_report_aggregates_only=true
+
+    - name: Upload Benchmark Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results-${{ matrix.platform }}
+        path: benchmark_results.json
+
+    - name: Store Benchmark Results
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        tool: 'googlecpp'
+        output-file-path: benchmark_results.json
+        # Each platform gets its own independent dataset and history
+        name: 'Doxa Benchmarks (${{ matrix.platform }})'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        # Store history in gh-pages branch (only on push to master)
+        auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        # Alert on PRs if perf regresses beyond threshold
+        alert-threshold: '120%'
+        comment-on-alert: true
+        fail-on-alert: false

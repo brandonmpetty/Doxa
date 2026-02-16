@@ -41,6 +41,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)PNM.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Region.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sauvola.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SIMD.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SIMDOps.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Su.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TRSingh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Types.hpp" />

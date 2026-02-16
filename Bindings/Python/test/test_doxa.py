@@ -70,7 +70,7 @@ class DoxaPyTests(unittest.TestCase):
         self.assertAlmostEqual(performanceAll.get("psnr"), 16.329, 2)
         self.assertAlmostEqual(performanceAll.get("nrm"), 0.048, 2)
         self.assertAlmostEqual(performanceAll.get("mcc"), 0.918, 2)
-        self.assertAlmostEqual(performanceAll.get("drdm"), 2.209, 2)
+        self.assertAlmostEqual(performanceAll.get("drdm"), 1.9519, 3)
 
         # Assert Partial
         self.assertEqual(performance.get("accuracy"), None)

@@ -19,6 +19,10 @@ x64/
 x86/
 bld/
 build/
+build-cpp-tests/
+build-python/
+build-wasm/
+build-bench/
 [Bb]in/
 [Oo]bj/
 [Ll]og/

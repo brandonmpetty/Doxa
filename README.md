@@ -31,6 +31,7 @@ It is written in C++ but supports multiple language bindings.
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
 * Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
+* SIMD - Supporting: SSE2, ARM NEON, WASM SIMD128
 
 **Performance Metrics**
 * Overall Accuracy
@@ -67,6 +68,55 @@ PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party C++ frameworks like OpenCV and Qt.  Examples can be found under the Demo folder.
 
+### Building
+
+The core library is header-only and requires no build. For bindings and tests, use CMake presets:
+
+```bash
+# Build and run C++ unit tests
+cmake --preset cpp-tests
+cmake --build build-cpp-tests --config Release
+ctest --test-dir build-cpp-tests -C Release
+
+# Build and test Python bindings (requires Python 3.12+, nanobind)
+cmake --preset python
+cmake --build build-python --config Release
+ctest --test-dir build-python -C Release
+
+# Build and test WebAssembly (requires Emscripten in PATH)
+cmake --preset wasm
+cmake --build build-wasm --config Release
+ctest --test-dir build-wasm -C Release
+
+# Build and run performance benchmarks (Google Benchmark)
+cmake --preset benchmarks
+cmake --build build-bench --config Release
+./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
+./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
+
+# Build everything (C++ Tests, Python, WASM)
+cmake --preset all
+cmake --build build --config Release
+ctest --test-dir build -C Release
+```
+
+
+See [Bindings/Python/README.md](Bindings/Python/README.md) and [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md) for detailed instructions.
+
+### Performance Benchmarks
+The project uses [Google Benchmark](https://github.com/google/benchmark) for measuring runtime performance of SIMD optimizations, calculator backends, and core operations. Benchmarks are separate from unit tests to keep correctness and performance concerns independent.
+
+```bash
+# Run benchmarks long enough to lower CV %
+./build-bench/Doxa.Bench/doxa_bench --benchmark_min_time=1s --benchmark_repetitions=10 --benchmark_report_aggregates_only=true
+
+# Compare two runs (e.g., before/after a change, or across platforms)
+# Requires running doxa_bench with: --benchmark_out=results.json --benchmark_out_format=json
+python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarks before.json after.json
+```
+
+CI automatically tracks benchmark results per platform (Linux, Windows, macOS) and alerts on regressions in pull requests.
+
 ### Performance Analysis
 Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
 
@@ -79,7 +129,7 @@ Experimental WASM support has been added in order to expose ΔBF to the web, as 
 A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
 
 ## License
-CC0 - Brandon M. Petty, 2023
+CC0 - Brandon M. Petty, 2026
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

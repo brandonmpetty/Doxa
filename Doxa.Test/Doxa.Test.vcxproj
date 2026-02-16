@@ -36,7 +36,9 @@
     <ClCompile Include="BatainehTests.cpp" />
     <ClCompile Include="BinarizationTests.cpp" />
     <ClCompile Include="CalculatorTests.cpp" />
+    <ClCompile Include="ClassifiedPerformanceTests.cpp" />
     <ClCompile Include="ContrastImageTests.cpp" />
+    <ClCompile Include="DRDMTests.cpp" />
     <ClCompile Include="GrayscaleTests.cpp" />
     <ClCompile Include="GridCalcTests.cpp" />
     <ClCompile Include="ImageTests.cpp" />
@@ -45,13 +47,13 @@
     <ClCompile Include="MorphologyTests.cpp" />
     <ClCompile Include="PaletteTests.cpp" />
     <ClCompile Include="ParametersTests.cpp" />
-    <ClCompile Include="PerformanceTests.cpp" />
     <ClCompile Include="PNMTests.cpp" />
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SIMDTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -71,6 +73,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -86,6 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

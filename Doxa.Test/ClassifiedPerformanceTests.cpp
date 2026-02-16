@@ -4,7 +4,7 @@
 
 namespace Doxa::UnitTests
 {
-	TEST(PerformanceTests, PerformanceClassificationsTest)
+	TEST(ClassifiedPerformanceTests, PerformanceClassificationsTest)
 	{
 		ClassifiedPerformance::Classifications classification;
 		classification.truePositive = 3;
@@ -19,7 +19,7 @@ namespace Doxa::UnitTests
 		EXPECT_EQ(classification.Total(), 0);
 	}
 
-	TEST(PerformanceTests, PerformanceTest)
+	TEST(ClassifiedPerformanceTests, PerformanceTest)
 	{
 		Image control(3, 3);
 		control.Pixel(0, 0) = Palette::Black;
@@ -65,7 +65,7 @@ namespace Doxa::UnitTests
 		//EXPECT_EQ(ClassifiedPerformance::CalculateNRM(classifications), 0.00);
 	}
 
-	TEST(PerformanceTests, PSNRBoundsTest)
+	TEST(ClassifiedPerformanceTests, PSNRBoundsTest)
 	{
 		ClassifiedPerformance::Classifications classification;
 		classification.truePositive = 3;
@@ -76,7 +76,7 @@ namespace Doxa::UnitTests
 		EXPECT_TRUE(ClassifiedPerformance::CalculatePSNR(classification) > 1000);
 	}
 
-	TEST(PerformanceTests, FMeasureBoundsTest)
+	TEST(ClassifiedPerformanceTests, FMeasureBoundsTest)
 	{
 		ClassifiedPerformance::Classifications classification;
 		classification.truePositive = 0; // Possible Divide By Zero
@@ -87,7 +87,7 @@ namespace Doxa::UnitTests
 		EXPECT_EQ(ClassifiedPerformance::CalculateFMeasure(classification), 0.0);
 	}
 
-	TEST(PerformanceTests, NRMBoundsTest)
+	TEST(ClassifiedPerformanceTests, NRMBoundsTest)
 	{
 		ClassifiedPerformance::Classifications classification;
 		classification.truePositive = 0; // Possible Divide By Zero
@@ -98,40 +98,7 @@ namespace Doxa::UnitTests
 		EXPECT_TRUE(ClassifiedPerformance::CalculateNRM(classification) > 1000);
 	}
 
-	TEST(PerformanceTests, DRDMTest)
-	{
-		// (3, 4) = Black is changed to White
-		// One 8x8 Block with a 5x5 Window
-		Pixel8 dataGT[] = {
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::Black, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::Black,  Palette::Black,  Palette::Black,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::Black, Palette::White,
-			Palette::White,  Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::Black,
-		};
-		Image groundTruthImage(8, 8, dataGT);
-
-		Pixel8 dataExp[] = {
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::Black, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::Black,  Palette::White,  Palette::Black,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::White,
-			Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::Black, Palette::White,
-			Palette::White,  Palette::Black,  Palette::White,  Palette::White,  Palette::White,  Palette::White, Palette::White, Palette::Black,
-		};
-		Image expImage(8, 8, dataExp);
-
-		double drdm = DRDM::CalculateDRDM(groundTruthImage, expImage);
-
-		EXPECT_EQ((72357 + 72357 + 32359) / (double)1000000, drdm);
-	}
-
-	TEST(PerformanceTests, MCCTest)
+	TEST(ClassifiedPerformanceTests, MCCTest)
 	{
 		// Numbers and expected value pulled from: https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
 		ClassifiedPerformance::Classifications classification;
@@ -143,7 +110,7 @@ namespace Doxa::UnitTests
 		EXPECT_NEAR(ClassifiedPerformance::CalculateMCC(classification), 0.478, 0.001);
 	}
 
-	TEST(PerformanceTests, MCCTest_LargeValues)
+	TEST(ClassifiedPerformanceTests, ClassifiedPerformanceSauvola)
 	{
 		// MCC will generate some extremely large values.  Ensure we can handle those by using a real image.
 		std::string projFolder = TestUtilities::ProjectFolder();
@@ -158,7 +125,16 @@ namespace Doxa::UnitTests
 		bool canCompare = ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
 		EXPECT_TRUE(canCompare);
 
-		double result = ClassifiedPerformance::CalculateMCC(classifications);
-		EXPECT_NEAR(result, 0.918, 0.001);
+		const double accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
+		const double fm = ClassifiedPerformance::CalculateFMeasure(classifications);
+		const double mcc = ClassifiedPerformance::CalculateMCC(classifications);
+		const double nrm = ClassifiedPerformance::CalculateNRM(classifications);
+		const double psnr = ClassifiedPerformance::CalculatePSNR(classifications);
+
+		EXPECT_NEAR(accuracy, 97.671, 0.001);
+        EXPECT_NEAR(fm, 93.204, 0.001);
+        EXPECT_NEAR(mcc, 0.918, 0.001);
+        EXPECT_NEAR(nrm, 0.048, 0.001);
+        EXPECT_NEAR(psnr, 16.329, 0.001);
 	}
 }

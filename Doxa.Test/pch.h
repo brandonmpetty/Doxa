@@ -8,6 +8,8 @@
 #include <vector>
 #include <tuple>
 
+#include <SIMD.h>
+#include <SIMDOps.hpp>
 #include <PNM.hpp>
 #include <Otsu.hpp>
 #include <Bernsen.hpp>

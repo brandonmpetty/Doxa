@@ -5,6 +5,7 @@
 
 #include "Image.hpp"
 #include "Palette.hpp"
+#include "SIMDOps.hpp"
 
 
 namespace Doxa
@@ -43,23 +44,100 @@ namespace Doxa
 			if (controlImage.width != expirementImage.width || controlImage.height != expirementImage.height)
 				return false;
 
-			// Analyze
-			for (int i = 0; i < controlImage.size; ++i)
+			#if defined(DOXA_SIMD)
+				CompareImages_SIMD(classifications, controlImage.data, expirementImage.data, controlImage.size);
+			#else
+				CompareImages_STD(classifications, controlImage.data, expirementImage.data, controlImage.size);
+			#endif
+
+			return true;
+		}
+
+		/// <summary>
+		/// Scalar implementation of image comparison - always available
+		/// </summary>
+		static void CompareImages_STD(Classifications& classifications, const Pixel8* control, const Pixel8* experiment, int size)
+		{
+			for (int i = 0; i < size; ++i)
 			{
-				if (controlImage.data[i] == expirementImage.data[i])
-					if (expirementImage.data[i] == Palette::Black)
+				if (control[i] == experiment[i])
+					if (experiment[i] == Palette::Black)
 						classifications.truePositive++;
 					else
 						classifications.trueNegative++;
 				else // Not a match
-					if (expirementImage.data[i] == Palette::Black)
+					if (experiment[i] == Palette::Black)
 						classifications.falsePositive++;
 					else
 						classifications.falseNegative++;
 			}
-
-			return true;
 		}
+
+#if defined(DOXA_SIMD)
+		/// <summary>
+		/// SIMD implementation of image comparison - only available when SIMD is enabled
+		/// </summary>
+		static void CompareImages_SIMD(Classifications& classifications, const Pixel8* control, const Pixel8* experiment, int size)
+		{
+			using namespace SIMD;
+
+			int idx = 0;
+			const int simd_end = size - (size % SIMD_WIDTH);
+
+			vec128 black_vec = VEC_SPLAT_U8(Palette::Black);
+			vec128 ones_vec = VEC_SPLAT_U8(1);
+
+			// Accumulators for SIMD counts
+			int tp_sum = 0, tn_sum = 0, fp_sum = 0, fn_sum = 0;
+
+			for (; idx < simd_end; idx += SIMD_WIDTH) {
+				vec128 ctrl = VEC_LOAD(control + idx);
+				vec128 exp = VEC_LOAD(experiment + idx);
+
+				// match_mask: 0xFF where control == experiment, 0x00 otherwise
+				vec128 match_mask = VEC_CMPEQ_U8(ctrl, exp);
+				// black_mask: 0xFF where experiment == black, 0x00 otherwise
+				vec128 black_mask = VEC_CMPEQ_U8(exp, black_vec);
+
+				// TP: match AND black
+				vec128 tp_mask = VEC_AND(match_mask, black_mask);
+				// TN: match AND NOT black
+				vec128 tn_mask = VEC_ANDNOT(black_mask, match_mask);
+				// FP: NOT match AND black
+				vec128 fp_mask = VEC_ANDNOT(match_mask, black_mask);
+				// FN: NOT match AND NOT black
+				vec128 not_match = VEC_NOT(match_mask);
+				vec128 not_black = VEC_NOT(black_mask);
+				vec128 fn_mask = VEC_AND(not_match, not_black);
+
+				// Count set bytes (mask has 0xFF for set, we need count of 1s)
+				// AND with 1s to convert 0xFF to 0x01, then horizontal sum
+				tp_sum += vec_hsum_u8(VEC_AND(tp_mask, ones_vec));
+				tn_sum += vec_hsum_u8(VEC_AND(tn_mask, ones_vec));
+				fp_sum += vec_hsum_u8(VEC_AND(fp_mask, ones_vec));
+				fn_sum += vec_hsum_u8(VEC_AND(fn_mask, ones_vec));
+			}
+
+			classifications.truePositive = tp_sum;
+			classifications.trueNegative = tn_sum;
+			classifications.falsePositive = fp_sum;
+			classifications.falseNegative = fn_sum;
+
+			// Handle remaining pixels with scalar
+			for (; idx < size; ++idx) {
+				if (control[idx] == experiment[idx])
+					if (experiment[idx] == Palette::Black)
+						classifications.truePositive++;
+					else
+						classifications.trueNegative++;
+				else
+					if (experiment[idx] == Palette::Black)
+						classifications.falsePositive++;
+					else
+						classifications.falseNegative++;
+			}
+		}
+#endif // DOXA_SIMD
 
 		static double CalculateAccuracy(const Classifications& classifications)
 		{

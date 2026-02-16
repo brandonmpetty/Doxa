@@ -13,11 +13,13 @@
     <ClCompile Include="MorphologyTests.cpp" />
     <ClCompile Include="PaletteTests.cpp" />
     <ClCompile Include="ParametersTests.cpp" />
-    <ClCompile Include="PerformanceTests.cpp" />
     <ClCompile Include="PNMTests.cpp" />
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="GridCalcTests.cpp" />
+    <ClCompile Include="SIMDTests.cpp" />
+    <ClCompile Include="ClassifiedPerformanceTests.cpp" />
+    <ClCompile Include="DRDMTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageFixture.hpp" />
