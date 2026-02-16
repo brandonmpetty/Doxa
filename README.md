@@ -75,8 +75,8 @@ The core library is header-only and requires no build. For bindings and tests, u
 ```bash
 # Build and run C++ unit tests
 cmake --preset cpp-tests
-cmake --build build --config Release
-ctest --test-dir build -C Release
+cmake --build build-cpp-tests --config Release
+ctest --test-dir build-cpp-tests -C Release
 
 # Build and test Python bindings (requires Python 3.12+, nanobind)
 cmake --preset python
@@ -94,7 +94,7 @@ cmake --build build-bench --config Release
 ./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
 ./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
 
-# Build everything (C++, Python, WASM)
+# Build everything (C++ Tests, Python, WASM)
 cmake --preset all
 cmake --build build --config Release
 ctest --test-dir build -C Release

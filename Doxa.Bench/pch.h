@@ -11,7 +11,7 @@
 #include <SIMDOps.hpp>
 #include <PNM.hpp>
 #include <Algorithm.hpp>
-#include <Niblack.hpp>
+#include <BinarizationFactory.hpp>
 #include <ChanMeanVarianceCalc.hpp>
 #include <IntegralImageMeanVarianceCalc.hpp>
 #include <ClassifiedPerformance.hpp>

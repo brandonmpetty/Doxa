@@ -36,6 +36,7 @@ add_executable(
   ClassifiedPerformanceBenchmarks.cpp
   DRDMBenchmarks.cpp
   CalculatorBenchmarks.cpp
+  BinarizationBenchmarks.cpp
 )
 
 target_include_directories(doxa_bench PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

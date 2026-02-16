@@ -1,8 +1,11 @@
 name: Publish to npm
 
+# Disabled: NPM_TOKEN secret not yet configured.
+# Re-enable by uncommenting the release trigger below.
 on:
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
+  workflow_dispatch: # manual trigger only for now
 
 jobs:
   publish:

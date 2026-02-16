@@ -126,7 +126,7 @@ namespace Doxa
 				const int top = idx - binaryImageIn.width;
 				const int bottom = idx + binaryImageIn.width;
 				const bool checkLeft = idx % binaryImageIn.width;
-				const bool checkRight = (idx + 1) % binaryImageIn.width;;
+				const bool checkRight = (idx + 1) % binaryImageIn.width;
 
 				// Process Top Row
 				if (top > 0)

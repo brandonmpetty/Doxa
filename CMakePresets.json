@@ -4,7 +4,7 @@
     {
       "name": "cpp-tests",
       "displayName": "C++ Tests",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build-cpp-tests",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "DOXA_BUILD_CPP_TESTS": "ON"
@@ -13,7 +13,7 @@
     {
       "name": "cpp-tests-debug",
       "displayName": "C++ Tests (Debug)",
-      "binaryDir": "${sourceDir}/build-debug",
+      "binaryDir": "${sourceDir}/build-cpp-tests",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "DOXA_BUILD_CPP_TESTS": "ON"

@@ -74,7 +74,7 @@ namespace Doxa::UnitTests
 
 	TEST_F(BinarizationTests, BinarizationTRSinghTest)
 	{
-		const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
+		const Parameters parameters({ { "window", 27 }, { "k", 0.1 } });
 
 		Image imageTRSingh = TRSingh::ToBinaryImage(image, parameters);
 

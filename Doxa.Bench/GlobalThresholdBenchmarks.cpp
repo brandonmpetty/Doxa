@@ -4,7 +4,7 @@
 
 namespace Doxa::Benchmarks
 {
-	static void BM_ToBinary_Scalar(benchmark::State& state)
+	static void BM_GlobalThreshold_Scalar(benchmark::State& state)
 	{
 		const std::string dir = ResourcesDir();
 		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
@@ -18,12 +18,12 @@ namespace Doxa::Benchmarks
 
 		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
 	}
-	BENCHMARK(BM_ToBinary_Scalar);
+	BENCHMARK(BM_GlobalThreshold_Scalar);
 
 	
 #if defined(DOXA_SIMD)
 
-	static void BM_ToBinary_SIMD(benchmark::State& state)
+	static void BM_GlobalThreshold_SIMD(benchmark::State& state)
 	{
 		const std::string dir = ResourcesDir();
 		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
@@ -37,7 +37,7 @@ namespace Doxa::Benchmarks
 
 		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
 	}
-	BENCHMARK(BM_ToBinary_SIMD);
+	BENCHMARK(BM_GlobalThreshold_SIMD);
 
 #endif // DOXA_SIMD
 
