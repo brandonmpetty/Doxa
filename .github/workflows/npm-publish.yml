@@ -1,5 +1,8 @@
 name: Publish to npm
 
+permissions:
+  contents: read
+
 # Disabled: NPM_TOKEN secret not yet configured.
 # Re-enable by uncommenting the release trigger below.
 on:
