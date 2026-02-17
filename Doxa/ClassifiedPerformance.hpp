@@ -3,6 +3,7 @@
 #ifndef CLASSIFIEDPERFORMANCE_HPP
 #define CLASSIFIEDPERFORMANCE_HPP
 
+#include <vector>
 #include "Image.hpp"
 #include "Palette.hpp"
 #include "SIMDOps.hpp"
@@ -12,7 +13,7 @@ namespace Doxa
 {
 	/// <summary>
 	/// A performance calculator for the family of classification metrics.
-	/// Implemenations: Accuracy, F-Measure, PSNR, MCC and NMR
+	/// Implemenations: Accuracy, (pseudo)Recall, (pseudo)Precision, (pseudo)F-Measure, PSNR, MCC and NMR
 	/// </summary>
 	class ClassifiedPerformance
 	{
@@ -24,6 +25,11 @@ namespace Doxa
 			int falsePositive = 0;	// An incorrectly chosen black pixel
 			int falseNegative = 0;	// An incorrectly chosen white pixel
 
+			double wpTruePositive = 0.0;	// Weighted Precision
+			double wpFalsePositive = 0.0;	// Weighted Precision
+			double wrTruePositive = 0.0;	// Weighted Recall
+			double wrFalseNegative = 0.0;	// Weighted Recall
+
 			int Total() const noexcept
 			{
 				return truePositive + trueNegative + falsePositive + falseNegative;
@@ -32,10 +38,14 @@ namespace Doxa
 			void Clear() noexcept
 			{
 				truePositive = trueNegative = falsePositive = falseNegative = 0;
+				wpTruePositive = wpFalsePositive = wrTruePositive = wrFalseNegative = 0.0;
 			}
 		};
 
-		static bool CompareImages(Classifications& classifications, const Image& controlImage, const Image& expirementImage)
+		static bool CompareImages(
+			Classifications& classifications, 
+			const Image& controlImage, 
+			const Image& expirementImage)
 		{
 			// Initialize
 			classifications.Clear();
@@ -139,9 +149,81 @@ namespace Doxa
 		}
 #endif // DOXA_SIMD
 
+		static bool CompareImages(
+			ClassifiedPerformance::Classifications& classifications, 
+			const Image& controlImage, 
+			const Image& expirementImage, 
+			const std::vector<double>& weightsPrecision, 
+			const std::vector<double>& weightsRecall)
+		{
+			// Initialize
+			classifications.Clear();
+
+			// Verify Input
+			if (controlImage.width != expirementImage.width || controlImage.height != expirementImage.height)
+				return false;
+
+			// Ensure that weights are properly passed
+			if (!weightsPrecision.size() || !weightsRecall.size())
+				return CompareImages(classifications, controlImage, expirementImage);
+
+			// Analyze using Pseudo Weights
+			for (int i = 0; i < controlImage.size; ++i)
+			{
+				if (controlImage.data[i] == expirementImage.data[i])
+				{
+					if (expirementImage.data[i] == Palette::Black)
+					{
+						classifications.truePositive++;
+						classifications.wpTruePositive += weightsPrecision[i];
+						classifications.wrTruePositive += weightsRecall[i];
+					}
+					else
+					{
+						classifications.trueNegative++;
+					}
+				}
+				else // Not a match
+				{
+					if (expirementImage.data[i] == Palette::Black)
+					{
+						classifications.falsePositive++;
+						classifications.wpFalsePositive += weightsPrecision[i];
+					}
+					else
+					{
+						classifications.falseNegative++;
+						classifications.wrFalseNegative += weightsRecall[i];
+					}
+				}
+			}
+
+			return true;
+		}
+
 		static double CalculateAccuracy(const Classifications& classifications)
 		{
 			return (((double)classifications.truePositive + classifications.trueNegative) / classifications.Total()) * 100;
+		}
+
+		static double CalculateRecall(const Classifications& classifications)
+		{
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (classifications.truePositive == 0) return 0.0;
+
+			const double recall = (double)classifications.truePositive / (classifications.truePositive + classifications.falseNegative);
+
+			return recall * 100;
+		}
+
+		static double CalculatePrecision(const Classifications& classifications)
+		{
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (classifications.truePositive == 0) return 0.0;
+
+			const double precision = (double)classifications.truePositive / (classifications.truePositive + classifications.falsePositive);
+
+			return precision * 100;
 		}
 
 		static double CalculateFMeasure(const Classifications& classifications)
@@ -153,6 +235,51 @@ namespace Doxa
 			const double precision = (double)classifications.truePositive / (classifications.truePositive + classifications.falsePositive);
 
 			return ((2 * recall * precision) / (recall + precision)) * 100;
+		}
+
+		static double CalculatePseudoRecall(const Classifications& classifications)
+		{
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (classifications.wrTruePositive == 0) return 0.0;
+
+			const double pseudoRecall = classifications.wrTruePositive / (classifications.wrTruePositive + classifications.wrFalseNegative);
+
+			return pseudoRecall * 100;
+		}
+
+		static double CalculatePseudoPrecision(const Classifications& classifications)
+		{
+			const double pseudoTruePositive = classifications.wpTruePositive + classifications.truePositive;
+			const double pseudoFalsePositive = classifications.wpFalsePositive + classifications.falsePositive;
+
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (pseudoTruePositive == 0) return 0.0;
+
+			const double pseudoPrecision = pseudoTruePositive / (pseudoTruePositive + pseudoFalsePositive);
+
+			return pseudoPrecision * 100;
+		}
+
+		/// <summary>
+		/// Pseudo F-Measure
+		/// </summary>
+		/// <remarks>"Performance Evaluation Methodology for Historical Document Image Binarization", 2013.</remarks>
+		static double CalculatePseudoFMeasure(const Classifications& classifications)
+		{
+			const double pseudoTruePositivePrecision = classifications.wpTruePositive + classifications.truePositive;
+			const double pseudoFalsePositivePrecision = classifications.wpFalsePositive + classifications.falsePositive;
+			const double pseudoTruePositiveRecall = classifications.wrTruePositive;
+			const double pseudoFalseNegativeRecall = classifications.wrFalseNegative;
+
+			// Prevent divide by zero.  Range is 0.0 to 1.0
+			if (pseudoTruePositivePrecision == 0 || pseudoTruePositiveRecall == 0) return 0.0;
+
+			const double pseudoPrecision = pseudoTruePositivePrecision / (pseudoTruePositivePrecision + pseudoFalsePositivePrecision);
+			const double pseudoRecall = pseudoTruePositiveRecall / (pseudoTruePositiveRecall + pseudoFalseNegativeRecall);
+
+			const double pseudoFMeasure = ((2 * pseudoRecall * pseudoPrecision) / (pseudoRecall + pseudoPrecision)) * 100;
+
+			return pseudoFMeasure;
 		}
 
 		static double CalculatePSNR(const Classifications& classifications)

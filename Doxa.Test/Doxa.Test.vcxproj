@@ -48,6 +48,7 @@
     <ClCompile Include="PaletteTests.cpp" />
     <ClCompile Include="ParametersTests.cpp" />
     <ClCompile Include="PNMTests.cpp" />
+    <ClCompile Include="DIBCOUtilsTests.cpp" />
     <ClCompile Include="RegionTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

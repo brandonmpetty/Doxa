@@ -35,7 +35,8 @@ It is written in C++ but supports multiple language bindings.
 
 **Performance Metrics**
 * Overall Accuracy
-* F-Measure
+* F-Measure, Precision, Recall
+* Pseudo F-Meaure, Precision, Recall - "Performance Evaluation Methodology for Historical Document Image Binarization", 2013.
 * Peak Signal-To-Noise Ratio (PSNR)
 * Negative Rate Metric (NRM)
 * Matthews Correlation Coefficient (MCC)

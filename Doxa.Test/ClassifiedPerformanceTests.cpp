@@ -65,7 +65,36 @@ namespace Doxa::UnitTests
 		//EXPECT_EQ(ClassifiedPerformance::CalculateNRM(classifications), 0.00);
 	}
 
-	TEST(ClassifiedPerformanceTests, PSNRBoundsTest)
+	TEST(PerformanceTests, PseudoMetrics)
+	{
+		// NOTE: Based off of 2018 DIBCO Metrics PR sample
+		ClassifiedPerformance::Classifications classification;
+
+		/*
+		std::string projFolder = TestUtilities::ProjectFolder();
+		auto precisionWeights = DIBCOUtils::ReadWeightsFile(projFolder + "PR_PWeights.dat");
+		auto recallWeights = DIBCOUtils::ReadWeightsFile(projFolder + "PR_RWeights.dat");
+		auto controlImage = PNM::Read(projFolder + "PR_GT.pbm");
+		auto experimentImage = PNM::Read(projFolder + "PR_bin.pbm");
+
+		ClassifiedPerformance::CompareImages(classification, controlImage, experimentImage, precisionWeights, recallWeights);
+		*/
+
+		classification.truePositive = 61573;
+		classification.trueNegative = 251404;
+		classification.falsePositive = 1929;
+		classification.falseNegative = 6493;
+		classification.wpTruePositive = 0.0;
+		classification.wpFalsePositive = 644.86664099999996;
+		classification.wrTruePositive = 11562.182811000408;
+		classification.wrFalseNegative = 64.369443000000018;
+
+		EXPECT_NEAR(ClassifiedPerformance::CalculatePseudoPrecision(classification), 95.9875, 0.0001);
+		EXPECT_NEAR(ClassifiedPerformance::CalculatePseudoRecall(classification), 99.4464, 0.0001);
+		EXPECT_NEAR(ClassifiedPerformance::CalculatePseudoFMeasure(classification), 97.6863, 0.0001);
+	}
+
+	TEST(PerformanceTests, PSNRBoundsTest)
 	{
 		ClassifiedPerformance::Classifications classification;
 		classification.truePositive = 3;

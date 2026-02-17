@@ -45,6 +45,7 @@ add_executable(
   ClassifiedPerformanceTests.cpp
   DRDMTests.cpp
   PNMTests.cpp
+  DIBCOUtilsTests.cpp
   RegionTests.cpp
   SIMDTests.cpp
 )

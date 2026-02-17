@@ -39,6 +39,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Palette.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Parameters.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PNM.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DIBCOUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Region.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sauvola.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SIMD.h" />
