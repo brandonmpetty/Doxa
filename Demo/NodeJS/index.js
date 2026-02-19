@@ -9,14 +9,17 @@ const sharp = require('sharp');
 
 /**
  * An example image reader wrapper around Sharp.
- * @param {*} file Input file location.  Should be 32b RGBA.
+ * @param {object} doxa Initialized Doxa instance
+ * @param {*} file Input file location.  Should be 8b grayscale, 24b RGB, or 32b RGBA.
+ * @param {number} algorithm Grayscale algorithm enum value (e.g. doxa.grayscale.MEAN). Defaults to MEAN.
  */
-async function readImage(file) {
+async function readImage(doxa, file, algorithm) {
 	return sharp(file)
 		.raw()
 		.toBuffer({ resolveWithObject: true })
 		.then(content => {
-			return new Doxa.Image(content.info.width, content.info.height, content.data);
+			return doxa.toGrayscale(
+				content.data, content.info.width, content.info.height, content.info.channels, algorithm);
 		});
 }
 
@@ -26,10 +29,10 @@ async function readImage(file) {
  * @param {*} file Output file location.  This can be any supported format.
  */
 async function writeImage(image, file) {
-	return sharp(Buffer.from(image.data()), { 
-		raw: { 
-			width: image.width, 
-			height: image.height, 
+	return sharp(Buffer.from(image.data()), {
+		raw: {
+			width: image.width,
+			height: image.height,
 			channels: 1 // b&w
 		}
 	}).toFile(file);
@@ -38,17 +41,19 @@ async function writeImage(image, file) {
 async function demo() {
 
 	// Initialize the Doxa framework
-	const Algorithms = await Doxa.initialize();
+	const doxa = await Doxa.initialize();
 
-	// Read local image files to process
-	const gtImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
-	const image = await readImage('../../README/2JohnC1V3.png');
+	// Read in the Ground Truth - 8bit
+	const gtImage = await readImage(doxa, '../../README/2JohnC1V3-GroundTruth.png');
+
+	// Read in the target image - 8b, 24b, 32b.  If color, convert to grayscale.
+	const image = await readImage(doxa, '../../README/2JohnC1V3.png', doxa.grayscale.MEAN);
 
 	// Generate a binary image
-	const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
+	const binImage = doxa.toBinary(doxa.binarization.SAUVOLA, image, { window: 27, k: 0.10 });
 
 	// Get performance information
-	const perf = Doxa.Binarization.calculatePerformance(gtImage, binImage);
+	const perf = doxa.calculatePerformance(gtImage, binImage);
 	console.dir(perf);
 
 	// Write file

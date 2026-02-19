@@ -13,7 +13,7 @@ namespace Doxa
 {
 	/// <summary>
 	/// A performance calculator for the family of classification metrics.
-	/// Implemenations: Accuracy, (pseudo)Recall, (pseudo)Precision, (pseudo)F-Measure, PSNR, MCC and NMR
+	/// Implementations: Accuracy, (pseudo)Recall, (pseudo)Precision, (pseudo)F-Measure, PSNR, MCC and NMR
 	/// </summary>
 	class ClassifiedPerformance
 	{

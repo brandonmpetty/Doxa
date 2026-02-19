@@ -47,7 +47,7 @@ namespace Doxa
 				if (q1 == 0)
 					continue;
 
-				// q2 = Weighted Forground
+				// q2 = Weighted Foreground
 				const int q2 = N - q1;
 				if (q2 == 0)
 					break;
@@ -56,7 +56,7 @@ namespace Doxa
 
 				const double m1m2 =
 					(double)sumB / q1 -			// Mean Background
-					(double)(sum - sumB) / q2;	// Mean Forground
+					(double)(sum - sumB) / q2;	// Mean Foreground
 
 				// Note - There is an insidious casting situation going on here.
 				// If one were to multiple by q1 or q2 first, an explicit cast would be required!

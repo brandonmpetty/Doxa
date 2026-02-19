@@ -31,11 +31,19 @@ WARMUP_ITERATIONS = 3
 TIMING_ITERATIONS = 10
 
 
-def read_image(file):
-    """Read image and convert to grayscale using Qt method."""
+def read_image(file, algorithm=doxapy.GrayscaleAlgorithms.MEAN):
     full_path = os.path.join(RESOURCES_DIR, os.path.basename(file))
-    # Grayscale Conversion: Qt method
-    return (np.dot(np.array(Image.open(full_path).convert('RGB')), [11, 16, 5]).astype(np.uint16) // 32).astype(np.uint8)
+    image = Image.open(full_path)
+
+    # If already in grayscale or binary, do not convert it
+    if image.mode == 'L':
+        return np.array(image)
+    
+    # Read the color image
+    rgb_image = np.array(image.convert('RGB') if image.mode not in ('RGB', 'RGBA') else image)
+
+    # Use Doxa to convert to grayscale
+    return doxapy.to_grayscale(algorithm, rgb_image)
 
 
 def measure_time(func, warmup=WARMUP_ITERATIONS, iterations=TIMING_ITERATIONS):

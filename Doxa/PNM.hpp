@@ -40,24 +40,6 @@ namespace Doxa
 	public:
 
 		/// <summary>
-		/// Values associated with the Parameter: grayscale
-		/// The meaning of what these algorithms will produce is entirely up to the input image.
-		/// You should not apply Lightness on a Gamma Corrected color image, for example.
-		/// </summary>
-		enum GrayscaleConversion
-		{
-			Qt,
-			Mean,
-			BT601,
-			BT709,
-			BT2100,
-			Value,
-			Luster,
-			Lightness,
-			MinAvg
-		};
-
-		/// <summary>
 		/// Reads any supported (aka: binary) PNM image from the filesystem.
 		/// 24 and 32 bit images will be converted to 8-bit grayscale automatically.
 		/// The PNM format specifies 709 gamma compression, but some are know to use sRGB.
@@ -148,7 +130,8 @@ namespace Doxa
 
 		void Read24BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
 		{
-			auto toGrayscale = GrayscaleFactory(params);
+			GrayscaleFunc toGrayscale = GrayscaleAlgorithm(
+				static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN)));
 
 			Pixel8 red, green, blue;
 			for (int idx = 0; idx < image.size; ++idx)
@@ -157,7 +140,7 @@ namespace Doxa
 				green = inputStream.get();
 				blue = inputStream.get();
 
-				// If the pixel is already gray, do not apply apply the correction
+				// If the pixel is already gray, do not apply the correction
 				image.data[idx] = (red == green && green == blue) ?
 					blue :
 					toGrayscale(red, green, blue); // Convert to GrayScale
@@ -166,7 +149,8 @@ namespace Doxa
 
 		void Read32BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
 		{
-			auto toGrayscale = GrayscaleFactory(params);
+			GrayscaleFunc toGrayscale = GrayscaleAlgorithm(
+				static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN)));
 
 			Pixel8 red, green, blue, alpha;
 			for (int idx = 0; idx < image.size; ++idx)
@@ -174,9 +158,9 @@ namespace Doxa
 				red = inputStream.get();
 				green = inputStream.get();
 				blue = inputStream.get();
-				alpha = inputStream.get(); // TODO - Apply alpha to lower RGB illuminocity
+				alpha = inputStream.get(); // TODO - Apply alpha to lower RGB luminosity
 
-				// If the pixel is already gray, do not apply apply the correction
+				// If the pixel is already gray, do not apply the correction
 				image.data[idx] = (red == green && green == blue) ?
 					blue :
 					toGrayscale(red, green, blue); // Convert to GrayScale
@@ -189,7 +173,7 @@ namespace Doxa
 
 			inputStream >> magicNumber;
 
-			// Note: We do not currently suppor the ASCII formats (P1, P2, P3)
+			// Note: We do not currently support the ASCII formats (P1, P2, P3)
 
 			if (magicNumber == "P4") // PBM 1 bit - Binary
 			{
@@ -348,53 +332,20 @@ namespace Doxa
 			outputStream.write(reinterpret_cast<char *>(image.data), size);
 		}
 
-		/// <summary>
-		/// Returns a specific Grayscale algorithm based on parameter configuration.
-		/// Defaulting to: Mean
-		/// This default may change in the future, as Mean is expected to perform better.
-		/// </summary>
-		/// <param name="params">Must set: grayscale</param>
-		/// <returns>A Grayscale algorithm</returns>
-		std::function<Pixel8 (Pixel8, Pixel8, Pixel8)> GrayscaleFactory(const Parameters& params)
+		GrayscaleFunc GrayscaleAlgorithm(GrayscaleAlgorithms algorithm)
 		{
-			// TODO: Add support for sRGB and 709 conversion to Linear RGB, then to gray, then potentially gamma corrected.
-			std::function<Pixel8(Pixel8, Pixel8, Pixel8)> algorithm;
-
-			int gsEnum = params.Get("grayscale", (int)GrayscaleConversion::Mean);
-
-			switch (gsEnum)
+			switch (algorithm)
 			{
-			case GrayscaleConversion::Qt:
-				algorithm = Grayscale::Qt<Pixel8>;
-				break;
-			case GrayscaleConversion::Mean:
-				algorithm = Grayscale::Mean<Pixel8>;
-				break;
-			case GrayscaleConversion::BT601:
-				algorithm = Grayscale::BT601<Pixel8>;
-				break;
-			case GrayscaleConversion::BT709:
-				algorithm = Grayscale::BT709<Pixel8>;
-				break;
-			case GrayscaleConversion::BT2100:
-				algorithm = Grayscale::BT2100<Pixel8>;
-				break;
-			case GrayscaleConversion::Value:
-				algorithm = Grayscale::Value<Pixel8>;
-				break;
-			case GrayscaleConversion::Luster:
-				algorithm = Grayscale::Luster<Pixel8>;
-				break;
-			case GrayscaleConversion::Lightness:
-				// This requires a change in colorspace.  sRGB is assumed.
-				algorithm = Grayscale::sRgbToLightness;
-				break;
-			case GrayscaleConversion::MinAvg:
-				algorithm = Grayscale::MinAvg<Pixel8>;
-				break;
+				case GrayscaleAlgorithms::QT:        return Grayscale::Qt<Pixel8>;
+				case GrayscaleAlgorithms::BT601:     return Grayscale::BT601<Pixel8>;
+				case GrayscaleAlgorithms::BT709:     return Grayscale::BT709<Pixel8>;
+				case GrayscaleAlgorithms::BT2100:    return Grayscale::BT2100<Pixel8>;
+				case GrayscaleAlgorithms::VALUE:     return Grayscale::Value<Pixel8>;
+				case GrayscaleAlgorithms::LUSTER:    return Grayscale::Luster<Pixel8>;
+				case GrayscaleAlgorithms::LIGHTNESS: return Grayscale::sRgbToLightness;
+				case GrayscaleAlgorithms::MINAVG:    return Grayscale::MinAvg<Pixel8>;
+				default:                             return Grayscale::Mean<Pixel8>;
 			}
-
-			return algorithm;
 		}
 	};
 }

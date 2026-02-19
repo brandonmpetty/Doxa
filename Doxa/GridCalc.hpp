@@ -44,7 +44,7 @@ namespace Doxa
 
 		/// <summary>
 		/// Iterates the image, calculating the corners of the window.
-		/// Window Size and how far windows are apart from each other are somewhat indepenent.
+		/// Window Size and how far windows are apart from each other are somewhat independent.
 		/// Distances between 2 and Window Size are possible.
 		/// </summary>
 		template<typename Processor>

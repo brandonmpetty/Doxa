@@ -141,29 +141,49 @@ namespace Doxa::UnitTests
 
 	TEST(ClassifiedPerformanceTests, ClassifiedPerformanceSauvola)
 	{
-		// MCC will generate some extremely large values.  Ensure we can handle those by using a real image.
 		std::string projFolder = TestUtilities::ProjectFolder();
 
+		// Grayscale Image
 		const std::string filePathBinary = projFolder + "2JohnC1V3-Sauvola.pbm";
 		Image binaryImage = PNM::Read(filePathBinary);
 
+		// Ground Truth
 		const std::string filePathGT = projFolder + "2JohnC1V3-GroundTruth.pbm";
 		Image groundTruthImage = PNM::Read(filePathGT);
 
+		// Load Pseudo Weights
+		const std::string filePathRWeights = projFolder + "2JohnC1V3-GroundTruth_RWeights.dat";
+		auto rWeights = DIBCOUtils::ReadWeightsFile(filePathRWeights);
+
+		const std::string filePathPWeights = projFolder + "2JohnC1V3-GroundTruth_PWeights.dat";
+		auto pWeights = DIBCOUtils::ReadWeightsFile(filePathPWeights);
+
+		// Run Classified Metrics
 		ClassifiedPerformance::Classifications classifications;
-		bool canCompare = ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
+		bool canCompare = ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, pWeights, rWeights);
 		EXPECT_TRUE(canCompare);
 
 		const double accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
 		const double fm = ClassifiedPerformance::CalculateFMeasure(classifications);
+		const double recall = ClassifiedPerformance::CalculateRecall(classifications);
+		const double precision = ClassifiedPerformance::CalculatePrecision(classifications);
+		const double pfm = ClassifiedPerformance::CalculatePseudoFMeasure(classifications);
+		const double precall = ClassifiedPerformance::CalculatePseudoRecall(classifications);
+		const double pprecision = ClassifiedPerformance::CalculatePseudoPrecision(classifications);
 		const double mcc = ClassifiedPerformance::CalculateMCC(classifications);
 		const double nrm = ClassifiedPerformance::CalculateNRM(classifications);
 		const double psnr = ClassifiedPerformance::CalculatePSNR(classifications);
 
+		// Test
 		EXPECT_NEAR(accuracy, 97.671, 0.001);
-        EXPECT_NEAR(fm, 93.204, 0.001);
-        EXPECT_NEAR(mcc, 0.918, 0.001);
-        EXPECT_NEAR(nrm, 0.048, 0.001);
-        EXPECT_NEAR(psnr, 16.329, 0.001);
+		EXPECT_NEAR(fm, 93.204, 0.001);
+		EXPECT_NEAR(recall, 91.3811, 0.001);
+		EXPECT_NEAR(precision, 95.1025, 0.001);
+		EXPECT_NEAR(pfm, 93.393, 0.001);
+		EXPECT_NEAR(precall, 92.7954, 0.001);
+		EXPECT_NEAR(pprecision, 93.9983, 0.001);
+		EXPECT_NEAR(mcc, 0.918, 0.001);
+		EXPECT_NEAR(nrm, 0.048, 0.001);
+		EXPECT_NEAR(psnr, 16.329, 0.001);
 	}
 }

@@ -30,8 +30,8 @@ namespace Doxa
 				// This adapts his formula to 8bit grayscale to avoid conversion operations.
 				constexpr double R = 255.0;
 
-				// TR Singh's algorith does not expressly mention the need for an absolute value.
-				// However, I beleive it is implied because we are talking about deviation
+				// TR Singh's algorithm does not expressly mention the need for an absolute value.
+				// However, I believe it is implied because we are talking about deviation
 				double meandev = std::abs((double)Algorithm::grayScaleImageIn.data[position] - mean);
 
 				// This clamping operation prevents a divide by zero situation

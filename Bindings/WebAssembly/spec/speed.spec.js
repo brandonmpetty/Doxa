@@ -7,9 +7,6 @@
  * - GlobalThresholding (Otsu) binarization
  * - Full Performance calculation (ClassifiedPerformance + DRDM)
  *
- * Note: The WebAssembly binding does not expose separate DRDM or ClassifiedPerformance
- * functions. Use the Python binding (calculate_performance_ex) for isolated measurements.
- *
  * Run with: npx jasmine spec/speed.spec.js
  */
 
@@ -19,6 +16,8 @@ const { Doxa } = require('../dist/doxa.js');
 // Number of iterations for timing
 const WARMUP_ITERATIONS = 3;
 const TIMING_ITERATIONS = 10;
+
+let doxa;
 
 /**
  * Read an image file and convert to Doxa.Image
@@ -31,7 +30,7 @@ async function readImage(file) {
     ctx.drawImage(image, 0, 0);
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    return new Doxa.Image(imageData.width, imageData.height, imageData.data);
+    return doxa.fromImageData(imageData);
 }
 
 /**
@@ -90,7 +89,6 @@ ${name}
 }
 
 describe("Doxa Speed Test Suite", function() {
-    let Algorithms;
     let grayscaleImage;
     let groundTruthImage;
     let binaryImage;
@@ -105,7 +103,7 @@ describe("Doxa Speed Test Suite", function() {
         console.log(`Timing iterations: ${TIMING_ITERATIONS}`);
 
         // Initialize WASM module
-        Algorithms = await Doxa.initialize();
+        doxa = await Doxa.initialize();
 
         // Load test images
         console.log('\nLoading test images...');
@@ -137,7 +135,7 @@ describe("Doxa Speed Test Suite", function() {
         const params = { window: 75, k: 0.2 };
 
         const results = measureTime(() => {
-            return Doxa.Binarization.toBinary(Algorithms.SAUVOLA, grayscaleImage, params);
+            return doxa.toBinary(doxa.binarization.SAUVOLA, grayscaleImage, params);
         });
 
         console.log(formatResults('Sauvola', results, imageWidth, imageHeight));
@@ -148,7 +146,7 @@ describe("Doxa Speed Test Suite", function() {
         const params = { window: 75, k: 0.2 };
 
         const results = measureTime(() => {
-            return Doxa.Binarization.toBinary(Algorithms.WAN, grayscaleImage, params);
+            return doxa.toBinary(doxa.binarization.WAN, grayscaleImage, params);
         });
 
         console.log(formatResults('WAN', results, imageWidth, imageHeight));
@@ -157,7 +155,7 @@ describe("Doxa Speed Test Suite", function() {
 
     it("Otsu (GlobalThresholding) binarization performance", function() {
         const results = measureTime(() => {
-            return Doxa.Binarization.toBinary(Algorithms.OTSU, grayscaleImage, {});
+            return doxa.toBinary(doxa.binarization.OTSU, grayscaleImage, {});
         });
 
         console.log(formatResults('Otsu (GlobalThresholding)', results, imageWidth, imageHeight));
@@ -172,7 +170,7 @@ describe("Doxa Speed Test Suite", function() {
         // Note: The WebAssembly binding calculates ClassifiedPerformance and DRDM together.
         // Use Python binding's calculate_performance_ex for isolated measurements.
         const results = measureTime(() => {
-            return Doxa.Binarization.calculatePerformance(groundTruthImage, binaryImage);
+            return doxa.calculatePerformance(groundTruthImage, binaryImage);
         });
 
         console.log(formatResults('Full Performance (ClassifiedPerformance + DRDM)', results, imageWidth, imageHeight));

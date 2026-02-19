@@ -25,27 +25,14 @@ npm run build:dev
 npm test
 ```
 
-### Using CMake Directly
+### Using CMake
 
 ```bash
 # From project root
-emcmake cmake -S . -B build-wasm -DCMAKE_BUILD_TYPE=Release
+cmake --preset wasm
 cmake --build build-wasm --config Release
 ctest --test-dir build-wasm -C Release
 ```
-
-### Build as Part of Full Project
-
-You can also build WASM along with C++ tests and Python bindings from the project root:
-
-```bash
-# From project root - builds everything (requires emcmake in PATH)
-cmake --preset all
-cmake --build build --config Release
-ctest --test-dir build -C Release
-```
-
-All output will be placed in the *dist* folder.
 
 ### Run the Web Demo
 

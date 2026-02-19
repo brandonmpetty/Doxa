@@ -4,10 +4,12 @@ const { Doxa } = require('../dist/doxa.js');
 
 describe("Doxa Image Class Test Suite", function() {
 
+    let doxa;
+
     beforeAll(async function() {
 
         // Initializing is required for setting up the WASM module.
-        this.Algorithms = await Doxa.initialize();
+        doxa = await Doxa.initialize();
     });
 
     it("Constructor no arguments", function() {
@@ -36,15 +38,15 @@ describe("Doxa Image Class Test Suite", function() {
         image.free();
     });
 
-    it("Constructor with Data", function() {
+    it("Constructor with 8-bit Data", function() {
 
-        const rgba = [
-            255,255,255,0,   0,0,0,0,      128,128,128,0,
-            255,0,0,0,       0,255,0,0,    0,0,255,0,
-            70,80,90,0,      90,80,70,0,   80,90,70,0
-        ];
+        const gray = new Uint8Array([
+            255, 0, 128,
+            85, 85, 85,
+            80, 80, 80
+        ]);
 
-        const image = new Doxa.Image(3, 3, rgba);
+        const image = new Doxa.Image(3, 3, gray);
 
         expect(image.width).toBe(3);
         expect(image.height).toBe(3);
@@ -65,24 +67,27 @@ describe("Doxa Image Class Test Suite", function() {
 
         expect(image.width).toBe(2);
         expect(image.height).toBe(3);
-        expect(image.size).toBe(6); // Initialize Size
+        expect(image.size).toBe(6);
+        expect(image.bufferSize).toBe(6);
 
         image.initialize(3,3);
 
         expect(image.width).toBe(3);
         expect(image.height).toBe(3);
-        expect(image.size).toBe(9); // Buffer Increased
+        expect(image.size).toBe(9);
+        expect(image.bufferSize).toBe(9); // Buffer grew
 
         image.initialize(2,1);
 
         expect(image.width).toBe(2);
         expect(image.height).toBe(1);
-        expect(image.size).toBe(9); // Buffer Retained
+        expect(image.size).toBe(2);       // Reflects actual image
+        expect(image.bufferSize).toBe(9); // Buffer retained
 
         image.free();
     });
 
-    it("to8BitImage", async function() {
+    it("Grayscale fromImageData", function() {
 
         const rgba = new createImageData(new Uint8ClampedArray([
             255,255,255,0,   0,0,0,0,      128,128,128,0,
@@ -90,51 +95,51 @@ describe("Doxa Image Class Test Suite", function() {
             70,80,90,0,      90,80,70,0,   80,90,70,0
         ]), 3, 3);
 
-        const gray = [];
+        const image = doxa.fromImageData(rgba);
 
-        const image = new Doxa.Image();
-        image.to8BitImage(gray, rgba);
-
-        expect(gray).toEqual([
+        // MEAN grayscale: (r+g+b)/3
+        expect(Array.from(image.data())).toEqual([
             255, 0, 128,
             85, 85, 85,
             80, 80, 80
         ]);
+
+        image.free();
     });
 
-    it("from8BitImage", function() {
+    it("toImageData", function() {
 
-        const _8bit = [
+        const gray = new Uint8Array([
             255, 0, 128,
             85, 85, 85,
             70, 70, 70
-        ];
+        ]);
 
-        const _32bit = new createImageData(3, 3);
+        const image = new Doxa.Image(3, 3, gray);
+        const imageData = new createImageData(3, 3);
+        image.toImageData(imageData);
 
-        const image = new Doxa.Image();
-        image.from8BitImage(_32bit, _8bit);
-
-        expect(Array.from(_32bit.data)).toEqual([
+        expect(Array.from(imageData.data)).toEqual([
             255,255,255,255,   0,0,0,255,      128,128,128,255,
             85,85,85,255,      85,85,85,255,   85,85,85,255,
             70,70,70,255,      70,70,70,255,   70,70,70,255
         ]);
+
+        image.free();
     });
 
     it("draw", function() {
 
         const canvas = createCanvas(3, 3);
 
-        const rgba = [
+        const rgba = new createImageData(new Uint8ClampedArray([
             255,255,255,0,   0,0,0,0,         128,128,128,0,
             255,0,0,0,       0,255,0,0,       0,0,255,0,
             0,0,0,0,         255,255,255,0,   0,0,0,0,
-        ];
+        ]), 3, 3);
 
-        // Create an Image object that will be converted to Grayscale
-        // Doxa only processes 8bit images
-        const image = new Doxa.Image(3, 3, rgba);
+        // Create an Image via Grayscale conversion
+        const image = doxa.fromImageData(rgba);
 
         // Draw image onto our canvas
         image.draw(canvas);
@@ -146,5 +151,7 @@ describe("Doxa Image Class Test Suite", function() {
             85,85,85,255,      85,85,85,255,      85,85,85,255,
             0,0,0,255,         255,255,255,255,   0,0,0,255
         ]);
+
+        image.free();
     });
 });

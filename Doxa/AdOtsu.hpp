@@ -18,7 +18,7 @@ namespace Doxa
 	/// 
 	/// This is the core, non-multi-scale, AdOtsu algorithm referenced in (5) of their paper.
 	/// It should be noted that the paper uses a special color to grayscale algorithm in order to create a
-	/// "non-sensitive gray-value image."  This would be "GrayscaleConversion::MinAvg".
+	/// "non-sensitive gray-value image."  This would be "GrayscaleAlgorithms::MINAVG".
 	/// 
 	/// The second iteration of this algorithm was introduced a year later in their work:
 	/// "AdOtsu: An adaptive and parameterless generalization of Otsu’s method for document image binarization"
