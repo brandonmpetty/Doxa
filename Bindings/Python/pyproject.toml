@@ -31,7 +31,8 @@ sdist.exclude = [
     "copy-cpp-files.py",
     "DoxaPy.ipynb",
     ".gitignore",
-    "test"
+    "test",
+    "dist"
 ]
 
 [tool.cibuildwheel]

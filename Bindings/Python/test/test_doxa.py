@@ -27,8 +27,7 @@ def read_image(file, algorithm=doxapy.GrayscaleAlgorithms.QT):
 
 def read_weights(file):
     full_path = os.path.join(RESOURCES_DIR, os.path.basename(file))
-    with open(full_path) as f:
-        return [float(x) for x in f.read().split()]
+    return doxapy.read_weights(full_path)
 
 
 class DoxaPyTests(unittest.TestCase):

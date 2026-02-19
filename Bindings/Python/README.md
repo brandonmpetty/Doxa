@@ -45,8 +45,9 @@ from PIL import Image
 import numpy as np
 import doxapy
 
-# Read an image.  If its color, use one of our many Grayscale algorithms to convert it
+
 def read_image(file, algorithm=doxapy.GrayscaleAlgorithms.MEAN):
+    """Read an image.  If its color, use one of our many Grayscale algorithms to convert it."""
     image = Image.open(file)
 
     # If already in grayscale or binary, do not convert it
@@ -96,6 +97,11 @@ ctest --test-dir build-python -C Release
 **Local Package Build**
 ```bash
 python -m build
+```
+
+**Local Wheel Build**
+```bash
+pip wheel . --no-deps
 ```
 
 ## License
