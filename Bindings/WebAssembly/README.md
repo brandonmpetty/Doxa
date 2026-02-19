@@ -31,6 +31,7 @@ npm test
 # From project root
 cmake --preset wasm
 cmake --build build-wasm --config Release
+npm install --prefix Bindings/WebAssembly
 ctest --test-dir build-wasm -C Release
 ```
 

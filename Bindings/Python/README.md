@@ -89,6 +89,7 @@ git clone --depth 1 https://github.com/brandonmpetty/Doxa.git
 cd Doxa
 cmake --preset python
 cmake --build build-python --config Release
+pip install -r Bindings/Python/requirements.txt
 ctest --test-dir build-python -C Release
 ```
 

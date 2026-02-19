@@ -4,8 +4,7 @@ import numpy as np
 import os
 
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'build'))) # Linux .so
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'build', 'Release'))) # Windows .pyd
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dist')))
 
 import doxapy
 

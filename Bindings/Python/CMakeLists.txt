@@ -73,4 +73,13 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|ARM64")
 
 endif()
 
+# Copy built module to dist/ directory (mirrors WASM pattern)
+add_custom_command(TARGET doxapy POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/dist
+    COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:doxapy>
+        ${CMAKE_CURRENT_SOURCE_DIR}/dist/
+    COMMENT "Copying doxapy module to dist/"
+)
+
 install(TARGETS doxapy LIBRARY DESTINATION doxapy)

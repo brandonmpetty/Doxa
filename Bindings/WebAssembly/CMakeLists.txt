@@ -62,7 +62,14 @@ add_custom_command(TARGET doxaWasm POST_BUILD
 include(CTest)
 enable_testing()
 
-find_program(NPM_EXECUTABLE NAMES npm.cmd npm)
+# Platform-specific script extension (avoid picking up .cmd on WSL2)
+if(WIN32)
+    set(CMD_EXT ".cmd")
+else()
+    set(CMD_EXT "")
+endif()
+
+find_program(NPM_EXECUTABLE NAMES npm${CMD_EXT})
 
 if(NPM_EXECUTABLE)
     add_test(NAME wasm_tests

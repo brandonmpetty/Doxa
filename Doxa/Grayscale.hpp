@@ -205,19 +205,6 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// A normalized implementation since we are usually not working with decimal.
-		/// This assumes that RGB are Linear values.  It is unlikely you will use this
-		/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
-		/// 
-		/// C++ Note: Some compilers do not like template specialization defined in the class.
-		/// </summary>
-		template<>
-		inline constexpr Pixel8 Lightness(Pixel8 r, Pixel8 g, Pixel8 b)
-		{
-			return Lightness((double)r / 255, (double)g / 255, (double)b / 255) * 255;
-		}
-
-		/// <summary>
 		/// CIELAB & CIELUV L Value.  Calculates Lightness when RGB are non-linear
 		/// sRGB values.  Since almost every RGB color value we will see is sRGB,
 		/// this formula should be used instead of Lightness(r,g,b).
@@ -301,6 +288,19 @@ namespace Doxa
 			}
 		}
 	};
+
+	/// <summary>
+	/// A normalized implementation since we are usually not working with decimal.
+	/// This assumes that RGB are Linear values.  It is unlikely you will use this
+	/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
+	///
+	/// C++ Note: Some compilers do not like template specialization defined in the class.
+	/// </summary>
+	template<>
+	inline constexpr Pixel8 Grayscale::Lightness(Pixel8 r, Pixel8 g, Pixel8 b)
+	{
+		return Lightness((double)r / 255, (double)g / 255, (double)b / 255) * 255;
+	}
 }
 
 

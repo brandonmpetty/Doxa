@@ -23,8 +23,7 @@
   "author": "Brandon M. Petty",
   "license": "CC0-1.0",
   "devDependencies": {
-    "canvas": "^2.11.2",
-    "jasmine": "^5.1.0",
-    "sharp": "^0.32.5"
+    "canvas": "3.2.1",
+    "jasmine": "6.0.0"
   }
 }
