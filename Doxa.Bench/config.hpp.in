@@ -1,0 +1,2 @@
+#pragma once
+#define DOXA_BENCH_RESOURCES_DIR "@DOXA_RESOURCES_DIR@"

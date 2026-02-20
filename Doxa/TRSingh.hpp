@@ -24,10 +24,21 @@ namespace Doxa
 			const int windowSize = parameters.Get("window", 75);
 			const double k = parameters.Get("k", 0.2);
 
-			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const int& position) {
-				const double meandev = (double)Algorithm::grayScaleImageIn.data[position] - mean;
+			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const int& position)
+			{
+				// Unlike Sauvola, the Singh algorithm necessitates a value between 0 and 1, not 0 255.
+				// This adapts his formula to 8bit grayscale to avoid conversion operations.
+				constexpr double R = 255.0;
 
-				return mean * (1 + k * ((meandev / (1 - meandev + std::numeric_limits<double>::lowest())) - 1));
+				// TR Singh's algorithm does not expressly mention the need for an absolute value.
+				// However, I believe it is implied because we are talking about deviation
+				double meandev = std::abs((double)Algorithm::grayScaleImageIn.data[position] - mean);
+
+				// This clamping operation prevents a divide by zero situation
+				// Alternative: Add std::numeric_limits<double>::epsilon() to the denominator
+				meandev = std::min(meandev, R - 1.0);
+
+				return mean * (1 + k * ((meandev / (R - meandev)) - 1));
 			});
 		}
 	};

@@ -1,18 +1,29 @@
 {
   "name": "doxajs",
   "version": "1.0.0",
-  "description": "Doxa Binarization Framework for JavaScript",
-  "main": "doxa.js",
+  "description": "Doxa Binarization Framework for JavaScript/WebAssembly",
+  "main": "dist/doxa.js",
+  "files": [
+    "dist/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brandonmpetty/Doxa"
+  },
+  "keywords": [
+    "binarization",
+    "image-processing"
+  ],
   "scripts": {
     "test": "jasmine",
-    "build": "node build.js",
-    "build:debug": "node build.js -d"
+    "build": "emcmake cmake -S ../.. -B ../../build-wasm -DCMAKE_BUILD_TYPE=Release && cmake --build ../../build-wasm --config Release",
+    "build:dev": "emcmake cmake -S ../.. -B ../../build-wasm -DCMAKE_BUILD_TYPE=Debug && cmake --build ../../build-wasm --config Debug",
+    "prepublishOnly": "npm run build"
   },
   "author": "Brandon M. Petty",
   "license": "CC0-1.0",
   "devDependencies": {
-    "canvas": "^2.11.2",
-    "jasmine": "^5.1.0",
-    "sharp": "^0.32.5"
+    "canvas": "3.2.1",
+    "jasmine": "6.0.0"
   }
 }

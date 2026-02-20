@@ -22,7 +22,7 @@ namespace Doxa
 	///		Wiener Filter
 	///		Sauvola binarization algorithm
 	///		A background estimation based thresholding algorithm
-	///		Upsampling and other post-processing meassures
+	///		Upsampling and other post-processing measures
 	/// 
 	/// The optional Upsampling on the fourth step is not currently performed, nor the Post-processing for the fifth step.
 	/// </summary>
@@ -70,12 +70,12 @@ namespace Doxa
 
 	protected:
 		/// <summary>
-		/// Calculates Average Forground / Background Distance, and Averate Background Text Value.
+		/// Calculates Average Foreground / Background Distance, and Average Background Text Value.
 		/// </summary>
 		void GatosCalculations(double& averageFgBgDistance, double& averageBgTextValue, const Image& backgroundImage, const Image& filteredImage, const Image& binaryImage) const
 		{
 			int backgroundCounter = 0;
-			int numeratorAverageFgBgDistance = 0; // Calculate Average Forground / Background Distance
+			int numeratorAverageFgBgDistance = 0; // Calculate Average Foreground / Background Distance
 			int numeratorAverageBgTextValue = 0; // Calculate Average Background Text Value
 
 			for (int index = 0; index < binaryImage.size; ++index)
@@ -99,7 +99,7 @@ namespace Doxa
 			return q * d * (((1 - p2) / (1 + expVal)) + p2);
 		}
 
-		// Note: backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the backround entirely
+		// Note: backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the background entirely
 		void ExtractBackground(Image& backgroundImage, const Image& filteredImage, const Image& binaryImage, const int windowSize = 51) const
 		{
 			LocalWindow::Iterate(filteredImage, windowSize, [&](const Region& window, const int& position)

@@ -3,7 +3,6 @@
 #ifndef LOCALWINDOW_HPP
 #define LOCALWINDOW_HPP
 
-#include <vector>
 #include <algorithm>
 #include "Image.hpp"
 #include "Palette.hpp"

@@ -5,27 +5,41 @@ This is an **experimental** project that exposes the ΔBF, written in C++, to Ja
 
 A Visual Studio Code [Notebook](./DoxaJs.nnb) was developed to easily test and document the API.  It uses the *Node.js Notebooks (REPL)* kernel.
 
-## Building with NPM
-DoxaJs is built using EMScripten and a custom build system exposed through NPM.  If you already have EMScripten installed and configured in your path, it will use your existing em++ compiler.  If not, it will download EMScripten and install it locally in the *build* folder.  All output will be placed in the *dist* folder.  This is a cross platform build system supporting Windows, Linux and OSX.
+## Building
 
-Release Build
-```
+DoxaJs is built using CMake with the Emscripten toolchain. You must have [Emscripten](https://emscripten.org/docs/getting_started/downloads.html) installed and available in your path.
+
+### Using npm (Recommended)
+
+```bash
+cd Bindings/WebAssembly
+npm install
+
+# Release build
 npm run build
-```
 
-Debug Build
-```
-npm run build:debug
-```
+# Debug build (with source maps and exception debugging)
+npm run build:dev
 
-Run Unit Tests
-```
+# Run tests
 npm test
 ```
 
-To run the Web Demo, run the command below and then navigate to: http://localhost:8080/Demo/WebJS 
+### Using CMake
+
+```bash
+# From project root
+cmake --preset wasm
+cmake --build build-wasm --config Release
+npm install --prefix Bindings/WebAssembly
+ctest --test-dir build-wasm -C Release
 ```
+
+### Run the Web Demo
+
+```bash
 emrun --no_browser --port 8080 .
+# Navigate to: http://localhost:8080/Demo/WebJS
 ```
 
 

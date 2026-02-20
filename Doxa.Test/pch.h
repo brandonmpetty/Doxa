@@ -8,6 +8,8 @@
 #include <vector>
 #include <tuple>
 
+#include <SIMD.h>
+#include <SIMDOps.hpp>
 #include <PNM.hpp>
 #include <Otsu.hpp>
 #include <Bernsen.hpp>
@@ -25,5 +27,6 @@
 #include <Bataineh.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
+#include <DIBCOUtils.hpp>
 
 #include "gtest/gtest.h"

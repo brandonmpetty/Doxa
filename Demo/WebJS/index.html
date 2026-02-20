@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		
+
 		<title>Δoxa Binarization Framework - WebAssembly Demo</title>
 	</head>
 	<body>
@@ -39,11 +39,11 @@
                 });
             }
 
-            function readCanvas(canvas) {
+            function readCanvas(doxa, canvas, algorithm) {
 
                 const ctx = canvas.getContext('2d');
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                return new Doxa.Image(imageData.width, imageData.height, imageData.data);
+                return doxa.fromImageData(imageData, algorithm);
             }
 
             async function demo() {
@@ -53,19 +53,19 @@
                 await loadCanvas(canvas, '../../README/2JohnC1V3.png');
 
                 // Initialize the Doxa framework
-                const Algorithms = await Doxa.initialize();
+                const doxa = await Doxa.initialize();
 
                 // Generate an Image object from the Canvas
-                const image = readCanvas(canvas);
+                const grayImage = readCanvas(doxa, canvas, doxa.grayscale.MEAN);
 
                 // Generate a binary image
-                const binImage = Doxa.Binarization.toBinary(Algorithms.SAUVOLA, image, { window: 26, k: 0.10 });
+                const binImage = doxa.toBinary(doxa.binarization.SAUVOLA, grayImage, { window: 27, k: 0.10 });
 
                 // Draw image back to the same Canvas
                 binImage.draw(canvas);
 
                 // Remember to free the memory of your WASM based images
-                image.free();
+                grayImage.free();
                 binImage.free();
             }
 

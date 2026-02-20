@@ -41,13 +41,13 @@ namespace Doxa
 
 	protected:
 		/// <summary>
-		/// This algorithm leverages a high contrast image to find where the forground might be.
-		/// Once a forground pixel is found, all connected pixels are associated with it as part of the
+		/// This algorithm leverages a high contrast image to find where the foreground might be.
+		/// Once a foreground pixel is found, all connected pixels are associated with it as part of the
 		/// final binary image.
 		/// </summary>
 		/// <param name="binaryImageOut">Final image</param>
 		/// <param name="highContrastImageIn">A high contrast image of the grayscale image</param>
-		/// <param name="binaryImageIn">A high detail, but probably noisey, binary image</param>
+		/// <param name="binaryImageIn">A high detail, but probably noisy, binary image</param>
 		void Combine(Image& binaryImageOut, const Image& highContrastImageIn, const Image& binaryImageIn)
 		{
 			// Ensure that everything is white to start off with
@@ -56,7 +56,7 @@ namespace Doxa
 			// Iterate every pixel of our high contrast image
 			for (int idx = 0; idx < highContrastImageIn.size; ++idx)
 			{
-				// Detect a high contrast region that contains a forground pixel
+				// Detect a high contrast region that contains a foreground pixel
 				if (Palette::White == highContrastImageIn.data[idx] &&
 					Palette::Black == binaryImageIn.data[idx])
 				{
@@ -70,15 +70,15 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// Spider is a fairly crafty algorithm that tracks down all connected forground pixels given a 
+		/// Spider is a fairly crafty algorithm that tracks down all connected foreground pixels given a 
 		/// starting point.  It does this non-recursively by searching a 3x3 area around the target pixel.
 		/// 
 		/// This takes advantage of the fact that many Niblack based binarization algorithms create a
-		/// small background buffer around the forground that is free from noise.
+		/// small background buffer around the foreground that is free from noise.
 		/// </summary>
-		/// <param name="binaryImageOut">Image containing the traced forground.</param>
-		/// <param name="binaryImageIn">Image containing the forground to trace.</param>
-		/// <param name="startIdx">A forground pixel location to start the trace.</param>
+		/// <param name="binaryImageOut">Image containing the traced foreground.</param>
+		/// <param name="binaryImageIn">Image containing the foreground to trace.</param>
+		/// <param name="startIdx">A foreground pixel location to start the trace.</param>
 		void Spider(Image& binaryImageOut, const Image& binaryImageIn, const int startIdx)
 		{
 			std::unordered_set<int> pixelPositions = { startIdx };
@@ -126,7 +126,7 @@ namespace Doxa
 				const int top = idx - binaryImageIn.width;
 				const int bottom = idx + binaryImageIn.width;
 				const bool checkLeft = idx % binaryImageIn.width;
-				const bool checkRight = (idx + 1) % binaryImageIn.width;;
+				const bool checkRight = (idx + 1) % binaryImageIn.width;
 
 				// Process Top Row
 				if (top > 0)

@@ -94,7 +94,7 @@ namespace Doxa
 					squareSum += integralSquare[x];
 				}
 
-				// As our window moves across, we are now able to use our sums to calcuate mean, variance, etc.
+				// As our window moves across, we are now able to use our sums to calculate mean, variance, etc.
 				// This happens until the right most edge of our windows hits the end of the image.
 				for (int x = 1; x < dr2; ++x, ++ind)
 				{
@@ -110,8 +110,8 @@ namespace Doxa
 					processor(mean, variance, ind);
 				}
 
-				// Now that our windows is sliding through the right side of the image, we have to remove the left most colum.
-				// As we do that, we are able to continue with our calcuation.
+				// Now that our windows is sliding through the right side of the image, we have to remove the left most column.
+				// As we do that, we are able to continue with our calculation.
 				for (int x = dr2; x <= width; ++x, ++ind)
 				{
 					const int winLeft = std::max(x - leftWindow, 0);

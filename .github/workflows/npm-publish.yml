@@ -1,0 +1,43 @@
+name: Publish to npm
+
+permissions:
+  contents: read
+
+# Disabled: NPM_TOKEN secret not yet configured.
+# Re-enable by uncommenting the release trigger below.
+on:
+  # release:
+  #   types: [published]
+  workflow_dispatch: # manual trigger only for now
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Install dependencies
+        working-directory: ./Bindings/WebAssembly
+        run: npm install
+
+      - name: Build WASM
+        working-directory: ./Bindings/WebAssembly
+        run: npm run build
+
+      - name: Run tests
+        working-directory: ./Bindings/WebAssembly
+        run: npm test
+
+      - name: Publish to npm
+        working-directory: ./Bindings/WebAssembly
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

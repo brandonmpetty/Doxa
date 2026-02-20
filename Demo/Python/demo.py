@@ -1,27 +1,48 @@
 from PIL import Image
 import numpy as np
+import os
+
+# Attempt to load your local doxapy.abi3.so / doxapy.pyd build first
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Bindings', 'Python', 'dist')))
+
 import doxapy
 
-def read_image(file):
-    return np.array(Image.open(file).convert('L'))
+# Read an image.  If its color, use one of our many Grayscale algorithms to convert it
+def read_image(file, algorithm=doxapy.GrayscaleAlgorithms.MEAN):
+    image = Image.open(file)
+
+    # If already in grayscale or binary, do not convert it
+    if image.mode == 'L':
+        return np.array(image)
+    
+    # Read the color image
+    rgb_image = np.array(image.convert('RGB') if image.mode not in ('RGB', 'RGBA') else image)
+
+    # Use Doxa to convert grayscale
+    return doxapy.to_grayscale(algorithm, rgb_image)
 
 
-# Read our target image and setup an output image buffer
-grayscale_image = read_image("2JohnC1V3.png")
-binary_image = np.empty(grayscale_image.shape, grayscale_image.dtype)
+# Use Doxa to convert our image into grayscale, if it isn't already
+grayscale_image = read_image("../../Doxa.Test/Resources/2JohnC1V3.ppm", doxapy.GrayscaleAlgorithms.MEAN)
 
-# Pick an algorithm from the DoxaPy library and convert the image to binary
-sauvola = doxapy.Binarization(doxapy.Binarization.Algorithms.SAUVOLA)
-sauvola.initialize(grayscale_image)
-sauvola.to_binary(binary_image, {"window": 75, "k": 0.2}) # algorithm params are optional
+# Convert the grayscale image to binary, returning a new image
+# NOTE: Algorithm parameters are options.  Defaults are provided.
+binary_image = doxapy.to_binary(doxapy.Binarization.Algorithms.SAUVOLA, grayscale_image, {"window": 75, "k": 0.2})
 
 # Calculate the binarization performance using a Ground Truth image
-groundtruth_image = read_image("2JohnC1V3-GroundTruth.png")
+groundtruth_image = read_image("../../Doxa.Test/Resources/2JohnC1V3-GroundTruth.pbm")
 performance = doxapy.calculate_performance(groundtruth_image, binary_image)
 print(performance)
 
 # Display our resulting image
 Image.fromarray(binary_image).show()
 
-# Lines 11 - 16 could be replaced with this one-liner, if you want to update the same image.
-#doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.SAUVOLA, grayscale_image)
+# Example: How to update a grayscale to binary in place
+#doxapy.update_to_binary(doxapy.Binarization.Algorithms.SAUVOLA, grayscale_image, {"window": 75, "k": 0.2})
+
+# Example: For testing parameter changes in a tight loop
+#binary_image = np.empty(grayscale_image.shape, grayscale_image.dtype)
+#sauvola = doxapy.Binarization(doxapy.Binarization.Algorithms.SAUVOLA)
+#sauvola.initialize(grayscale_image)
+#sauvola.to_binary(binary_image, {"window": 75, "k": 0.2})
