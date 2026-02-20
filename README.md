@@ -89,6 +89,11 @@ cmake --preset wasm
 cmake --build build-wasm --config Release
 ctest --test-dir build-wasm -C Release
 
+# Build and test MATLAB bindings (requires MATLAB)
+cmake --preset matlab
+cmake --build build-matlab --config Release
+ctest --test-dir build-matlab -C Release
+
 # Build and run performance benchmarks (Google Benchmark)
 cmake --preset benchmarks
 cmake --build build-bench --config Release
@@ -102,7 +107,7 @@ ctest --test-dir build -C Release
 ```
 
 
-See [Bindings/Python/README.md](Bindings/Python/README.md) and [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md) for detailed instructions.
+See [Bindings/Python/README.md](Bindings/Python/README.md), [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md), and [Bindings/Matlab/README.md](Bindings/Matlab/README.md) for detailed instructions.
 
 ### Performance Benchmarks
 The project uses [Google Benchmark](https://github.com/google/benchmark) for measuring runtime performance of SIMD optimizations, calculator backends, and core operations. Benchmarks are separate from unit tests to keep correctness and performance concerns independent.
