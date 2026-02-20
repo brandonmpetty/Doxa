@@ -9,6 +9,21 @@
 
 namespace Doxa
 {
+	enum GrayscaleAlgorithms
+	{
+		MEAN = 0,
+		QT = 1,
+		BT601 = 2,
+		BT709 = 3,
+		BT2100 = 4,
+		VALUE = 5,
+		LUSTER = 6,
+		LIGHTNESS = 7,
+		MINAVG = 8
+	};
+
+	typedef Pixel8(*GrayscaleFunc)(Pixel8, Pixel8, Pixel8);
+
 	/// <summary>
 	/// This entire class was greatly influenced by the Color-to-Grayscale article written by Christopher Kanan and 
 	/// Garrison W. Cottrell.
@@ -20,7 +35,7 @@ namespace Doxa
 	/// The top 2 grayscale formulas found by Kanan and Cottrell are Gleam and Intensity'.
 	/// The great news is that these share the same formula which is very fast, referred to here as Mean(...).
 	/// The bad news is that if you are given a Linear RGB set, your Intensity' is now just Intensity and drops you
-	/// from 2nd place to 8th.  Luckily, for color images, you should safely assume you are recieving gamma corrected
+	/// from 2nd place to 8th.  Luckily, for color images, you should safely assume you are receiving gamma corrected
 	/// RGB values.
 	/// 
 	/// Because we should assume some form of gamma correction, we are also far more likely to get the result of Luma
@@ -29,7 +44,7 @@ namespace Doxa
 	/// to Linear RGB values and then gamma corrected after the fact, you end up with the 3rd place finisher, Luminance'.
 	/// Basically the same formula can take you from 3rd to 10th place, simply due to gamma correction!
 	/// 
-	/// It is therefore this naieve author's opinion that as long as you start with gamma corrected RGB values, you
+	/// It is therefore this naive author's opinion that as long as you start with gamma corrected RGB values, you
 	/// should be set regardless of your exact gamma compression scheme, or grayscale conversion formula you want to try.
 	/// It is also recommended that when you finally do convert to Grayscale, that you apply your image processing 
 	/// algorithms to an uncompressed, linear, grayscale image.
@@ -210,13 +225,75 @@ namespace Doxa
 			// Return normalized Y value
 			return y * 255;
 		}
+
+
+		/// <summary>
+		/// Convert an RGB/RGBA buffer to 8-bit grayscale.
+		/// </summary>
+		static void ToGrayscale(
+			Pixel8* output,
+			const Pixel8* input,
+			int width, int height, int channels,
+			GrayscaleAlgorithms algorithm = GrayscaleAlgorithms::MEAN)
+		{
+			const int size = width * height;
+
+			switch (algorithm)
+			{
+				case GrayscaleAlgorithms::QT:
+					GrayscaleConverter<Qt<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::BT601:
+					GrayscaleConverter<BT601<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::BT709:
+					GrayscaleConverter<BT709<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::BT2100:
+					GrayscaleConverter<BT2100<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::VALUE:
+					GrayscaleConverter<Value<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::LUSTER:
+					GrayscaleConverter<Luster<Pixel8>>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::LIGHTNESS:
+					GrayscaleConverter<sRgbToLightness>(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::MINAVG:
+					GrayscaleConverter<MinAvg<Pixel8>>(output, input, size, channels);
+					break;
+				default:
+					GrayscaleConverter<Mean<Pixel8>>(output, input, size, channels);
+					break;
+			}
+		}
+
+	private:
+
+		/// <summary>
+		/// An optimized grayscale conversion loop where all algs are inlined
+		/// </summary>
+		template<GrayscaleFunc Algorithm>
+		static void GrayscaleConverter(
+			Pixel8* output,
+			const Pixel8* input,
+			int size,
+			int channels)
+		{
+			for (int i = 0, offset = 0; i < size; ++i, offset += channels)
+			{
+				output[i] = Algorithm(input[offset], input[offset + 1], input[offset + 2]);
+			}
+		}
 	};
 
 	/// <summary>
 	/// A normalized implementation since we are usually not working with decimal.
-	/// This assumes that RGB are Linear values.  It is unlike you will use this
+	/// This assumes that RGB are Linear values.  It is unlikely you will use this
 	/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
-	/// 
+	///
 	/// C++ Note: Some compilers do not like template specialization defined in the class.
 	/// </summary>
 	template<>

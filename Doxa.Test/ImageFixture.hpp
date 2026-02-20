@@ -15,7 +15,7 @@ namespace Doxa::UnitTests
 
 			// Load Color Image
 			const std::string filePath = projFolder + "2JohnC1V3.ppm";
-			image = PNM::Read(filePath, ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
+			image = PNM::Read(filePath, ParameterMap{ {"grayscale", GrayscaleAlgorithms::QT} });
 		}
 
 		Image image;

@@ -6,7 +6,7 @@ namespace Doxa::Benchmarks
 {
 	static Image ReadTestImage()
 	{
-		return PNM::Read(ResourcesDir() + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
+		return PNM::Read(ResourcesDir() + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", GrayscaleAlgorithms::QT} });
 	}
 
 	// --- Global Thresholding ---

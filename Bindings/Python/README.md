@@ -1,7 +1,7 @@
 # DoxaPy
 
 ## Introduction
-DoxaPy is an image binarization library focussing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image. 
+DoxaPy is an image binarization library focusing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image.
 
 **Algorithms**
 * Otsu - "A threshold selection method from gray-level histograms", 1979.
@@ -26,7 +26,8 @@ DoxaPy is an image binarization library focussing on local adaptive thresholding
 
 **Performance Metrics**
 * Overall Accuracy
-* F-Measure
+* F-Measure, Precision, Recall
+* Pseudo F-Measure, Precision, Recall - "Performance Evaluation Methodology for Historical Document Image Binarization", 2013.
 * Peak Signal-To-Noise Ratio (PSNR)
 * Negative Rate Metric (NRM)
 * Matthews Correlation Coefficient (MCC)
@@ -34,7 +35,7 @@ DoxaPy is an image binarization library focussing on local adaptive thresholding
 
 
 ## Overview
-DoxaPy uses the Δoxa Binarization Framework for quickly processing python Image files.
+DoxaPy uses the Δoxa Binarization Framework for quickly processing python Image files.  It is comprised of three major sets of algorithms: Color to Grayscale, Grayscale to Binary, and Performance Metrics.  It can be used as a full DIBCO Metrics replacement that is significantly smaller, faster, and easier to integrate into existing projects.
 
 ### Example
 This short demo uses DoxaPy to read in a color image, converts it to binary, and then compares it to a Ground Truth image in order to calculate performance.
@@ -44,18 +45,27 @@ from PIL import Image
 import numpy as np
 import doxapy
 
-def read_image(file):
-    return np.array(Image.open(file).convert('L'))
+
+def read_image(file, algorithm=doxapy.GrayscaleAlgorithms.MEAN):
+    """Read an image.  If its color, use one of our many Grayscale algorithms to convert it."""
+    image = Image.open(file)
+
+    # If already in grayscale or binary, do not convert it
+    if image.mode == 'L':
+        return np.array(image)
+    
+    # Read the color image
+    rgb_image = np.array(image.convert('RGB') if image.mode not in ('RGB', 'RGBA') else image)
+
+    # Use Doxa to convert grayscale
+    return doxapy.to_grayscale(algorithm, rgb_image)
 
 
-# Read our target image and setup an output image buffer
+# Read our target image and convert it to grayscale
 grayscale_image = read_image("2JohnC1V3.png")
-binary_image = np.empty(grayscale_image.shape, grayscale_image.dtype)
 
-# Pick an algorithm from the DoxaPy library and convert the image to binary
-sauvola = doxapy.Binarization(doxapy.Binarization.Algorithms.SAUVOLA)
-sauvola.initialize(grayscale_image)
-sauvola.to_binary(binary_image, {"window": 75, "k": 0.2})
+# Convert the grayscale image to a binary image (algorithm parameters optional)
+binary_image = doxapy.to_binary(doxapy.Binarization.Algorithms.SAUVOLA, grayscale_image, {"window": 75, "k": 0.2})
 
 # Calculate the binarization performance using a Ground Truth image
 groundtruth_image = read_image("2JohnC1V3-GroundTruth.png")
@@ -66,35 +76,22 @@ print(performance)
 Image.fromarray(binary_image).show()
 ```
 
-### Alternative Calls
-DoxaPy can very efficiently reuse the same memory buffer for converting a grayscale image to binary.  Unless you are constantly changing algorithm parameters for the same image, it is recommended that you call this method.
-
-```python
-# Transforms the grayscale image buffer into binary with a single call
-doxapy.Binarization.update_to_binary(doxapy.Binarization.Algorithms.NICK, grayscale_image)
-```
+### DoxaPy Notebook
+For more details, open the [DoxaPy Notebook](https://github.com/brandonmpetty/Doxa/blob/master/Bindings/Python/DoxaPy.ipynb) and to get an interactive demo.
 
 
 ## Building and Test
 DoxaPy supports 64b Linux, Windows, and Mac OSX on Python 3.x. Starting with DoxaPy 0.9.4, Python 3.12 and above are supported with full ABI compatibility. This means that new versions of DoxaPy will only be published due to feature enhancements, not Python version support.
 
-**Build from Project Root (Recommended)**
+**Build from Project Root**
 ```bash
 # From the Doxa project root
+git clone --depth 1 https://github.com/brandonmpetty/Doxa.git
+cd Doxa
 cmake --preset python
 cmake --build build-python --config Release
+pip install -r Bindings/Python/requirements.txt
 ctest --test-dir build-python -C Release
-```
-
-**Build from this Directory**
-```bash
-git clone https://github.com/brandonmpetty/Doxa
-cd Doxa/Bindings/Python
-pip install -r requirements.txt
-python copy-cpp-files.py
-cmake -S . -B ./build
-cmake --build ./build --config Release
-python test/test_doxa.py
 ```
 
 **Local Package Build**
@@ -102,8 +99,13 @@ python test/test_doxa.py
 python -m build
 ```
 
+**Local Wheel Build**
+```bash
+pip wheel . --no-deps
+```
+
 ## License
-CC0 - Brandon M. Petty, 2025
+CC0 - Brandon M. Petty, 2026
 
 To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
 

@@ -27,5 +27,6 @@
 #include <Bataineh.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
+#include <DIBCOUtils.hpp>
 
 #include "gtest/gtest.h"

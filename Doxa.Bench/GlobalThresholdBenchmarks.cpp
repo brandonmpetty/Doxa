@@ -7,7 +7,7 @@ namespace Doxa::Benchmarks
 	static void BM_GlobalThreshold_Scalar(benchmark::State& state)
 	{
 		const std::string dir = ResourcesDir();
-		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
+		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", GrayscaleAlgorithms::QT} });
 		Image binary(image.width, image.height);
 		const Pixel8 threshold = 128;
 
@@ -26,7 +26,7 @@ namespace Doxa::Benchmarks
 	static void BM_GlobalThreshold_SIMD(benchmark::State& state)
 	{
 		const std::string dir = ResourcesDir();
-		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", PNM::GrayscaleConversion::Qt} });
+		Image image = PNM::Read(dir + "2JohnC1V3.ppm", ParameterMap{ {"grayscale", GrayscaleAlgorithms::QT} });
 		Image binary(image.width, image.height);
 		const Pixel8 threshold = 128;
 

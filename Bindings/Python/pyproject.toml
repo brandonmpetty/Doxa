@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "doxapy"
-version = "0.9.4"
+version = "0.9.5"
 description = "An image binarization library focussing on local adaptive thresholding"
 readme = "README.md"
 authors = [
@@ -31,7 +31,8 @@ sdist.exclude = [
     "copy-cpp-files.py",
     "DoxaPy.ipynb",
     ".gitignore",
-    "test"
+    "test",
+    "dist"
 ]
 
 [tool.cibuildwheel]

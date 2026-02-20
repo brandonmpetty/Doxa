@@ -58,7 +58,7 @@ namespace Doxa::UnitTests
 
 		// Setup
 		const std::string filePath = TestUtilities::ProjectFolder() + "2JohnC1V3.ppm";
-		const Image grayScaleImage = PNM::Read(filePath, ParameterMap{ {"grayscale", PNM::GrayscaleConversion::BT601} });
+		const Image grayScaleImage = PNM::Read(filePath, ParameterMap{ {"grayscale", GrayscaleAlgorithms::BT601} });
 		BatainehTestharness bataineh;
 		bataineh.Initialize(grayScaleImage);
 

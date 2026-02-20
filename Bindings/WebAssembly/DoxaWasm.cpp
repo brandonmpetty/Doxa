@@ -1,10 +1,13 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
+#include <sstream>
 //#include <iostream>
 
 #include "../../Doxa/BinarizationFactory.hpp"
 #include "../../Doxa/ClassifiedPerformance.hpp"
 #include "../../Doxa/DRDM.hpp"
+#include "../../Doxa/DIBCOUtils.hpp"
+#include "../../Doxa/Grayscale.hpp"
 
 //#include "../Doxa/PNM.hpp"
 using namespace Doxa;
@@ -17,10 +20,30 @@ struct Performance
 {
 	double Accuracy;
 	double FM;
+	double Recall;
+	double Precision;
 	double MCC;
 	double PSNR;
 	double NRM;
 	double DRDM;
+};
+
+/// <summary>
+/// Structure for measuring pseudo performance characteristics, including standard and pseudo metrics
+/// </summary>
+struct PseudoPerformance
+{
+	double Accuracy;
+	double FM;
+	double Recall;
+	double Precision;
+	double MCC;
+	double PSNR;
+	double NRM;
+	double DRDM;
+	double PseudoFM;
+	double PseudoPrecision;
+	double PseudoRecall;
 };
 
 Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, const int width, const int height)
@@ -35,12 +58,61 @@ Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, 
 	Performance perf;
 	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
 	perf.FM = ClassifiedPerformance::CalculateFMeasure(classifications);
+	perf.Recall = ClassifiedPerformance::CalculateRecall(classifications);
+	perf.Precision = ClassifiedPerformance::CalculatePrecision(classifications);
 	perf.MCC = ClassifiedPerformance::CalculateMCC(classifications);
 	perf.PSNR = ClassifiedPerformance::CalculatePSNR(classifications);
 	perf.NRM = ClassifiedPerformance::CalculateNRM(classifications);
 	perf.DRDM = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
 
 	return perf;
+}
+
+
+PseudoPerformance CalculatePseudoPerformance(
+	intptr_t groundTruthData, intptr_t binaryData,
+	const int width, const int height,
+	const std::string& precisionWeightsText,
+	const std::string& recallWeightsText)
+{
+	Image groundTruthImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(groundTruthData));
+	Image binaryImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(binaryData));
+
+	// Parse weight text via DIBCOUtils
+	std::stringstream precisionStream(precisionWeightsText);
+	std::stringstream recallStream(recallWeightsText);
+	const size_t allocatedSize = static_cast<size_t>(width) * height;
+	auto precisionWeights = DIBCOUtils::ReadWeights(precisionStream, allocatedSize);
+	auto recallWeights = DIBCOUtils::ReadWeights(recallStream, allocatedSize);
+
+	// Compute weighted classifications
+	ClassifiedPerformance::Classifications classifications;
+	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights);
+
+	PseudoPerformance perf;
+	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
+	perf.FM = ClassifiedPerformance::CalculateFMeasure(classifications);
+	perf.Recall = ClassifiedPerformance::CalculateRecall(classifications);
+	perf.Precision = ClassifiedPerformance::CalculatePrecision(classifications);
+	perf.MCC = ClassifiedPerformance::CalculateMCC(classifications);
+	perf.PSNR = ClassifiedPerformance::CalculatePSNR(classifications);
+	perf.NRM = ClassifiedPerformance::CalculateNRM(classifications);
+	perf.DRDM = DRDM::CalculateDRDM(groundTruthImage, binaryImage);
+	perf.PseudoFM = ClassifiedPerformance::CalculatePseudoFMeasure(classifications);
+	perf.PseudoPrecision = ClassifiedPerformance::CalculatePseudoPrecision(classifications);
+	perf.PseudoRecall = ClassifiedPerformance::CalculatePseudoRecall(classifications);
+
+	return perf;
+}
+
+
+void ToGrayscale(intptr_t outputData, intptr_t inputData,
+	int width, int height, int channels, GrayscaleAlgorithms algorithm)
+{
+	Grayscale::ToGrayscale(
+		reinterpret_cast<Pixel8*>(outputData),
+		reinterpret_cast<const Pixel8*>(inputData),
+		width, height, channels, algorithm);
 }
 
 
@@ -137,9 +209,41 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 	value_object<Performance>("Performance")
 		.field("accuracy", &Performance::Accuracy)
 		.field("fm", &Performance::FM)
+		.field("recall", &Performance::Recall)
+		.field("precision", &Performance::Precision)
 		.field("mcc", &Performance::MCC)
 		.field("psnr", &Performance::PSNR)
 		.field("nrm", &Performance::NRM)
 		.field("drdm", &Performance::DRDM);
 	function("calculatePerformance", &CalculatePerformance, allow_raw_pointers());
+
+	value_object<PseudoPerformance>("PseudoPerformance")
+		.field("accuracy", &PseudoPerformance::Accuracy)
+		.field("fm", &PseudoPerformance::FM)
+		.field("recall", &PseudoPerformance::Recall)
+		.field("precision", &PseudoPerformance::Precision)
+		.field("mcc", &PseudoPerformance::MCC)
+		.field("psnr", &PseudoPerformance::PSNR)
+		.field("nrm", &PseudoPerformance::NRM)
+		.field("drdm", &PseudoPerformance::DRDM)
+		.field("pseudoFM", &PseudoPerformance::PseudoFM)
+		.field("pseudoPrecision", &PseudoPerformance::PseudoPrecision)
+		.field("pseudoRecall", &PseudoPerformance::PseudoRecall);
+	function("calculatePseudoPerformance", &CalculatePseudoPerformance, allow_raw_pointers());
+
+	enum_<GrayscaleAlgorithms>("Grayscale.Algorithms")
+		.value("MEAN", GrayscaleAlgorithms::MEAN)
+		.value("QT", GrayscaleAlgorithms::QT)
+		.value("BT601", GrayscaleAlgorithms::BT601)
+		.value("BT709", GrayscaleAlgorithms::BT709)
+		.value("BT2100", GrayscaleAlgorithms::BT2100)
+		.value("VALUE", GrayscaleAlgorithms::VALUE)
+		.value("LUSTER", GrayscaleAlgorithms::LUSTER)
+		.value("LIGHTNESS", GrayscaleAlgorithms::LIGHTNESS)
+		.value("MINAVG", GrayscaleAlgorithms::MINAVG);
+	EM_ASM(
+		Module['Grayscale'] = { 'Algorithms': Module['Grayscale.Algorithms'] };
+		delete Module['Grayscale.Algorithms'];
+	);
+	function("toGrayscale", &ToGrayscale, allow_raw_pointers());
 };

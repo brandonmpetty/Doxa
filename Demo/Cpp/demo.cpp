@@ -43,7 +43,7 @@ int main()
 	// Read image and turn it into an 8bit grayscale.
 	// The PNM reader is obviously limiting, but does offer 8 different color to grayscale algorithms.
 	Doxa::Image doxaGsImage = Doxa::PNM::Read(R"(2JohnC1V3.ppm)", 
-		Doxa::Parameters({{"grayscale", Doxa::PNM::GrayscaleConversion::Mean}})); // Optional
+		Doxa::Parameters({{"grayscale", Doxa::GrayscaleAlgorithms::MEAN}})); // Optional
 
 	// Use a binarization algorithm to convert it into black and white
 	const Doxa::Parameters parameters({ {"window", 25}, {"k", 0.10} });

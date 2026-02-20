@@ -27,7 +27,7 @@ namespace Doxa
 	///		3. No independent example of this algorithm actually working
 	/// 
 	/// Bilal Bataineh did provided me with a code snippet that was of some assistance.
-	/// It should be noted that his implementation uses a Luma BT601 conversion: PNM::GrayscaleConversion::BT601
+	/// It should be noted that his implementation uses a Luma BT601 conversion: GrayscaleAlgorithms::BT601
 	/// 
 	/// </summary>
 	/// <remarks>"An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011.</remarks>

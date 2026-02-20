@@ -44,10 +44,9 @@ if(DOXA_BUILD_PYTHON AND NOT EMSCRIPTEN)
         COMMAND ${Python_EXECUTABLE} -m unittest discover -s test -p "test_*.py" -v
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Bindings/Python
     )
-    # Set PYTHONPATH so tests can find the built doxapy module
-    # For multi-config generators (Visual Studio), use $<CONFIG> for the config subdirectory
+    # Set PYTHONPATH so tests can find the built doxapy module in dist/
     set_tests_properties(python_tests PROPERTIES
-        ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/Bindings/Python/$<CONFIG>"
+        ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/Bindings/Python/dist"
     )
 endif()
 
@@ -57,8 +56,17 @@ endif()
 if(EMSCRIPTEN)
     add_subdirectory(Bindings/WebAssembly)
 elseif(DOXA_BUILD_WASM)
+    # Platform-specific script extensions (avoid picking up .cmd/.bat on WSL2)
+    if(WIN32)
+        set(CMD_EXT ".cmd")
+        set(BAT_EXT ".bat")
+    else()
+        set(CMD_EXT "")
+        set(BAT_EXT "")
+    endif()
+
     # Build WASM as external project using emcmake
-    find_program(EMCMAKE NAMES emcmake.bat emcmake
+    find_program(EMCMAKE NAMES emcmake${BAT_EXT}
         HINTS ENV EMSDK
         PATH_SUFFIXES upstream/emscripten
     )
@@ -75,7 +83,7 @@ elseif(DOXA_BUILD_WASM)
             TEST_COMMAND ""
         )
         # Add WASM tests to CTest (runs after wasm_build)
-        find_program(NPM_EXECUTABLE NAMES npm.cmd npm)
+        find_program(NPM_EXECUTABLE NAMES npm${CMD_EXT})
         if(NPM_EXECUTABLE)
             add_test(NAME wasm_tests
                 COMMAND ${NPM_EXECUTABLE} test

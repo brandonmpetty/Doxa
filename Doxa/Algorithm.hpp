@@ -56,7 +56,7 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// A conveniance method for taking in a Gray Scale image /w params and returning a Binary image.
+		/// A convenience method for taking in a Gray Scale image /w params and returning a Binary image.
 		/// </summary>
 		static Image ToBinaryImage(const Image& grayScaleImageIn, const Parameters& parameters = Parameters())
 		{
@@ -73,7 +73,7 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// A conveniance method for safely converting a Gray Scale image to Binary.
+		/// A convenience method for safely converting a Gray Scale image to Binary.
 		/// Note: You may need to create a temp image and copy it, depending on your algorithm.
 		/// </summary>
 		static void UpdateToBinary(Image& image, const Parameters& parameters = Parameters())
