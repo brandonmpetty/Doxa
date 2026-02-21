@@ -1,4 +1,4 @@
-# DoxaPy
+# Δoxa Binarization Framework - Python
 
 ## Introduction
 DoxaPy is an image binarization library focusing on local adaptive thresholding algorithms. In English, this means that it has the ability to turn a color or gray scale image into a black and white image.

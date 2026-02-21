@@ -22,6 +22,7 @@ build/
 build-cpp-tests/
 build-python/
 build-wasm/
+build-matlab/
 build-bench/
 [Bb]in/
 [Oo]bj/

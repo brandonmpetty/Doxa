@@ -50,6 +50,16 @@
       }
     },
     {
+      "name": "matlab",
+      "displayName": "MATLAB MEX Bindings",
+      "binaryDir": "${sourceDir}/build-matlab",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DOXA_BUILD_CPP_TESTS": "OFF",
+        "DOXA_BUILD_MATLAB": "ON"
+      }
+    },
+    {
       "name": "all",
       "displayName": "All Components (C++, Python, WASM)",
       "binaryDir": "${sourceDir}/build",
@@ -67,6 +77,7 @@
     { "name": "python", "configurePreset": "python" },
     { "name": "wasm", "configurePreset": "wasm" },
     { "name": "benchmarks", "configurePreset": "benchmarks" },
+    { "name": "matlab", "configurePreset": "matlab" },
     { "name": "all", "configurePreset": "all" }
   ],
   "testPresets": [
@@ -74,6 +85,7 @@
     { "name": "cpp-tests-debug", "configurePreset": "cpp-tests-debug", "configuration": "Debug" },
     { "name": "python", "configurePreset": "python", "configuration": "Release" },
     { "name": "wasm", "configurePreset": "wasm", "configuration": "Release" },
+    { "name": "matlab", "configurePreset": "matlab", "configuration": "Release" },
     { "name": "all", "configurePreset": "all", "configuration": "Release" }
   ]
 }
