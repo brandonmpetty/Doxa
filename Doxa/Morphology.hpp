@@ -26,7 +26,7 @@ namespace Doxa
 
 		/// <summary>
 		/// Close is simply Dilate followed by Erode.
-		/// This can help fill holes in the forground.
+		/// This can help fill holes in the foreground.
 		/// </summary>
 		static void Close(Image& morphedImage, const Image& grayScaleImage, const int windowSize = 3)
 		{

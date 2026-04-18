@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find MATLAB and its components
-find_package(Matlab REQUIRED COMPONENTS MAIN_PROGRAM)
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
 
 # Include the root Doxa directory for header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../..)

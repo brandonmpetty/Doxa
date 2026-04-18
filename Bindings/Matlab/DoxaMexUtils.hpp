@@ -195,7 +195,7 @@ namespace DoxaMexUtils
             {"SU", Doxa::Algorithms::SU},           {"TRSINGH", Doxa::Algorithms::TRSINGH},
             {"BATAINEH", Doxa::Algorithms::BATAINEH}, {"ISAUVOLA", Doxa::Algorithms::ISAUVOLA},
             {"WAN", Doxa::Algorithms::WAN},         {"GATOS", Doxa::Algorithms::GATOS},
-            {"ADOTSU", Doxa::Algorithms::ADOTSU}
+            {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR}
         };
 
         auto it = algorithmMap.find(algorithmStr);
@@ -219,7 +219,8 @@ namespace DoxaMexUtils
             {"VALUE", Doxa::GrayscaleAlgorithms::VALUE},
             {"LUSTER", Doxa::GrayscaleAlgorithms::LUSTER},
             {"LIGHTNESS", Doxa::GrayscaleAlgorithms::LIGHTNESS},
-            {"MINAVG", Doxa::GrayscaleAlgorithms::MINAVG}
+            {"MINAVG", Doxa::GrayscaleAlgorithms::MINAVG},
+            {"LABDIST", Doxa::GrayscaleAlgorithms::LABDIST}
         };
 
         auto it = grayscaleMap.find(algorithmStr);

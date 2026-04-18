@@ -85,7 +85,7 @@ namespace Doxa::Benchmarks
 	static void BM_Bernsen(benchmark::State& state)
 	{
 		const Image image = ReadTestImage();
-		const Parameters parameters({ { "window", 75 }, { "threshold", 100 }, { "constrast-limit", 25 } });
+		const Parameters parameters({ { "window", 75 }, { "threshold", 100 }, { "contrast-limit", 25 } });
 
 		for (auto _ : state) {
 			Image result = Bernsen::ToBinaryImage(image, parameters);

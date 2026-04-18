@@ -35,7 +35,7 @@ namespace Doxa
 		{
 			// 0 will trigger the auto detection of these parameters as detailed in the paper
 			int windowSize = parameters.Get("window", 0); // Based on Stroke Size
-			int minN = parameters.Get("minN", windowSize); // Roughly basd on size of window
+			int minN = parameters.Get("minN", windowSize); // Roughly based on size of window
 
 			// Step 1 - Contrast Image Construction
 			Image contrastImage(Algorithm::grayScaleImageIn.width, Algorithm::grayScaleImageIn.height);

@@ -61,7 +61,7 @@ namespace Doxa::UnitTests
 
 	TEST_F(BinarizationTests, BinarizationBernsenTest)
 	{
-		const Parameters parameters({ { "window", 61 }, { "threshold", 150 }, {"constrast-limit", 15} });
+		const Parameters parameters({ { "window", 61 }, { "threshold", 150 }, {"contrast-limit", 25} });
 
 		Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
