@@ -24,6 +24,7 @@ It is written in C++ but supports multiple language bindings.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
+* Phansalkar - "Adaptive Local Thresholding for Detection of Nuclei in Diversely Stained Cytology Images", 2011.
 * ISauvola - "ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization", 2016.
 * WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
 
@@ -98,7 +99,7 @@ ctest --test-dir build-matlab -C Release
 cmake --preset benchmarks
 cmake --build build-bench --config Release
 ./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
-./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
+.\build-bench\Doxa.Bench\Release\doxa_bench.exe  # Windows
 
 # Build everything (C++ Tests, Python, WASM)
 cmake --preset all

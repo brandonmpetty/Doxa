@@ -178,6 +178,20 @@ namespace Doxa::Benchmarks
 	}
 	BENCHMARK(BM_Bataineh);
 
+	static void BM_Phansalkar(benchmark::State& state)
+	{
+		const Image image = ReadTestImage();
+		const Parameters parameters({ { "window", 75 }, { "k", 0.2 } });
+
+		for (auto _ : state) {
+			Image result = Phansalkar::ToBinaryImage(image, parameters);
+			benchmark::DoNotOptimize(result.data);
+		}
+
+		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
+	}
+	BENCHMARK(BM_Phansalkar);
+
 	static void BM_AdOtsu(benchmark::State& state)
 	{
 		const Image image = ReadTestImage();

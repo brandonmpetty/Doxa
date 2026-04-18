@@ -185,14 +185,10 @@ namespace Doxa::UnitTests
 	{
 		const Parameters parameters({ {"window", 27}, {"k", 0.10} });
 
-		PNM::Write(image, TestUtilities::ProjectFolder() + "2JohnC1V3-LABDist.pgm");
-
 		Image imagePhansalkar = Phansalkar::ToBinaryImage(image, parameters);
 
 		Image imagePhansalkar2(image);
 		Phansalkar::UpdateToBinary(imagePhansalkar2, parameters);
-
-		PNM::Write(imagePhansalkar, TestUtilities::ProjectFolder() + "2JohnC1V3-Phansalkar.pbm");
 
 		TestUtilities::AssertImages(imagePhansalkar, imagePhansalkar2);
 		TestUtilities::AssertImageFile(imagePhansalkar, projFolder + "2JohnC1V3-Phansalkar.pbm");

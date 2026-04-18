@@ -44,16 +44,16 @@ Doxa.updateToBinary(Doxa.Algorithms.SAUVOLA, img, window=75, k=0.2);
 ```
 
 ## Algorithms
-All 13 binarization algorithms are available via `Doxa.Algorithms`:
+All 14 binarization algorithms are available via `Doxa.Algorithms`:
 
 | Global | Local Adaptive |
 |--------|---------------|
-| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `SU`, `TRSINGH`, `BATAINEH`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
+| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `SU`, `TRSINGH`, `BATAINEH`, `PHANSALKAR`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
 
 ## Grayscale Conversion
-Nine grayscale algorithms are available via `Doxa.Grayscale`:
+Ten grayscale algorithms are available via `Doxa.Grayscale`:
 
-`MEAN`, `QT`, `BT601`, `BT709`, `BT2100`, `VALUE`, `LUSTER`, `LIGHTNESS`, `MINAVG`
+`MEAN`, `QT`, `BT601`, `BT709`, `BT2100`, `VALUE`, `LUSTER`, `LIGHTNESS`, `MINAVG`, `LABDIST`
 
 ```matlab
 % Smart constructor handles files, 2D arrays, and 3D color arrays
