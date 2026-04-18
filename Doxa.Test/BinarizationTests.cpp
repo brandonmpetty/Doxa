@@ -181,6 +181,24 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageFile(imageAdOtsuMSG, projFolder + "2JohnC1V3-AdOtsuMSG.pbm");
 	}
 
+	TEST_F(BinarizationTests, BinarizationPhansalkarTest)
+	{
+		const Parameters parameters({ {"window", 27}, {"k", 0.10} });
+
+		PNM::Write(image, TestUtilities::ProjectFolder() + "2JohnC1V3-LABDist.pgm");
+
+		Image imagePhansalkar = Phansalkar::ToBinaryImage(image, parameters);
+
+		Image imagePhansalkar2(image);
+		Phansalkar::UpdateToBinary(imagePhansalkar2, parameters);
+
+		PNM::Write(imagePhansalkar, TestUtilities::ProjectFolder() + "2JohnC1V3-Phansalkar.pbm");
+
+		TestUtilities::AssertImages(imagePhansalkar, imagePhansalkar2);
+		TestUtilities::AssertImageFile(imagePhansalkar, projFolder + "2JohnC1V3-Phansalkar.pbm");
+	}
+
+
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{
 		Image imageBataineh = Bataineh::ToBinaryImage(image);

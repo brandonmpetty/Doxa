@@ -4,11 +4,18 @@
 #define GRAYSCALE_HPP
 
 #include <algorithm>
+#include <array>
+#include <optional>
+#include <vector>
 #include "Types.hpp"
 
 
 namespace Doxa
 {
+	using GrayscaleFunc = Pixel8(*)(Pixel8, Pixel8, Pixel8);
+	using XYZ = std::tuple<float, float, float>;
+	using Lab = std::tuple<float, float, float>;
+
 	enum GrayscaleAlgorithms
 	{
 		MEAN = 0,
@@ -19,10 +26,9 @@ namespace Doxa
 		VALUE = 5,
 		LUSTER = 6,
 		LIGHTNESS = 7,
-		MINAVG = 8
+		MINAVG = 8,
+		LABDIST = 9
 	};
-
-	typedef Pixel8(*GrayscaleFunc)(Pixel8, Pixel8, Pixel8);
 
 	/// <summary>
 	/// This entire class was greatly influenced by the Color-to-Grayscale article written by Christopher Kanan and 
@@ -70,20 +76,20 @@ namespace Doxa
 			y = y <= 0.0018 ? y * 4.5 : Gamma((1.099 * y - 0.099) / 1.055, 2.2);
 		}
 
-
 		/// <summary>
-		/// RGB are sRGB Gamma Corrected values that will be turned Linear.
+		/// Return a fast linear conversion LUT for uncompressing a color space
 		/// </summary>
-		static inline void sRgbToLinear(double& r, double& g, double& b)
+		static std::array<float, 256> LinearLUT()
 		{
-			auto toLinear = [&](const double channel)
+			std::array<float, 256> lut;
+			
+			for (int i = 0; i < 256; i++)
 			{
-				return channel <= 0.04045 ? channel / 12.92 : std::pow((channel + 0.055) / 1.055, 2.4);
-			};
+				const float v = i / 255.0f;
+				lut[i] = (v <= 0.04045f) ? v / 12.92f : powf((v + 0.055f) / 1.055f, 2.4f);
+			}
 
-			r = toLinear(r);
-			g = toLinear(g);
-			b = toLinear(b);
+			return lut;
 		}
 
 		/// <summary>
@@ -193,46 +199,69 @@ namespace Doxa
 		/// This is also known as a chromatic adaptation transformation (CAT).
 		/// See:  https://drafts.csswg.org/css-color/#rgb-to-lab
 		/// </summary>
-		template<typename T>
-		static inline constexpr T Lightness(T r, T g, T b)
+		static inline constexpr float Lightness(float r, float g, float b)
 		{
 			const auto addGamma = [&](double y)
 			{
 				return y > 0.00885 ? Gamma(y, 3) : 7.78703 * y + 0.13793;
 			};
 
-			return (1.0 / 100) * (116 * addGamma(BT709(r, g, b)) - 16);
+			return 116 * addGamma(BT709(r, g, b)) - 16;
 		}
 
 		/// <summary>
-		/// CIELAB & CIELUV L Value.  Calculates Lightness when RGB are non-linear
-		/// sRGB values.  Since almost every RGB color value we will see is sRGB,
-		/// this formula should be used instead of Lightness(r,g,b).
+		/// Linear sRGB to XYZ color space with a D65 white point
 		/// </summary>
-		static inline Pixel8 sRgbToLightness(Pixel8 r, Pixel8 g, Pixel8 b)
+		static constexpr inline XYZ RGBToXYZ(double r, double g, double b)
 		{
-			// These are sRGB values
-			double red = (double)r / 255;
-			double green = (double)g / 255;
-			double blue = (double)b / 255;
-
-			// Convert to Linear
-			Grayscale::sRgbToLinear(red, green, blue);
-
-			// Convert to CIE L - Lightness
-			const double y = Grayscale::Lightness(red, green, blue);
-
-			// Return normalized Y value
-			return y * 255;
+			return {
+				0.4124564f * r + 0.3575761f * g + 0.1804375f * b,
+				0.2126729f * r + 0.7151522f * g + 0.0721750f * b,
+				0.0193339f * r + 0.1191920f * g + 0.9503041f * b
+			};
 		}
 
+		/// <summary>
+		/// XYZ to L* a* b* color space with D65 whitepoint tristimulus values
+		/// </summary>
+		static inline Lab XYZToLab(float X, float Y, float Z)
+		{
+			const auto f = [](float t) {
+				return (t > 0.008856f) ? cbrtf(t) : (7.787037f * t + 0.137931f);
+			};
+
+			// D65 Tristimulus Values - D50: [0.96422, 1, 0.82521]
+			const auto fx = f(X / 0.95047f);
+			const auto fy = f(Y / 1.0f);
+			const auto fz = f(Z / 1.08883f);
+
+			return {
+				116.0f * fy - 16.0f,
+				500.0f * (fx - fy),
+				200.0f * (fy - fz)
+			};
+		}	
+
+		/// <summary>
+		/// L* a* b* Euclidean Distance
+		/// Takes into account chromatic spearation, not just Lightness.
+		/// All input parameters are linear and must be uncompressed.
+		/// Source: Used by Phansalkar
+		/// </summary>
+		static inline float LABDist(float red, float green, float blue)
+		{
+			const auto [X, Y, Z] = RGBToXYZ(red, green, blue);
+			const auto [L, a, b] = XYZToLab(X, Y, Z);
+
+			return sqrtf(L * L + a * a + b * b);
+		}
 
 		/// <summary>
 		/// Convert an RGB/RGBA buffer to 8-bit grayscale.
 		/// </summary>
 		static void ToGrayscale(
 			Pixel8* output,
-			const Pixel8* input,
+			const uint8_t* input,
 			int width, int height, int channels,
 			GrayscaleAlgorithms algorithm = GrayscaleAlgorithms::MEAN)
 		{
@@ -258,12 +287,19 @@ namespace Doxa
 				case GrayscaleAlgorithms::LUSTER:
 					GrayscaleConverter<Luster<Pixel8>>(output, input, size, channels);
 					break;
-				case GrayscaleAlgorithms::LIGHTNESS:
-					GrayscaleConverter<sRgbToLightness>(output, input, size, channels);
-					break;
 				case GrayscaleAlgorithms::MINAVG:
 					GrayscaleConverter<MinAvg<Pixel8>>(output, input, size, channels);
 					break;
+
+				// Linear Algorithms - Assumes we are working in a compressed sRGB colorspace
+				case GrayscaleAlgorithms::LIGHTNESS:
+					GrayscaleConverterLightness(output, input, size, channels);
+					break;
+				case GrayscaleAlgorithms::LABDIST:
+					GrayscaleConverterLABDist(output, input, size, channels);
+					break;
+
+				// Default - The Mean algorithm is safe, efficient, and effective
 				default:
 					GrayscaleConverter<Mean<Pixel8>>(output, input, size, channels);
 					break;
@@ -272,13 +308,15 @@ namespace Doxa
 
 	private:
 
+		static inline std::optional<std::array<float, 256>> m_lut;
+
 		/// <summary>
 		/// An optimized grayscale conversion loop where all algs are inlined
 		/// </summary>
-		template<GrayscaleFunc Algorithm>
+		template<auto Algorithm>
 		static void GrayscaleConverter(
 			Pixel8* output,
-			const Pixel8* input,
+			const uint8_t* input,
 			int size,
 			int channels)
 		{
@@ -287,20 +325,54 @@ namespace Doxa
 				output[i] = Algorithm(input[offset], input[offset + 1], input[offset + 2]);
 			}
 		}
-	};
 
-	/// <summary>
-	/// A normalized implementation since we are usually not working with decimal.
-	/// This assumes that RGB are Linear values.  It is unlikely you will use this
-	/// since 709 or sRGB to Linear will give you a 0 to 1 decimal value.
-	///
-	/// C++ Note: Some compilers do not like template specialization defined in the class.
-	/// </summary>
-	template<>
-	inline constexpr Pixel8 Grayscale::Lightness(Pixel8 r, Pixel8 g, Pixel8 b)
-	{
-		return Lightness((double)r / 255, (double)g / 255, (double)b / 255) * 255;
-	}
+		/// <summary>
+		/// Lightness has a known range of 0-100, allowing a single-pass conversion.
+		/// </summary>
+		static void GrayscaleConverterLightness(
+			Pixel8* output,
+			const uint8_t* input,
+			int size,
+			int channels)
+		{
+			if (!m_lut) m_lut = LinearLUT();
+			const float scale = 255.0f / 100.0f;
+
+			for (int i = 0, offset = 0; i < size; ++i, offset += channels)
+			{
+				output[i] = static_cast<Pixel8>(
+					Lightness((*m_lut)[input[offset]], (*m_lut)[input[offset + 1]], (*m_lut)[input[offset + 2]]) * scale);
+			}
+		}
+
+		/// <summary>
+		/// LABDist has an unknown range requiring two passes: compute values, then normalize.
+		/// </summary>
+		static void GrayscaleConverterLABDist(
+			Pixel8* output,
+			const uint8_t* input,
+			int size,
+			int channels)
+		{
+			if (!m_lut) m_lut = LinearLUT();
+
+			std::vector<float> values(size);
+
+			for (int i = 0, offset = 0; i < size; ++i, offset += channels)
+			{
+				values[i] = LABDist((*m_lut)[input[offset]], (*m_lut)[input[offset + 1]], (*m_lut)[input[offset + 2]]);
+			}
+
+			auto [mn, mx] = std::minmax_element(values.data(), values.data() + size);
+			const float min = *mn;
+			const float scale = 255.0f / std::max(*mx - *mn, 1.0f);
+
+			for (int i = 0; i < size; ++i)
+			{
+				output[i] = static_cast<Pixel8>((values[i] - min) * scale);
+			}
+		}
+	};
 }
 
 

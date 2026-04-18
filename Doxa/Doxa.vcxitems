@@ -50,5 +50,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Wan.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WienerFilter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wolf.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Phansalkar.hpp" />
   </ItemGroup>
 </Project>

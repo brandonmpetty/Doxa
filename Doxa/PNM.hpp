@@ -7,7 +7,6 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
-#include <functional>
 #include <cassert>
 #include "Image.hpp"
 #include "Palette.hpp"
@@ -128,42 +127,60 @@ namespace Doxa
 			inputStream.read(reinterpret_cast<char *>(image.data), image.size);
 		}
 
-		void Read24BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
+		template<int Channels>
+		void ColorToGrayscale(std::istream& inputStream, Image& image, GrayscaleAlgorithms algorithm)
 		{
-			GrayscaleFunc toGrayscale = GrayscaleAlgorithm(
-				static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN)));
+			auto readRgb = [&]() -> std::tuple<Pixel8, Pixel8, Pixel8> {
+				Pixel8 r = inputStream.get(), g = inputStream.get(), b = inputStream.get();
+				if constexpr (Channels == 4) inputStream.get(); // Discard alpha
+				return { r, g, b };
+			};
 
-			Pixel8 red, green, blue;
-			for (int idx = 0; idx < image.size; ++idx)
+			if (algorithm == GrayscaleAlgorithms::LABDIST)
 			{
-				red = inputStream.get();
-				green = inputStream.get();
-				blue = inputStream.get();
+				// Two-pass: unknown range requires min/max discovery
+				const auto lut = Grayscale::LinearLUT();
+				std::vector<float> values(image.size);
 
-				// If the pixel is already gray, do not apply the correction
-				image.data[idx] = (red == green && green == blue) ?
-					blue :
-					toGrayscale(red, green, blue); // Convert to GrayScale
+				for (int idx = 0; idx < image.size; ++idx)
+				{
+					auto [r, g, b] = readRgb();
+					values[idx] = Grayscale::LABDist(lut[r], lut[g], lut[b]);
+				}
+
+				auto [mn, mx] = std::minmax_element(values.begin(), values.end());
+				const float min = *mn;
+				const float scale = 255.0f / std::max(*mx - *mn, 1.0f);
+
+				for (int idx = 0; idx < image.size; ++idx)
+					image.data[idx] = static_cast<Pixel8>((values[idx] - min) * scale);
 			}
-		}
-
-		void Read32BitBinary(std::istream& inputStream, Image& image, const Parameters& params = Parameters())
-		{
-			GrayscaleFunc toGrayscale = GrayscaleAlgorithm(
-				static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN)));
-
-			Pixel8 red, green, blue, alpha;
-			for (int idx = 0; idx < image.size; ++idx)
+			else if (algorithm == GrayscaleAlgorithms::LIGHTNESS)
 			{
-				red = inputStream.get();
-				green = inputStream.get();
-				blue = inputStream.get();
-				alpha = inputStream.get(); // TODO - Apply alpha to lower RGB luminosity
+				// Single-pass: known range 0-100
+				const auto lut = Grayscale::LinearLUT();
+				const float scale = 255.0f / 100.0f;
 
-				// If the pixel is already gray, do not apply the correction
-				image.data[idx] = (red == green && green == blue) ?
-					blue :
-					toGrayscale(red, green, blue); // Convert to GrayScale
+				for (int idx = 0; idx < image.size; ++idx)
+				{
+					auto [r, g, b] = readRgb();
+					image.data[idx] = static_cast<Pixel8>(
+						Grayscale::Lightness(lut[r], lut[g], lut[b]) * scale);
+				}
+			}
+			else
+			{
+				// Single-pass: non-linear algorithms with gray shortcut
+				auto toGrayscale = GrayscaleAlgorithm(algorithm);
+
+				for (int idx = 0; idx < image.size; ++idx)
+				{
+					auto [r, g, b] = readRgb();
+
+					// If the pixel is already gray, do not apply the correction
+					image.data[idx] = (r == g && g == b) ?
+						b : toGrayscale(r, g, b);
+				}
 			}
 		}
 
@@ -215,7 +232,8 @@ namespace Doxa
 				image.size = image.width * image.height;
 				image.data = new Pixel8[image.size];
 
-				return Read24BitBinary(inputStream, image, params);
+				auto algorithm = static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN));
+				return ColorToGrayscale<3>(inputStream, image, algorithm);
 			}
 			else if (magicNumber == "P7") // PAM arbitrary bit - Binary
 			{
@@ -253,10 +271,16 @@ namespace Doxa
 
 					return Read8BitBinary(inputStream, image);
 				case 3:
-					return Read24BitBinary(inputStream, image, params);
+				{
+					auto algorithm = static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN));
+					return ColorToGrayscale<3>(inputStream, image, algorithm);
+				}
 				case 4:
+				{
 					if (image.tupleType != TupleTypes::RGBA) throw "PAM: Only 32bit RGBA is supported.";
-					return Read32BitBinary(inputStream, image, params);
+					auto algorithm = static_cast<GrayscaleAlgorithms>(params.Get("grayscale", (int)GrayscaleAlgorithms::MEAN));
+					return ColorToGrayscale<4>(inputStream, image, algorithm);
+				}
 				}
 			}
 
@@ -336,14 +360,18 @@ namespace Doxa
 		{
 			switch (algorithm)
 			{
+				// Works in Non-Linear Color Space
 				case GrayscaleAlgorithms::QT:        return Grayscale::Qt<Pixel8>;
 				case GrayscaleAlgorithms::BT601:     return Grayscale::BT601<Pixel8>;
 				case GrayscaleAlgorithms::BT709:     return Grayscale::BT709<Pixel8>;
 				case GrayscaleAlgorithms::BT2100:    return Grayscale::BT2100<Pixel8>;
 				case GrayscaleAlgorithms::VALUE:     return Grayscale::Value<Pixel8>;
 				case GrayscaleAlgorithms::LUSTER:    return Grayscale::Luster<Pixel8>;
-				case GrayscaleAlgorithms::LIGHTNESS: return Grayscale::sRgbToLightness;
 				case GrayscaleAlgorithms::MINAVG:    return Grayscale::MinAvg<Pixel8>;
+
+				// Linear algorithms (LIGHTNESS, LABDIST) are handled directly by ColorToGrayscale
+
+				// Default
 				default:                             return Grayscale::Mean<Pixel8>;
 			}
 		}
