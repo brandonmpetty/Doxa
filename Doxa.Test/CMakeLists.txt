@@ -48,6 +48,7 @@ add_executable(
   DIBCOUtilsTests.cpp
   RegionTests.cpp
   SIMDTests.cpp
+  SuTests.cpp
 )
 
 # Platform detection and SIMD compiler flags

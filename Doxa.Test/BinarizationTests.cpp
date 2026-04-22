@@ -115,6 +115,11 @@ namespace Doxa::UnitTests
 	{
 		Image imageSu = Su::ToBinaryImage(image);
 
+		// Ensure the auto parameters are understood
+		Image contrastImage(image.width, image.height);
+		ContrastImage::GenerateContrastImage(contrastImage, image);
+		std::cout << "Stroke: " << ContrastImage::EstimateStrokeWidth(image) << std::endl;
+
 		Image imageSu2(image);
 		Su::UpdateToBinary(imageSu2);
 
