@@ -212,7 +212,7 @@ namespace Doxa
 		/// <summary>
 		/// Linear sRGB to XYZ color space with a D65 white point
 		/// </summary>
-		static constexpr inline XYZ RGBToXYZ(double r, double g, double b)
+		static constexpr inline XYZ RGBToXYZ(float r, float g, float b)
 		{
 			return {
 				0.4124564f * r + 0.3575761f * g + 0.1804375f * b,

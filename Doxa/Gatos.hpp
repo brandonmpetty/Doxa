@@ -10,9 +10,6 @@
 #include "Image.hpp"
 #include "WienerFilter.hpp"
 
-////////////////////////////////////////////////////////////////////////
-// This code is highly experimental and has not been unit tested yet! //
-////////////////////////////////////////////////////////////////////////
 
 namespace Doxa
 {
@@ -55,20 +52,21 @@ namespace Doxa
 
 			for (int index = 0; index < binaryImageOut.size; ++index)
 			{
-				const double threshold = Threshold(binaryImageOut.data[index], d, b);
+				const double threshold = Threshold(backgroundImage.data[index], d, b);
 
 				binaryImageOut.data[index] = backgroundImage.data[index] - filteredImage.data[index] > threshold ?
 					Palette::Black : Palette::White;
 			}
 
 			// Step 4.5 - Upsampling
-			// TODO - Implement
+			// This increases your image size.  Not implementing.
 
 			// Step 5 - Post-processing
-			// TODO - Implement
+			// Resulted in a significant loss of detail.  Not providing until refined.
 		}
 
 	protected:
+
 		/// <summary>
 		/// Calculates Average Foreground / Background Distance, and Average Background Text Value.
 		/// </summary>
@@ -124,7 +122,10 @@ namespace Doxa
 						}
 					});
 
-					backgroundImage.data[position] = numerator / denominator;
+					if (denominator > 0)
+					{
+						backgroundImage.data[position] = numerator / denominator;
+					}
 				}
 			});
 		}
