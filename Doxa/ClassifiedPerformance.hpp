@@ -45,19 +45,19 @@ namespace Doxa
 		static bool CompareImages(
 			Classifications& classifications, 
 			const Image& controlImage, 
-			const Image& expirementImage)
+			const Image& experimentImage)
 		{
 			// Initialize
 			classifications.Clear();
 
 			// Verify Input
-			if (controlImage.width != expirementImage.width || controlImage.height != expirementImage.height)
+			if (controlImage.width != experimentImage.width || controlImage.height != experimentImage.height)
 				return false;
 
 			#if defined(DOXA_SIMD)
-				CompareImages_SIMD(classifications, controlImage.data, expirementImage.data, controlImage.size);
+				CompareImages_SIMD(classifications, controlImage.data, experimentImage.data, controlImage.size);
 			#else
-				CompareImages_STD(classifications, controlImage.data, expirementImage.data, controlImage.size);
+				CompareImages_STD(classifications, controlImage.data, experimentImage.data, controlImage.size);
 			#endif
 
 			return true;
@@ -152,7 +152,7 @@ namespace Doxa
 		static bool CompareImages(
 			ClassifiedPerformance::Classifications& classifications, 
 			const Image& controlImage, 
-			const Image& expirementImage, 
+			const Image& experimentImage, 
 			const std::vector<double>& weightsPrecision, 
 			const std::vector<double>& weightsRecall)
 		{
@@ -160,19 +160,19 @@ namespace Doxa
 			classifications.Clear();
 
 			// Verify Input
-			if (controlImage.width != expirementImage.width || controlImage.height != expirementImage.height)
+			if (controlImage.width != experimentImage.width || controlImage.height != experimentImage.height)
 				return false;
 
 			// Ensure that weights are properly passed
 			if (!weightsPrecision.size() || !weightsRecall.size())
-				return CompareImages(classifications, controlImage, expirementImage);
+				return CompareImages(classifications, controlImage, experimentImage);
 
 			// Analyze using Pseudo Weights
 			for (int i = 0; i < controlImage.size; ++i)
 			{
-				if (controlImage.data[i] == expirementImage.data[i])
+				if (controlImage.data[i] == experimentImage.data[i])
 				{
-					if (expirementImage.data[i] == Palette::Black)
+					if (experimentImage.data[i] == Palette::Black)
 					{
 						classifications.truePositive++;
 						classifications.wpTruePositive += weightsPrecision[i];
@@ -185,7 +185,7 @@ namespace Doxa
 				}
 				else // Not a match
 				{
-					if (expirementImage.data[i] == Palette::Black)
+					if (experimentImage.data[i] == Palette::Black)
 					{
 						classifications.falsePositive++;
 						classifications.wpFalsePositive += weightsPrecision[i];
@@ -330,10 +330,10 @@ namespace Doxa
 
 		// Convenience Method
 		template<typename CalcFunc>
-		static double Calculate(const Image& controlImage, const Image& expirementImage, CalcFunc calcFunc)
+		static double Calculate(const Image& controlImage, const Image& experimentImage, CalcFunc calcFunc)
 		{
 			Classifications classifications;
-			return CompareImages(classifications, controlImage, expirementImage) ? calcFunc(classifications) : 0.0;
+			return CompareImages(classifications, controlImage, experimentImage) ? calcFunc(classifications) : 0.0;
 		}
 	};
 }

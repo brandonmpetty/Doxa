@@ -61,13 +61,14 @@
     },
     {
       "name": "all",
-      "displayName": "All Components (C++, Python, WASM)",
+      "displayName": "All Components (C++, Python, WASM, MATLAB)",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "DOXA_BUILD_CPP_TESTS": "ON",
         "DOXA_BUILD_PYTHON": "ON",
-        "DOXA_BUILD_WASM": "ON"
+        "DOXA_BUILD_WASM": "ON",
+        "DOXA_BUILD_MATLAB": "ON"
       }
     }
   ],

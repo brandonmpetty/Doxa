@@ -11,6 +11,7 @@
 #include <SIMD.h>
 #include <SIMDOps.hpp>
 #include <PNM.hpp>
+#include <Grayscale.hpp>
 #include <Otsu.hpp>
 #include <Bernsen.hpp>
 #include <Niblack.hpp>
@@ -25,6 +26,7 @@
 #include <Su.hpp>
 #include <ISauvola.hpp>
 #include <Bataineh.hpp>
+#include <Phansalkar.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
 #include <DIBCOUtils.hpp>

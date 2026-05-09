@@ -32,7 +32,7 @@ ctest --test-dir build-wasm -C Release
 cmake --preset benchmarks
 cmake --build build-bench --config Release
 ./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
-./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
+.\build-bench\Doxa.Bench\Release\doxa_bench.exe  # Windows
 
 # Build everything (C++, Python, WASM)
 cmake --preset all
@@ -58,7 +58,7 @@ cmake -S . -B ./build
 cmake --build ./build --config Release
 ctest --test-dir ./build -C Release  # Or run directly:
 ./build/doxa_test  # Linux/Mac
-./build/Release/doxa_test.exe  # Windows
+.\build\Release\doxa_test.exe  # Windows
 ```
 
 ### Python Bindings (DoxaPy)
@@ -124,7 +124,7 @@ All binarization algorithms inherit from `Algorithm<T>` base class (CRTP pattern
 - `Otsu.hpp` - Histogram-based single threshold
 
 **Local Adaptive Thresholding:**
-- `Sauvola.hpp`, `Niblack.hpp`, `Wolf.hpp`, `Nick.hpp`, `TRSingh.hpp`, `Bernsen.hpp`, `ISauvola.hpp`, `Wan.hpp`, `Su.hpp`, `Gatos.hpp`, `Bataineh.hpp`, `AdOtsu.hpp`
+- `Sauvola.hpp`, `Niblack.hpp`, `Wolf.hpp`, `Nick.hpp`, `TRSingh.hpp`, `Bernsen.hpp`, `Phansalkar.hpp`, `ISauvola.hpp`, `Wan.hpp`, `Su.hpp`, `Gatos.hpp`, `Bataineh.hpp`, `AdOtsu.hpp`
 
 Each algorithm can be called statically via:
 ```cpp
@@ -152,7 +152,7 @@ Algorithms use these via template inheritance to avoid virtual function overhead
 ### Language Bindings Architecture
 
 **Python (DoxaPy):**
-- `Bindings/Python/src/DoxaPy.cpp` - nanobind wrapper exposing all 13 algorithms
+- `Bindings/Python/src/DoxaPy.cpp` - nanobind wrapper exposing all 14 algorithms
 - Converts NumPy arrays ↔ Doxa Image objects
 - Usage pattern:
   ```python

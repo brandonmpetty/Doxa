@@ -200,7 +200,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("BATAINEH", Algorithms::BATAINEH)
 		.value("ISAUVOLA", Algorithms::ISAUVOLA)
 		.value("WAN", Algorithms::WAN)
-		.value("GATOS", Algorithms::GATOS);
+		.value("GATOS", Algorithms::GATOS)
+		.value("PHANSALKAR", Algorithms::PHANSALKAR);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];
@@ -240,7 +241,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("VALUE", GrayscaleAlgorithms::VALUE)
 		.value("LUSTER", GrayscaleAlgorithms::LUSTER)
 		.value("LIGHTNESS", GrayscaleAlgorithms::LIGHTNESS)
-		.value("MINAVG", GrayscaleAlgorithms::MINAVG);
+		.value("MINAVG", GrayscaleAlgorithms::MINAVG)
+		.value("LABDIST", GrayscaleAlgorithms::LABDIST);
 	EM_ASM(
 		Module['Grayscale'] = { 'Algorithms': Module['Grayscale.Algorithms'] };
 		delete Module['Grayscale.Algorithms'];

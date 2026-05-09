@@ -53,7 +53,13 @@ endif()
 
 # MATLAB MEX Bindings (native build only)
 if(DOXA_BUILD_MATLAB AND NOT EMSCRIPTEN)
-    add_subdirectory(Bindings/Matlab)
+    find_package(Matlab COMPONENTS MAIN_PROGRAM)
+    if(Matlab_FOUND)
+        add_subdirectory(Bindings/Matlab)
+    else()
+        message(WARNING "DOXA_BUILD_MATLAB=ON but MATLAB not found. "
+            "Skipping MATLAB MEX bindings. Install MATLAB or set Matlab_ROOT_DIR.")
+    endif()
 endif()
 
 # WebAssembly - two modes:

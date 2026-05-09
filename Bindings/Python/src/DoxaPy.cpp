@@ -269,6 +269,7 @@ NB_MODULE(doxapy, m) {
 		.value("LUSTER", GrayscaleAlgorithms::LUSTER)
 		.value("LIGHTNESS", GrayscaleAlgorithms::LIGHTNESS)
 		.value("MINAVG", GrayscaleAlgorithms::MINAVG)
+		.value("LABDIST", GrayscaleAlgorithms::LABDIST)
 		.export_values();
 
 	m.def("to_grayscale", &ToGrayscale,
@@ -311,5 +312,6 @@ NB_MODULE(doxapy, m) {
 		.value("WAN", Algorithms::WAN)
 		.value("GATOS", Algorithms::GATOS)
 		.value("ADOTSU", Algorithms::ADOTSU)
+		.value("PHANSALKAR", Algorithms::PHANSALKAR)
 		.export_values();
 }

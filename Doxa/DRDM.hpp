@@ -20,9 +20,9 @@ namespace Doxa
 	class DRDM
 	{
 	public:
-		static double CalculateDRDM(const Image& controlImage, const Image& expirementImage)
+		static double CalculateDRDM(const Image& controlImage, const Image& experimentImage)
 		{
-			const uint64_t sumDRDk = SumDRDkForMismatchedPixels(controlImage, expirementImage);
+			const uint64_t sumDRDk = SumDRDkForMismatchedPixels(controlImage, experimentImage);
 
 			// To avoid rounding issues we are using ints instead of doubles, which we accomplished by using a 1000000 multiplier.
 			return sumDRDk / (double)(NUBN(controlImage) * 1000000);

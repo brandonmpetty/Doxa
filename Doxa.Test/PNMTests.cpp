@@ -13,8 +13,7 @@ namespace Doxa::UnitTests
 		// Reads
 		using PNM::Read1BitBinary;
 		using PNM::Read8BitBinary;
-		using PNM::Read24BitBinary;
-		using PNM::Read32BitBinary;
+		using PNM::ColorToGrayscale;
 		using PNM::ReadPNM;
 
 		// Writes
@@ -159,7 +158,7 @@ namespace Doxa::UnitTests
 		// Execute - Will convert to 8-bit Gray Scale
 		PNMTestharness pnm;
 		Image image(3, 2);
-		pnm.Read24BitBinary(stream, image);
+		pnm.ColorToGrayscale<3>(stream, image, GrayscaleAlgorithms::MEAN);
 
 		// Assert
 		const Pixel8 expected[] = { 
@@ -182,7 +181,7 @@ namespace Doxa::UnitTests
 		// Execute - Will convert to 8-bit Gray Scale
 		PNMTestharness pnm;
 		Image image(3, 2);
-		pnm.Read32BitBinary(stream, image);
+		pnm.ColorToGrayscale<4>(stream, image, GrayscaleAlgorithms::MEAN);
 
 		// Assert
 		const Pixel8 expected[] = {

@@ -61,7 +61,7 @@ namespace Doxa::UnitTests
 
 	TEST_F(BinarizationTests, BinarizationBernsenTest)
 	{
-		const Parameters parameters({ { "window", 61 }, { "threshold", 150 }, {"constrast-limit", 15} });
+		const Parameters parameters({ { "window", 61 }, { "threshold", 150 }, {"contrast-limit", 25} });
 
 		Image imageBernsen = Bernsen::ToBinaryImage(image, parameters);
 
@@ -114,6 +114,11 @@ namespace Doxa::UnitTests
 	TEST_F(BinarizationTests, BinarizationSuTest)
 	{
 		Image imageSu = Su::ToBinaryImage(image);
+
+		// Ensure the auto parameters are understood
+		Image contrastImage(image.width, image.height);
+		ContrastImage::GenerateContrastImage(contrastImage, image);
+		std::cout << "Stroke: " << ContrastImage::EstimateStrokeWidth(image) << std::endl;
 
 		Image imageSu2(image);
 		Su::UpdateToBinary(imageSu2);
@@ -180,6 +185,20 @@ namespace Doxa::UnitTests
 		Image imageAdOtsuMSG = AdOtsuMS::ToBinaryImage(image);
 		TestUtilities::AssertImageFile(imageAdOtsuMSG, projFolder + "2JohnC1V3-AdOtsuMSG.pbm");
 	}
+
+	TEST_F(BinarizationTests, BinarizationPhansalkarTest)
+	{
+		const Parameters parameters({ {"window", 27}, {"k", 0.10} });
+
+		Image imagePhansalkar = Phansalkar::ToBinaryImage(image, parameters);
+
+		Image imagePhansalkar2(image);
+		Phansalkar::UpdateToBinary(imagePhansalkar2, parameters);
+
+		TestUtilities::AssertImages(imagePhansalkar, imagePhansalkar2);
+		TestUtilities::AssertImageFile(imagePhansalkar, projFolder + "2JohnC1V3-Phansalkar.pbm");
+	}
+
 
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{

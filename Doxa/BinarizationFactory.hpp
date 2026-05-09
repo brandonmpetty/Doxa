@@ -17,6 +17,7 @@
 #include "Su.hpp"
 #include "Gatos.hpp"
 #include "AdOtsu.hpp"
+#include "Phansalkar.hpp"
 
 
 namespace Doxa
@@ -35,7 +36,8 @@ namespace Doxa
 		ISAUVOLA = 9,
 		WAN = 10,
 		GATOS = 11,
-		ADOTSU = 12
+		ADOTSU = 12,
+		PHANSALKAR = 13,
 	};
 
 
@@ -89,6 +91,9 @@ namespace Doxa
 				break;
 			case ADOTSU:
 				algorithmPtr = new AdOtsuMS();
+				break;
+			case PHANSALKAR:
+				algorithmPtr = new Phansalkar();
 				break;
 			}
 

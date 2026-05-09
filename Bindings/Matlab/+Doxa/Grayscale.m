@@ -11,6 +11,7 @@ classdef Grayscale
     %       Doxa.Grayscale.LUSTER    - HLS Lightness
     %       Doxa.Grayscale.LIGHTNESS - CIELAB/CIELUV Lightness
     %       Doxa.Grayscale.MINAVG    - Min-Average (for multi-color text)
+    %       Doxa.Grayscale.LABDIST   - L*a*b* Euclidean Distance (used by Phansalkar)
     %
     %   See also Doxa.Image
 
@@ -24,5 +25,6 @@ classdef Grayscale
         LUSTER
         LIGHTNESS
         MINAVG
+        LABDIST
     end
 end

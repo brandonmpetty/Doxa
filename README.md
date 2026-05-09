@@ -24,6 +24,7 @@ It is written in C++ but supports multiple language bindings.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
+* Phansalkar - "Adaptive Local Thresholding for Detection of Nuclei in Diversely Stained Cytology Images", 2011.
 * ISauvola - "ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization", 2016.
 * WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
 
@@ -69,11 +70,22 @@ PNM::Write(imageSauvola, R"(C:\MyImage-Sauvola.pam)");
 
 ΔBF is incredibly light weight, being a header-only library.  It can integrate easily with other 3rd party C++ frameworks like OpenCV and Qt.  Examples can be found under the Demo folder.
 
-### Building
+### Building and Testing
 
 The core library is header-only and requires no build. For bindings and tests, use CMake presets:
 
 ```bash
+# Build everything (C++ Tests, Python, WASM, MATLAB)
+cmake --preset all
+cmake --build build --config Release
+ctest --test-dir build -C Release
+
+# Build and run performance benchmarks (Google Benchmark)
+cmake --preset benchmarks
+cmake --build build-bench --config Release
+./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
+.\build-bench\Doxa.Bench\Release\doxa_bench.exe  # Windows
+
 # Build and run C++ unit tests
 cmake --preset cpp-tests
 cmake --build build-cpp-tests --config Release
@@ -93,24 +105,21 @@ ctest --test-dir build-wasm -C Release
 cmake --preset matlab
 cmake --build build-matlab --config Release
 ctest --test-dir build-matlab -C Release
-
-# Build and run performance benchmarks (Google Benchmark)
-cmake --preset benchmarks
-cmake --build build-bench --config Release
-./build-bench/Doxa.Bench/doxa_bench              # Linux/Mac
-./build-bench/Doxa.Bench/Release/doxa_bench.exe  # Windows
-
-# Build everything (C++ Tests, Python, WASM)
-cmake --preset all
-cmake --build build --config Release
-ctest --test-dir build -C Release
 ```
 
+### Language Bindings
+* Javascript / WASM
+* Python
+* Matlab
+
+Examples of how to use each binding are provided in the Demo folder.
 
 See [Bindings/Python/README.md](Bindings/Python/README.md), [Bindings/WebAssembly/README.md](Bindings/WebAssembly/README.md), and [Bindings/Matlab/README.md](Bindings/Matlab/README.md) for detailed instructions.
 
-### Performance Benchmarks
-The project uses [Google Benchmark](https://github.com/google/benchmark) for measuring runtime performance of SIMD optimizations, calculator backends, and core operations. Benchmarks are separate from unit tests to keep correctness and performance concerns independent.
+A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
+
+### Benchmarks
+The project uses [Google Benchmark](https://github.com/google/benchmark) for measuring runtime performance of SIMD optimizations, calculator backends, and core operations. Benchmarks are separate from unit tests to keep correctness and runtime performance concerns independent.
 
 ```bash
 # Run benchmarks long enough to lower CV %
@@ -121,19 +130,10 @@ The project uses [Google Benchmark](https://github.com/google/benchmark) for mea
 python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarks before.json after.json
 ```
 
-CI automatically tracks benchmark results per platform (Linux, Windows, macOS) and alerts on regressions in pull requests.
-
 ### Performance Analysis
-Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.
+Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.  All DIBCO metric algorithms, past and present, are provided.  ΔBF's metrics are significantly faster than calling DIBCO_metrics.exe directly.
 
-### Language Bindings
-* Javascript / WASM
-* Python
-* Matlab
-
-Experimental **WASM** support has been added in order to expose ΔBF to the web, as well as NodeJs.  For **Python**, an experimental DoxaPy library has been developed and publish on PyPi. Experimental **Matlab** bindings can also be built.  Examples of how to use each binding are provided in the Demo folder.
-
-A [Live Demo](https://brandonmpetty.github.io/Doxa/WebAssembly) has been created to highlight some of what ΔBF is capable of on the web.
+**NOTE** - DIBCO Weight generation still requires [BinEvalWeights](https://github.com/kzagoris/DibcoEvaluation/tree/master/Prerequisites/BinEvalWeights)
 
 ## License
 CC0 - Brandon M. Petty, 2026
