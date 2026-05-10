@@ -18,6 +18,7 @@
 #include "Gatos.hpp"
 #include "AdOtsu.hpp"
 #include "Phansalkar.hpp"
+#include "Wellner.hpp"
 
 
 namespace Doxa
@@ -38,6 +39,7 @@ namespace Doxa
 		GATOS = 11,
 		ADOTSU = 12,
 		PHANSALKAR = 13,
+		WELLNER = 14,
 	};
 
 
@@ -94,6 +96,9 @@ namespace Doxa
 				break;
 			case PHANSALKAR:
 				algorithmPtr = new Phansalkar();
+				break;
+			case WELLNER:
+				algorithmPtr = new Wellner();
 				break;
 			}
 

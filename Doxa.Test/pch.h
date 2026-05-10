@@ -27,6 +27,7 @@
 #include <ISauvola.hpp>
 #include <Bataineh.hpp>
 #include <Phansalkar.hpp>
+#include <Wellner.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
 #include <DIBCOUtils.hpp>

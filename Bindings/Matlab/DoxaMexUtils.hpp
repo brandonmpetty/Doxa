@@ -195,7 +195,8 @@ namespace DoxaMexUtils
             {"SU", Doxa::Algorithms::SU},           {"TRSINGH", Doxa::Algorithms::TRSINGH},
             {"BATAINEH", Doxa::Algorithms::BATAINEH}, {"ISAUVOLA", Doxa::Algorithms::ISAUVOLA},
             {"WAN", Doxa::Algorithms::WAN},         {"GATOS", Doxa::Algorithms::GATOS},
-            {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR}
+            {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR},
+            {"WELLNER", Doxa::Algorithms::WELLNER}
         };
 
         auto it = algorithmMap.find(algorithmStr);

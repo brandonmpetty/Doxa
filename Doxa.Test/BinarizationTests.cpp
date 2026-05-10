@@ -199,6 +199,18 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageFile(imagePhansalkar, projFolder + "2JohnC1V3-Phansalkar.pbm");
 	}
 
+	TEST_F(BinarizationTests, BinarizationWellner)
+	{
+		const Parameters parameters({ {"t", 15} }); // Param's `s` is defaulted and optimized
+
+		Image imageWellner = Wellner::ToBinaryImage(image, parameters);
+
+		Image imageWellner2(image);
+		Wellner::UpdateToBinary(imageWellner2, parameters);
+
+		TestUtilities::AssertImages(imageWellner, imageWellner2);
+		TestUtilities::AssertImageFile(imageWellner, projFolder + "2JohnC1V3-Wellner.pbm");
+	}
 
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{

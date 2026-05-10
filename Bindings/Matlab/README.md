@@ -48,7 +48,7 @@ All 14 binarization algorithms are available via `Doxa.Algorithms`:
 
 | Global | Local Adaptive |
 |--------|---------------|
-| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `SU`, `TRSINGH`, `BATAINEH`, `PHANSALKAR`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
+| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `WELLNER`, `SU`, `TRSINGH`, `BATAINEH`, `PHANSALKAR`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
 
 ## Grayscale Conversion
 Ten grayscale algorithms are available via `Doxa.Grayscale`:

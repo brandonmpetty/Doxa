@@ -49,6 +49,7 @@ add_executable(
   RegionTests.cpp
   SIMDTests.cpp
   SuTests.cpp
+  WellnerTests.cpp
   WienerFilterTests.cpp
 )
 

@@ -14,6 +14,10 @@ function outputImage = binarize(algorithm, inputImage, options)
 %       distance      - AdOtsu: grid distance (default: window/2)
 %       minN          - Su: minimum neighborhood (default: window)
 %       glyph         - Gatos: estimated stroke width (default: 60)
+%       p             - Phansalkar: foreground sensitivity (default: 3.0)
+%       q             - Phansalkar: background sensitivity (default: 10.0)
+%       s             - Wellner: moving-average stride (default: floor-pow2(width/8))
+%       t             - Wellner: threshold percentage (default: 15)
 %
 %   See also Doxa.Algorithms, Doxa.updateToBinary, Doxa.Image
 
@@ -28,6 +32,10 @@ function outputImage = binarize(algorithm, inputImage, options)
         options.distance = []
         options.minN = []
         options.glyph = []
+        options.p = []
+        options.q = []
+        options.s = []
+        options.t = []
     end
 
     params = Doxa.buildParams(options);

@@ -48,6 +48,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TRSingh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Types.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wan.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Wellner.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WienerFilter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wolf.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Phansalkar.hpp" />

@@ -19,6 +19,10 @@ function updateToBinary(algorithm, inputImage, options)
         options.distance = []
         options.minN = []
         options.glyph = []
+        options.p = []
+        options.q = []
+        options.s = []
+        options.t = []
     end
 
     params = Doxa.buildParams(options);

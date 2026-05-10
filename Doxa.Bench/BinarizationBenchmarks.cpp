@@ -192,6 +192,22 @@ namespace Doxa::Benchmarks
 	}
 	BENCHMARK(BM_Phansalkar);
 
+	static void BM_Wellner(benchmark::State& state)
+	{
+		const Image image = ReadTestImage();
+		// Use the algorithm's defaults (window auto-rounded to power-of-two,
+		// t = 15) so the bench reflects what naive callers actually get.
+		const Parameters parameters({ { "t", 15 } });
+
+		for (auto _ : state) {
+			Image result = Wellner::ToBinaryImage(image, parameters);
+			benchmark::DoNotOptimize(result.data);
+		}
+
+		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
+	}
+	BENCHMARK(BM_Wellner);
+
 	static void BM_AdOtsu(benchmark::State& state)
 	{
 		const Image image = ReadTestImage();

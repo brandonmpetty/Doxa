@@ -313,5 +313,6 @@ NB_MODULE(doxapy, m) {
 		.value("GATOS", Algorithms::GATOS)
 		.value("ADOTSU", Algorithms::ADOTSU)
 		.value("PHANSALKAR", Algorithms::PHANSALKAR)
+		.value("WELLNER", Algorithms::WELLNER)
 		.export_values();
 }
