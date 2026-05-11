@@ -28,6 +28,8 @@
 #include <Bataineh.hpp>
 #include <Phansalkar.hpp>
 #include <Wellner.hpp>
+#include <Bradley.hpp>
+#include <Feng.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
 #include <DIBCOUtils.hpp>

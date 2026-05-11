@@ -7,7 +7,7 @@ classdef Algorithms
     %   Local Adaptive Thresholding:
     %       Doxa.Algorithms.BERNSEN, NIBLACK, SAUVOLA, WOLF, NICK, SU,
     %       TRSINGH, BATAINEH, PHANSALKAR, ISAUVOLA, WAN, GATOS, ADOTSU,
-    %       WELLNER
+    %       WELLNER, BRADLEY, FENG
     %
     %   See also Doxa.binarize
 
@@ -27,5 +27,7 @@ classdef Algorithms
         GATOS
         ADOTSU
         WELLNER
+        BRADLEY
+        FENG
     end
 end

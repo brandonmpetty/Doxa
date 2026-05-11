@@ -18,6 +18,12 @@ function outputImage = binarize(algorithm, inputImage, options)
 %       q             - Phansalkar: background sensitivity (default: 10.0)
 %       s             - Wellner: moving-average stride (default: floor-pow2(width/8))
 %       t             - Wellner: threshold percentage (default: 15)
+%       secondaryWindow - Feng: larger window for Rs (default: 3*window)
+%       alpha1        - Feng: mean-shift weight (default: 0.12)
+%       k1            - Feng: alpha2 coefficient (default: 0.025)
+%       k2            - Feng: alpha3 coefficient (default: 0.2)
+%       gamma         - Feng: sRatio exponent (default: 2.0)
+%       noiseFloor    - Feng: lower bound on Rs for flat regions (default: 10.0)
 %
 %   See also Doxa.Algorithms, Doxa.updateToBinary, Doxa.Image
 
@@ -36,6 +42,12 @@ function outputImage = binarize(algorithm, inputImage, options)
         options.q = []
         options.s = []
         options.t = []
+        options.secondaryWindow = []
+        options.alpha1 = []
+        options.k1 = []
+        options.k2 = []
+        options.gamma = []
+        options.noiseFloor = []
     end
 
     params = Doxa.buildParams(options);

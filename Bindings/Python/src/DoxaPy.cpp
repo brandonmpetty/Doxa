@@ -314,5 +314,7 @@ NB_MODULE(doxapy, m) {
 		.value("ADOTSU", Algorithms::ADOTSU)
 		.value("PHANSALKAR", Algorithms::PHANSALKAR)
 		.value("WELLNER", Algorithms::WELLNER)
+		.value("BRADLEY", Algorithms::BRADLEY)
+		.value("FENG", Algorithms::FENG)
 		.export_values();
 }

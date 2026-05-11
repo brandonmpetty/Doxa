@@ -212,6 +212,35 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageFile(imageWellner, projFolder + "2JohnC1V3-Wellner.pbm");
 	}
 
+	TEST_F(BinarizationTests, BinarizationBradleyTest)
+	{
+		const Parameters parameters({ { "window", 75 }, { "t", 15 } });
+
+		Image imageBradley = Bradley::ToBinaryImage(image, parameters);
+
+		Image imageBradley2(image);
+		Bradley::UpdateToBinary(imageBradley2, parameters);
+
+		TestUtilities::AssertImages(imageBradley, imageBradley2);
+		TestUtilities::AssertImageFile(imageBradley, projFolder + "2JohnC1V3-Bradley.pbm");
+	}
+
+	TEST_F(BinarizationTests, BinarizationFengTest)
+	{
+		const Parameters parameters({
+			{ "window", 25 }, { "secondary-window", 75 }, { "distance", 12 },
+			{ "alpha1", 0.12 }, { "k1", 0.025 }, { "k2", 0.2 }, { "gamma", 2.0 }
+		});
+
+		Image imageFeng = Feng::ToBinaryImage(image, parameters);
+
+		Image imageFeng2(image);
+		Feng::UpdateToBinary(imageFeng2, parameters);
+
+		TestUtilities::AssertImages(imageFeng, imageFeng2);
+		TestUtilities::AssertImageFile(imageFeng, projFolder + "2JohnC1V3-Feng.pbm");
+	}
+
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{
 		Image imageBataineh = Bataineh::ToBinaryImage(image);

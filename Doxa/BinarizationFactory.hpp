@@ -19,6 +19,8 @@
 #include "AdOtsu.hpp"
 #include "Phansalkar.hpp"
 #include "Wellner.hpp"
+#include "Bradley.hpp"
+#include "Feng.hpp"
 
 
 namespace Doxa
@@ -40,6 +42,8 @@ namespace Doxa
 		ADOTSU = 12,
 		PHANSALKAR = 13,
 		WELLNER = 14,
+		BRADLEY = 15,
+		FENG = 16,
 	};
 
 
@@ -99,6 +103,12 @@ namespace Doxa
 				break;
 			case WELLNER:
 				algorithmPtr = new Wellner();
+				break;
+			case BRADLEY:
+				algorithmPtr = new Bradley();
+				break;
+			case FENG:
+				algorithmPtr = new Feng();
 				break;
 			}
 

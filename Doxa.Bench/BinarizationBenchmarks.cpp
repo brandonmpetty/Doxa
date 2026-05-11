@@ -208,6 +208,37 @@ namespace Doxa::Benchmarks
 	}
 	BENCHMARK(BM_Wellner);
 
+	static void BM_Bradley(benchmark::State& state)
+	{
+		const Image image = ReadTestImage();
+		const Parameters parameters({ { "window", 75 }, { "t", 15 } });
+
+		for (auto _ : state) {
+			Image result = Bradley::ToBinaryImage(image, parameters);
+			benchmark::DoNotOptimize(result.data);
+		}
+
+		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
+	}
+	BENCHMARK(BM_Bradley);
+
+	static void BM_Feng(benchmark::State& state)
+	{
+		const Image image = ReadTestImage();
+		const Parameters parameters({
+			{ "window", 25 }, { "secondary-window", 75 }, { "distance", 12 },
+			{ "alpha1", 0.12 }, { "k1", 0.025 }, { "k2", 0.2 }, { "gamma", 2.0 }
+		});
+
+		for (auto _ : state) {
+			Image result = Feng::ToBinaryImage(image, parameters);
+			benchmark::DoNotOptimize(result.data);
+		}
+
+		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
+	}
+	BENCHMARK(BM_Feng);
+
 	static void BM_AdOtsu(benchmark::State& state)
 	{
 		const Image image = ReadTestImage();
