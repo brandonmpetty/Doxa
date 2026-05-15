@@ -94,6 +94,14 @@ namespace Doxa
 					squareSum += integralSquare[x];
 				}
 
+				// Cache the reciprocal of `count` so the per-pixel mean/variance
+				// can multiply instead of divide.  count only changes at the
+				// left/right edges of the row; the interior holds a constant
+				// (winBottom - winTop) * windowSize.  Branch predictor learns
+				// the pattern instantly.
+				int lastCount = 0;
+				double invCount = 0.0;
+
 				// As our window moves across, we are now able to use our sums to calculate mean, variance, etc.
 				// This happens until the right most edge of our windows hits the end of the image.
 				for (int x = 1; x < dr2; ++x, ++ind)
@@ -104,8 +112,9 @@ namespace Doxa
 					sum += integral[winRight] - integral[winLeft];
 					squareSum += integralSquare[winRight] - integralSquare[winLeft];
 
-					const double mean = ((double)sum) / count;
-					const double variance = ((double)squareSum) / count - mean * mean;
+					if (count != lastCount) { invCount = 1.0 / count; lastCount = count; }
+					const double mean = (double)sum * invCount;
+					const double variance = (double)squareSum * invCount - mean * mean;
 
 					processor(mean, variance, ind);
 				}
@@ -120,8 +129,9 @@ namespace Doxa
 					sum -= integral[winLeft];
 					squareSum -= integralSquare[winLeft];
 
-					const double mean = ((double)sum) / count;
-					const double variance = ((double)squareSum) / count - mean * mean;
+					if (count != lastCount) { invCount = 1.0 / count; lastCount = count; }
+					const double mean = (double)sum * invCount;
+					const double variance = (double)squareSum * invCount - mean * mean;
 
 					processor(mean, variance, ind);
 				}
