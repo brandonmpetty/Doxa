@@ -18,7 +18,7 @@ function outputImage = binarize(algorithm, inputImage, options)
 %       q             - Phansalkar: background sensitivity (default: 10.0)
 %       s             - Wellner: moving-average stride (default: floor-pow2(width/8))
 %       t             - Wellner: threshold percentage (default: 15)
-%       secondaryWindow - Feng: larger window for Rs (default: 3*window)
+%       secondaryWindowMultiplier - Feng: secondary window multiplier in primary cells (default: 3)
 %       alpha1        - Feng: mean-shift weight (default: 0.12)
 %       k1            - Feng: alpha2 coefficient (default: 0.025)
 %       k2            - Feng: alpha3 coefficient (default: 0.2)
@@ -42,7 +42,7 @@ function outputImage = binarize(algorithm, inputImage, options)
         options.q = []
         options.s = []
         options.t = []
-        options.secondaryWindow = []
+        options.secondaryWindowMultiplier = []
         options.alpha1 = []
         options.k1 = []
         options.k2 = []

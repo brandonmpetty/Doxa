@@ -226,7 +226,7 @@ namespace Doxa::Benchmarks
 	{
 		const Image image = ReadTestImage();
 		const Parameters parameters({
-			{ "window", 25 }, { "secondary-window", 75 }, { "distance", 12 },
+			{ "window", 25 }, { "secondary-window-multiplier", 3 },
 			{ "alpha1", 0.12 }, { "k1", 0.025 }, { "k2", 0.2 }, { "gamma", 2.0 }
 		});
 

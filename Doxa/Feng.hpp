@@ -33,6 +33,16 @@ namespace Doxa
 	/// primary window (a grid) and bilinearly interpolated for the
 	/// remaining pixels -- the same pattern AdOtsu uses through GridCalc.
 	///
+	/// "window" sets both the sampling window (the region used to
+	/// compute m, s, M around each grid point) and the interpolation
+	/// cell width.  Internally the grid stride is (window - 1), so each
+	/// bilinear cell is exactly window x window pixels inclusive of its
+	/// shared corners -- one input parameter with one geometric meaning.
+	///
+	/// "secondary-window-multiplier" controls the secondary window used
+	/// to compute Rs.  A multiplier of M reads a grid-point neighborhood,
+	/// spanning roughly M primary cells across.  Defaults to 3, min 2.
+	///
 	/// Two grid passes are required: phase one collects (m, s, M) per grid
 	/// point, phase two reads neighboring s values to compute Rs.  The
 	/// per-grid storage is small (a few thousand entries for typical
@@ -52,18 +62,22 @@ namespace Doxa
 		{
 			const Image& gray = Algorithm::grayScaleImageIn;
 
-			// Read parameters, utilizing defaults
-			// The primary window should be 1 to 2 times the character size
-			const int primaryWindow   = parameters.Get("window", 25);
+			// Read parameters, utilizing defaults.
+			// The primary window should be 1 to 2 times the character size.
+			// Clamped to >= 2 so the grid stride is always >= 1.
+			const int primaryWindow = std::max(2, parameters.Get("window", 25));
 
-			// The paper doesn't pin a size; Fig. 1 visually shows roughly 3x the primary.
-			const int secondaryWindow = parameters.Get("secondary-window", primaryWindow * 3);
+			// secondary-window-multiplier: read M primary cells across for Rs.
+			// Clamped to >= 2 so the secondary strictly exceeds the primary cell.
+			const int secondaryMult = std::max(2, parameters.Get("secondary-window-multiplier", 3));
 
-			const int dist            = std::max(1, parameters.Get("distance", primaryWindow / 2));
-			const double alpha1       = parameters.Get("alpha1", 0.12);
-			const double k1           = parameters.Get("k1", 0.025);
-			const double k2           = parameters.Get("k2", 0.2);
-			const double gamma        = parameters.Get("gamma", 2.0);
+			// Grid stride is one less than the window so the bilinear cell
+			// is exactly primaryWindow pixels wide inclusive of corners.
+			const int dist       = primaryWindow - 1;
+			const double alpha1  = parameters.Get("alpha1", 0.12);
+			const double k1      = parameters.Get("k1", 0.025);
+			const double k2      = parameters.Get("k2", 0.2);
+			const double gamma   = parameters.Get("gamma", 2.0);
 
 			// Lower bound on Rs.  Feng's formula assumes the secondary window
 			// always contains some text-bearing region whose s dominates the
@@ -74,7 +88,7 @@ namespace Doxa
 			// inputs; internally clamped to a tiny positive value so the
 			// inner-loop s/Rs division is always safe.
 			///
-			// NOTE: Somewhat bypasses the need for the paper's recommendation of a median filter!
+			// NOTE: This somewhat bypasses the need for the paper's recommendation of a median filter!
 			// With the right sized primary window, black splotches in white areas go away.
 			// However, this lets you use a much smaller window (1/3 the size) and get great results!
 			const double noiseFloor   = std::max(parameters.Get("noise-floor", 10.0), 1e-9);
@@ -115,7 +129,7 @@ namespace Doxa
 
 				const double mean = static_cast<double>(sum) / count;
 				const double variance = static_cast<double>(sumSq) / count - mean * mean;
-				
+
 				grid_m[idx] = mean;
 				grid_s[idx] = std::sqrt(variance > 0.0 ? variance : 0.0);
 				grid_M[idx] = static_cast<double>(minVal);
@@ -124,9 +138,9 @@ namespace Doxa
 			});
 
 			// Phase 2: write the per-grid-point threshold at the grid center pixel.
-			// Rs is max(s) over a secondary window centered on the grid point; in
-			// grid coordinates its half-extent is ceil(secondaryWindow / (2*dist)).
-			const int secondaryRadius = std::max(1, (secondaryWindow + 2 * dist - 1) / (2 * dist));
+			// Rs is max(s) over a secondary window centered on the grid point; the
+			// half-extent in grid steps is secondaryMult / 2 cells.
+			const int secondaryRadius = secondaryMult / 2;
 
 			int gx = 0, gy = 0;
 			Iterate(gray, primaryWindow, dist, [&](const Region&, const int& position)

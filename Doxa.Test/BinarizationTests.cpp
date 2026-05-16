@@ -228,7 +228,7 @@ namespace Doxa::UnitTests
 	TEST_F(BinarizationTests, BinarizationFengTest)
 	{
 		const Parameters parameters({
-			{ "window", 25 }, { "secondary-window", 75 }, { "distance", 12 },
+			{ "window", 25 },
 			{ "alpha1", 0.12 }, { "k1", 0.025 }, { "k2", 0.2 }, { "gamma", 2.0 }
 		});
 

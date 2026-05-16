@@ -23,7 +23,7 @@ function updateToBinary(algorithm, inputImage, options)
         options.q = []
         options.s = []
         options.t = []
-        options.secondaryWindow = []
+        options.secondaryWindowMultiplier = []
         options.alpha1 = []
         options.k1 = []
         options.k2 = []

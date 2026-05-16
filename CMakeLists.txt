@@ -33,11 +33,7 @@ endif()
 # Python Bindings (native build only)
 if(DOXA_BUILD_PYTHON AND NOT EMSCRIPTEN)
     find_package(Python 3.12 REQUIRED COMPONENTS Interpreter)
-    # Sync headers from core library
-    execute_process(
-        COMMAND ${Python_EXECUTABLE} copy-cpp-files.py
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Bindings/Python
-    )
+    # Header sync into Bindings/Python/src/Doxa is handled by Bindings/Python/CMakeLists.txt
     add_subdirectory(Bindings/Python)
 
     # Add Python tests to CTest

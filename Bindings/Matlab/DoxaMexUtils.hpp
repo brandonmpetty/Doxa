@@ -151,7 +151,7 @@ namespace DoxaMexUtils
     {
         static const std::unordered_map<std::string, std::string> nameMap = {
             {"contrastLimit", "contrast-limit"},
-            {"secondaryWindow", "secondary-window"},
+            {"secondaryWindowMultiplier", "secondary-window-multiplier"},
             {"noiseFloor", "noise-floor"}
         };
 
