@@ -74,12 +74,14 @@ ctest --test-dir build-python -C Release
 # Or build from Bindings/Python directory
 cd Bindings/Python
 pip install -r requirements.txt
-python copy-cpp-files.py
 cmake -S . -B ./build
 cmake --build ./build --config Release
 python test/test_doxa.py
 
-# Build distributable wheel (uses cibuildwheel)
+# Build distributable wheel (uses cibuildwheel).
+# Note: this is the only path that still requires copy-cpp-files.py
+# (run it first), since sdist creation happens before CMake configures.
+python copy-cpp-files.py
 python -m build
 ```
 

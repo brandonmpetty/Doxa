@@ -44,11 +44,11 @@ Doxa.updateToBinary(Doxa.Algorithms.SAUVOLA, img, window=75, k=0.2);
 ```
 
 ## Algorithms
-All 14 binarization algorithms are available via `Doxa.Algorithms`:
+All 17 binarization algorithms are available via `Doxa.Algorithms`:
 
 | Global | Local Adaptive |
 |--------|---------------|
-| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `SU`, `TRSINGH`, `BATAINEH`, `PHANSALKAR`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
+| `OTSU` | `BERNSEN`, `NIBLACK`, `SAUVOLA`, `WOLF`, `NICK`, `WELLNER`, `BRADLEY`, `FENG`, `SU`, `TRSINGH`, `BATAINEH`, `PHANSALKAR`, `ISAUVOLA`, `WAN`, `GATOS`, `ADOTSU` |
 
 ## Grayscale Conversion
 Ten grayscale algorithms are available via `Doxa.Grayscale`:

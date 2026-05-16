@@ -15,6 +15,31 @@ else()
     add_compile_options("-Wno-narrowing")
 endif()
 
+# --------------------------------------------------------------------------
+# TEST-ONLY: Disable FMA contraction in the test binary so that float-heavy
+# algorithms (Feng in particular) produce byte-identical output across
+# compilers.  Without this, Clang on Apple Silicon -- and any compiler with
+# fast-math flags -- can fuse `a*b + c` into a single FMA instruction with
+# one rounding step instead of two, producing 1-ULP differences that flip
+# threshold-boundary pixels and break our byte-equal ground-truth pbm
+# assertions.
+#
+# MSVC's default is /fp:precise which already prohibits fusion, so this is
+# only needed for GCC and Clang.
+#
+# DO NOT USE THIS FLAG IN PRODUCTION BUILDS.  It is a CI determinism aid,
+# not an algorithm correctness setting.  FMA is both faster AND more
+# accurate (one rounding step instead of two) -- production users of Doxa
+# should leave FMA enabled.  Disabling it here costs ~1-2% perf in the
+# test binary and gives up ~1 ULP of accuracy in exchange for byte-equal
+# output across Linux / macOS / Windows.  The Doxa core library is
+# header-only, so this flag only affects this test executable; downstream
+# projects that include Doxa headers are unaffected.
+# --------------------------------------------------------------------------
+if(NOT MSVC)
+    add_compile_options("-ffp-contract=off")
+endif()
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -49,6 +74,7 @@ add_executable(
   RegionTests.cpp
   SIMDTests.cpp
   SuTests.cpp
+  WellnerTests.cpp
   WienerFilterTests.cpp
 )
 

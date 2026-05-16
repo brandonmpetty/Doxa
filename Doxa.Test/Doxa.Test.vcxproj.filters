@@ -22,6 +22,7 @@
     <ClCompile Include="DRDMTests.cpp" />
     <ClCompile Include="DIBCOUtilsTests.cpp" />
     <ClCompile Include="WienerFilterTests.cpp" />
+    <ClCompile Include="WellnerTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageFixture.hpp" />

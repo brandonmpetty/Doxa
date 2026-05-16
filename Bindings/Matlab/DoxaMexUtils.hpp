@@ -150,7 +150,9 @@ namespace DoxaMexUtils
     inline std::string MapParameterName(const std::string& matlabName)
     {
         static const std::unordered_map<std::string, std::string> nameMap = {
-            {"contrastLimit", "contrast-limit"}
+            {"contrastLimit", "contrast-limit"},
+            {"secondaryWindowMultiplier", "secondary-window-multiplier"},
+            {"noiseFloor", "noise-floor"}
         };
 
         auto it = nameMap.find(matlabName);
@@ -195,7 +197,9 @@ namespace DoxaMexUtils
             {"SU", Doxa::Algorithms::SU},           {"TRSINGH", Doxa::Algorithms::TRSINGH},
             {"BATAINEH", Doxa::Algorithms::BATAINEH}, {"ISAUVOLA", Doxa::Algorithms::ISAUVOLA},
             {"WAN", Doxa::Algorithms::WAN},         {"GATOS", Doxa::Algorithms::GATOS},
-            {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR}
+            {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR},
+            {"WELLNER", Doxa::Algorithms::WELLNER}, {"BRADLEY", Doxa::Algorithms::BRADLEY},
+            {"FENG", Doxa::Algorithms::FENG}
         };
 
         auto it = algorithmMap.find(algorithmStr);

@@ -42,6 +42,23 @@ execute_process(
 )
 find_package(nanobind CONFIG REQUIRED)
 
+# Vendor the core library headers into src/Doxa.  The Python wheel build
+# (scikit-build-core / pyproject.toml) needs a self-contained source tree,
+# so we keep a snapshot here.  configure_file with COPYONLY tracks each
+# source header as a CMake dependency -- editing any Doxa/*.hpp triggers a
+# reconfigure-and-recopy on the next build.
+#
+# Note: this handles local cmake builds.  The standalone `python -m build`
+# (sdist) path still uses copy-cpp-files.py, which runs before CMake.
+file(GLOB DOXA_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Doxa/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Doxa/*.h")
+foreach(HEADER ${DOXA_HEADERS})
+    get_filename_component(HEADER_NAME ${HEADER} NAME)
+    configure_file(${HEADER}
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Doxa/${HEADER_NAME}" COPYONLY)
+endforeach()
+
 include_directories(./src/Doxa)
 
 nanobind_add_module(

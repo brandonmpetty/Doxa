@@ -50,9 +50,13 @@ namespace Doxa
 			double d, b;
 			GatosCalculations(d, b, backgroundImage, filteredImage, binaryImageOut);
 
+			// Move division out of the loop to optimize ThresholdDefault.
+			const double invB = 8.0 / b;
+
 			for (int index = 0; index < binaryImageOut.size; ++index)
 			{
-				const double threshold = Threshold(backgroundImage.data[index], d, b);
+				//const double threshold = Threshold(backgroundImage.data[index], d, b);
+				const double threshold = ThresholdDefault(backgroundImage.data[index], d, invB);
 
 				binaryImageOut.data[index] = backgroundImage.data[index] - filteredImage.data[index] > threshold ?
 					Palette::Black : Palette::White;
@@ -91,10 +95,17 @@ namespace Doxa
 			averageBgTextValue = (double)numeratorAverageBgTextValue / backgroundCounter;
 		}
 
-		double Threshold(const int backgroundValue, const double d, const double b, const double q = 0.6, const double p1 = 0.5, const double p2 = 0.8) const
+		inline double Threshold(const int backgroundValue, const double d, const double b, const double q = 0.6, const double p1 = 0.5, const double p2 = 0.8) const
 		{
 			const double expVal = exp(((-4 * backgroundValue) / (b * (1 - p1))) + ((2 * (1 + p1)) / (1 - p1)));
 			return q * d * (((1 - p2) / (1 + expVal)) + p2);
+		}
+
+		// An optimized version of Threshold where the default parameters allow for greater simplification
+		inline double ThresholdDefault(int backgroundValue, double d, double invB) const
+		{
+			const double x = 6.0 - invB * backgroundValue;
+			return d * (0.48 + 0.12 / (1.0 + std::exp(x)));
 		}
 
 		// Note: backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the background entirely

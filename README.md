@@ -16,9 +16,12 @@ It is written in C++ but supports multiple language bindings.
 * Otsu - "A threshold selection method from gray-level histograms", 1979.
 * Bernsen - "Dynamic thresholding of gray-level images", 1986.
 * Niblack - "An Introduction to Digital Image Processing", 1986.
+* Wellner - "Interacting with Paper on the DigitalDesk", 1994.
 * Sauvola - "Adaptive document image binarization", 1999.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
+* Feng - "Adaptive Binarization Method for Document Image Analysis", 2004.
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
+* Bradley - "Adaptive Thresholding Using the Integral Image", 2007.
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
 * AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.

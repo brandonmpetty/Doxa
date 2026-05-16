@@ -81,6 +81,14 @@ namespace Doxa
 					sum += integral[x];
 				}
 
+				// Cache the reciprocal of `area` so the per-pixel mean can
+				// multiply instead of divide.  area only changes at the
+				// left/right edges of the row; the interior holds a constant
+				// (winBottom - winTop) * windowSize.  Branch predictor learns
+				// the pattern instantly.
+				int lastArea = 0;
+				double invArea = 0.0;
+
 				// As our window moves across, we are now able to use our sums to calculate mean, variance, etc.
 				// This happens until the right most edge of our windows hits the end of the image.
 				for (int x = 1; x < dr2; ++x, ++ind)
@@ -90,7 +98,8 @@ namespace Doxa
 					const int area = (winBottom - winTop)*(winRight - winLeft);
 					sum += integral[winRight] - integral[winLeft];
 
-					const double mean = ((double)sum) / area;
+					if (area != lastArea) { invArea = 1.0 / area; lastArea = area; }
+					const double mean = (double)sum * invArea;
 
 					processor(mean, ind);
 				}
@@ -104,7 +113,8 @@ namespace Doxa
 					const int area = (winBottom - winTop)*(winRight - winLeft);
 					sum -= integral[winLeft];
 
-					const double mean = ((double)sum) / area;
+					if (area != lastArea) { invArea = 1.0 / area; lastArea = area; }
+					const double mean = (double)sum * invArea;
 
 					processor(mean, ind);
 				}
