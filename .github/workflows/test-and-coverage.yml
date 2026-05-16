@@ -100,11 +100,12 @@ jobs:
       run: |
         # Use gcovr to generate XML coverage report for GCC
         # Filter to only the core library headers - exclude test files and build artifacts
-        gcovr --xml --xml-pretty --gcov-ignore-parse-errors=suspicious_hits.warn --root .. --filter '../Doxa/' > coverage.xml
+        gcovr --xml --xml-pretty --gcov-ignore-parse-errors=suspicious_hits.warn --root .. --filter '${{ github.workspace }}/Doxa/' > coverage.xml
 
     - name: Upload Coverage Report
       if: runner.os == 'Linux'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ${{ steps.strings.outputs.build-output-dir }}/coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ steps.strings.outputs.build-output-dir }}/coverage.xml
         fail_ci_if_error: false
