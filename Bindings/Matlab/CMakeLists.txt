@@ -19,9 +19,10 @@ matlab_add_mex(NAME image_mex SRC ImageMex.cpp)
 matlab_add_mex(NAME binarize_mex SRC BinarizeMex.cpp)
 matlab_add_mex(NAME update_to_binary_mex SRC UpdateToBinaryMex.cpp)
 matlab_add_mex(NAME calculate_performance_mex SRC CalculatePerformanceMex.cpp)
+matlab_add_mex(NAME pseudo_weights_mex SRC PseudoWeightsMex.cpp)
 
 # All MEX targets
-set(MEX_TARGETS image_mex binarize_mex update_to_binary_mex calculate_performance_mex)
+set(MEX_TARGETS image_mex binarize_mex update_to_binary_mex calculate_performance_mex pseudo_weights_mex)
 
 # Set output directory for all MEX targets
 set_property(TARGET ${MEX_TARGETS} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${MEX_OUTPUT_DIR})

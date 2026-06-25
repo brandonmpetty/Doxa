@@ -24,6 +24,11 @@ function outputImage = binarize(algorithm, inputImage, options)
 %       k2            - Feng: alpha3 coefficient (default: 0.2)
 %       gamma         - Feng: sRatio exponent (default: 2.0)
 %       noiseFloor    - Feng: lower bound on Rs for flat regions (default: 10.0)
+%       sigma         - XDoG: inner Gaussian sigma (default: 1.0)
+%       k             - XDoG: ratio sigma_outer/sigma_inner (default: 1.8)
+%       p             - XDoG: edge sharpening strength (default: 35.0)
+%       epsilon       - XDoG: threshold on [0,1] scale (default: 0.20)
+%       phi           - XDoG: tanh ramp steepness (default: 10.0)
 %
 %   See also Doxa.Algorithms, Doxa.updateToBinary, Doxa.Image
 
@@ -48,6 +53,9 @@ function outputImage = binarize(algorithm, inputImage, options)
         options.k2 = []
         options.gamma = []
         options.noiseFloor = []
+        options.sigma = []
+        options.epsilon = []
+        options.phi = []
     end
 
     params = Doxa.buildParams(options);

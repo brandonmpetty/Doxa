@@ -10,6 +10,7 @@
 #include "Doxa/DRDM.hpp"
 #include "Doxa/DIBCOUtils.hpp"
 #include "Doxa/Grayscale.hpp"
+#include "Doxa/PseudoWeights.hpp"
 
 namespace nb = nanobind;
 using namespace Doxa;
@@ -155,6 +156,20 @@ nb::ndarray<nb::numpy, Pixel8, nb::ndim<2>> ToGrayscale(
 	return nb::ndarray<nb::numpy, Pixel8, nb::ndim<2>>(output, 2, shape, owner);
 }
 
+// Generate the pseudo precision and recall weight maps from a Ground Truth image.
+// Returns a (precision_weights, recall_weights) tuple of weight lists, matching read_weights
+// and ready to pass straight to calculate_performance for pseudo-metrics - no .dat file required.
+nb::object GeneratePseudoWeights(const nb::ndarray<Pixel8, nb::ndim<2>>& groundTruthImageArray)
+{
+	Image groundTruthImage = ArrayToImage(groundTruthImageArray);
+
+	std::vector<double> gw, pw;
+	PseudoWeights::Generate(gw, pw, groundTruthImage);
+
+	// (precision, recall) so it splats into calculate_performance(gt, bin, precision, recall)
+	return nb::make_tuple(std::move(pw), std::move(gw));
+}
+
 /// <summary>
 /// Binarization is a helper class to help interface the C++ Doxa framework with Python.
 /// It exposes through enumeration all of the algorithms supported by the library.
@@ -277,6 +292,11 @@ NB_MODULE(doxapy, m) {
 		nb::arg("color_image"),
 		"Convert an RGB or RGBA image to 8-bit grayscale.");
 
+	m.def("generate_pseudo_weights", &GeneratePseudoWeights,
+		nb::arg("ground_truth_image"),
+		"Generate (precision_weights, recall_weights) pseudo-weight arrays from a ground "
+		"truth image. Pass them straight to calculate_performance for pseudo-metrics.");
+
 	m.def("to_binary", &ToBinary,
 		nb::arg("algorithm"),
 		nb::arg("image"),
@@ -316,5 +336,6 @@ NB_MODULE(doxapy, m) {
 		.value("WELLNER", Algorithms::WELLNER)
 		.value("BRADLEY", Algorithms::BRADLEY)
 		.value("FENG", Algorithms::FENG)
+		.value("XDOG", Algorithms::XDOG)
 		.export_values();
 }

@@ -75,7 +75,11 @@ add_executable(
   SIMDTests.cpp
   SuTests.cpp
   WellnerTests.cpp
-  WienerFilterTests.cpp
+  FilterTests.cpp
+  ConvolutionTests.cpp
+  EdgeDetectorTests.cpp
+  ThinningTests.cpp
+  PseudoWeightsTests.cpp
 )
 
 # Platform detection and SIMD compiler flags

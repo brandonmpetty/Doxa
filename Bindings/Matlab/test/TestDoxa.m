@@ -54,6 +54,21 @@ classdef TestDoxa < matlab.unittest.TestCase
                 'In-place binarized image does not match ground truth.');
         end
 
+        function testXDoG(testCase)
+            % Tests the edge-based XDoG algorithm and its parameter set.
+            binary = Doxa.binarize(Doxa.Algorithms.XDOG, ...
+                testCase.TestData.grayscaleImage, ...
+                sigma=1.0, k=1.8, p=35.0, epsilon=0.20, phi=10.0);
+
+            result = binary.toArray();
+
+            % Verify against ground truth
+            expected = uint8(imread(fullfile( ...
+                testCase.TestData.resourceDir, '2JohnC1V3-XDoG.pbm'))) * 255;
+            testCase.verifyEqual(result, expected, ...
+                'XDoG image does not match ground truth.');
+        end
+
         function testCalculatePerformance(testCase)
             % Tests performance metrics match Python/C++ expected values.
             metrics = Doxa.calculatePerformance( ...
@@ -77,6 +92,26 @@ classdef TestDoxa < matlab.unittest.TestCase
             rWeights = Doxa.readWeights(fullfile( ...
                 testCase.TestData.resourceDir, '2JohnC1V3-GroundTruth_RWeights.dat'));
 
+            metrics = Doxa.calculatePerformance( ...
+                testCase.TestData.groundTruth, ...
+                testCase.TestData.sauvolaGroundTruth, ...
+                precisionWeights=pWeights, recallWeights=rWeights);
+
+            testCase.verifyEqual(metrics.pseudoFM, 93.393, 'RelTol', 1e-2);
+            testCase.verifyEqual(metrics.pseudoRecall, 92.795, 'RelTol', 1e-2);
+            testCase.verifyEqual(metrics.pseudoPrecision, 93.998, 'RelTol', 1e-2);
+        end
+
+        function testGeneratePseudoWeights(testCase)
+            % Tests generating pseudo-weights from just the ground truth (no .dat file).
+            [pWeights, rWeights] = Doxa.generatePseudoWeights(testCase.TestData.groundTruth);
+
+            % Weights cover every pixel
+            numPixels = testCase.TestData.groundTruth.width * testCase.TestData.groundTruth.height;
+            testCase.verifyEqual(numel(pWeights), numPixels);
+            testCase.verifyEqual(numel(rWeights), numPixels);
+
+            % Generated weights produce the same pseudo-metrics as the reference .dat files
             metrics = Doxa.calculatePerformance( ...
                 testCase.TestData.groundTruth, ...
                 testCase.TestData.sauvolaGroundTruth, ...

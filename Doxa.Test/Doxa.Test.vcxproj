@@ -56,7 +56,7 @@
     </ClCompile>
     <ClCompile Include="SIMDTests.cpp" />
     <ClCompile Include="WellnerTests.cpp" />
-    <ClCompile Include="WienerFilterTests.cpp" />
+    <ClCompile Include="FilterTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

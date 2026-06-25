@@ -241,6 +241,22 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageFile(imageFeng, projFolder + "2JohnC1V3-Feng.pbm");
 	}
 
+	TEST_F(BinarizationTests, BinarizationXDoGTest)
+	{
+		const Parameters parameters({
+			{ "sigma", 1.0 }, { "k", 1.8 }, { "p", 35.0 },
+			{ "epsilon", 0.20 }, { "phi", 10.0 }
+		});
+
+		Image imageXDoG = XDoG::ToBinaryImage(image, parameters);
+
+		Image imageXDoG2(image);
+		XDoG::UpdateToBinary(imageXDoG2, parameters);
+
+		TestUtilities::AssertImages(imageXDoG, imageXDoG2);
+		TestUtilities::AssertImageFile(imageXDoG, projFolder + "2JohnC1V3-XDoG.pbm");
+	}
+
 	TEST_F(BinarizationTests, BinarizationBatainehTest)
 	{
 		Image imageBataineh = Bataineh::ToBinaryImage(image);

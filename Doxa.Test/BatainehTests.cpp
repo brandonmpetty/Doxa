@@ -90,7 +90,7 @@ namespace Doxa::UnitTests
 		SUCCEED() << "REDg = " << redCountImage << ", BLACKg = " << blackCountImage;
 
 		// Create a Red Black White image for analysis
-		PNM::Write(rbwImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-RBW.pgm");
+		//PNM::Write(rbwImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-RBW.pgm");
 
 		// Calculate P Value - helps determine window size
 		double p = (double)blackCountImage / redCountImage;
@@ -117,7 +117,7 @@ namespace Doxa::UnitTests
 
 		// Create a window breakdown image for analysis
 		Image windowImage = bataineh.GenerateWindowImage(rbwImage, windows);
-		PNM::Write(windowImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-Windows.pgm");
+		//PNM::Write(windowImage, TestUtilities::ProjectFolder() + "2JohnC1V3-Bataineh-Windows.pgm");
 
 		// Get Sigma Max and Min as well as local window Sigma and Mean
 		double sigmaMax;

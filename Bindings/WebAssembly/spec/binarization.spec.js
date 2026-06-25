@@ -85,6 +85,47 @@ describe("Doxa Binarization Class Test Suite", function() {
         expect(metrics.pseudoPrecision).toBeCloseTo(93.9983, 2);
     });
 
+    it("Binarization generatePseudoWeights runs successfully", async function() {
+
+        const groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
+        const binaryImage = await readImage('../../README/2JohnC1V3-Sauvola.png');
+
+        // Generate weight text from just the ground truth (no .dat file)
+        const weights = doxa.generatePseudoWeights(groundTruthImage);
+
+        expect(typeof weights.precision).toBe('string');
+        expect(typeof weights.recall).toBe('string');
+
+        // Generated weights produce the same pseudo metrics as the reference .dat files
+        const metrics = doxa.calculatePerformance(
+            groundTruthImage, binaryImage, weights.precision, weights.recall);
+
+        expect(metrics.pseudoFM).toBeCloseTo(93.393, 2);
+        expect(metrics.pseudoRecall).toBeCloseTo(92.7954, 2);
+        expect(metrics.pseudoPrecision).toBeCloseTo(93.9983, 2);
+    });
+
+    it("Binarization XDoG runs with its parameters", async function() {
+
+        const image = await readImage('../../README/2JohnC1V3.png');
+
+        // XDoG is edge-based with its own parameter set
+        const binImage = doxa.toBinary(doxa.binarization.XDOG, image,
+            { sigma: 1.0, k: 1.8, p: 35.0, epsilon: 0.20, phi: 10.0 });
+
+        expect(binImage.width).toEqual(image.width);
+        expect(binImage.height).toEqual(image.height);
+
+        // Output is strictly binary
+        const unique = new Set(binImage.data());
+        Array.from(unique).forEach(v => expect([0, 255]).toContain(v));
+
+        // Parameters take effect: a very different phi/epsilon yields a different image
+        const binImage2 = doxa.toBinary(doxa.binarization.XDOG, image,
+            { sigma: 1.0, k: 1.8, p: 35.0, epsilon: 0.05, phi: 1.0 });
+        expect(binImage.data()).not.toEqual(binImage2.data());
+    });
+
     it("Algorithm defaults are applied", async function() {
 
         const image = await readImage('../../README/2JohnC1V3.png');

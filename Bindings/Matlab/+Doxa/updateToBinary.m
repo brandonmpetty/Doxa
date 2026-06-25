@@ -29,6 +29,9 @@ function updateToBinary(algorithm, inputImage, options)
         options.k2 = []
         options.gamma = []
         options.noiseFloor = []
+        options.sigma = []
+        options.epsilon = []
+        options.phi = []
     end
 
     params = Doxa.buildParams(options);

@@ -21,7 +21,7 @@
     <ClCompile Include="ClassifiedPerformanceTests.cpp" />
     <ClCompile Include="DRDMTests.cpp" />
     <ClCompile Include="DIBCOUtilsTests.cpp" />
-    <ClCompile Include="WienerFilterTests.cpp" />
+    <ClCompile Include="FilterTests.cpp" />
     <ClCompile Include="WellnerTests.cpp" />
   </ItemGroup>
   <ItemGroup>

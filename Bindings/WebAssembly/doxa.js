@@ -121,6 +121,19 @@ const Doxa = {
 						groundTruth.heapPtr, binary.heapPtr,
 						binary.width, binary.height
 					);
+				},
+
+				/**
+				 * Generate pseudo precision/recall weights from a ground truth image.
+				 * Returns DIBCO-format weight text, just as if read from .dat files, ready
+				 * to pass to calculatePerformance for pseudo metrics - no .dat file required.
+				 * @param {Doxa.Image} groundTruth - Ground truth binary image
+				 * @returns {{precision: string, recall: string}} Weight text for calculatePerformance
+				 */
+				generatePseudoWeights: function(groundTruth) {
+					return Doxa.Wasm.generatePseudoWeights(
+						groundTruth.heapPtr, groundTruth.width, groundTruth.height
+					);
 				}
 			};
 

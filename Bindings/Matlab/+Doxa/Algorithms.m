@@ -9,6 +9,9 @@ classdef Algorithms
     %       TRSINGH, BATAINEH, PHANSALKAR, ISAUVOLA, WAN, GATOS, ADOTSU,
     %       WELLNER, BRADLEY, FENG
     %
+    %   Edge-Based Thresholding:
+    %       Doxa.Algorithms.XDOG
+    %
     %   See also Doxa.binarize
 
     enumeration
@@ -29,5 +32,6 @@ classdef Algorithms
         WELLNER
         BRADLEY
         FENG
+        XDOG
     end
 end

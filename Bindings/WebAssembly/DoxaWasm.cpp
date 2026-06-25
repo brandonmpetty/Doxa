@@ -8,6 +8,7 @@
 #include "../../Doxa/DRDM.hpp"
 #include "../../Doxa/DIBCOUtils.hpp"
 #include "../../Doxa/Grayscale.hpp"
+#include "../../Doxa/PseudoWeights.hpp"
 
 //#include "../Doxa/PNM.hpp"
 using namespace Doxa;
@@ -44,6 +45,16 @@ struct PseudoPerformance
 	double PseudoFM;
 	double PseudoPrecision;
 	double PseudoRecall;
+};
+
+/// <summary>
+/// Pseudo weight maps serialized as DIBCO-format text, ready to feed back into
+/// calculatePerformance (which parses weight text) for pseudo-metrics.
+/// </summary>
+struct PseudoWeightsText
+{
+	std::string precision;
+	std::string recall;
 };
 
 Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, const int width, const int height)
@@ -103,6 +114,26 @@ PseudoPerformance CalculatePseudoPerformance(
 	perf.PseudoRecall = ClassifiedPerformance::CalculatePseudoRecall(classifications);
 
 	return perf;
+}
+
+
+/// <summary>
+/// Generate the pseudo precision and recall weight maps from a Ground Truth image,
+/// returned as DIBCO-format text - just as if read from the .dat weight files.
+/// The strings plug straight into calculatePerformance for pseudo-metrics.
+/// </summary>
+PseudoWeightsText GeneratePseudoWeights(intptr_t groundTruthData, const int width, const int height)
+{
+	Image groundTruthImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(groundTruthData));
+
+	std::vector<double> gw, pw;
+	PseudoWeights::Generate(gw, pw, groundTruthImage);
+
+	std::stringstream precisionStream, recallStream;
+	DIBCOUtils::WriteWeights(precisionStream, pw);
+	DIBCOUtils::WriteWeights(recallStream, gw);
+
+	return { precisionStream.str(), recallStream.str() };
 }
 
 
@@ -204,7 +235,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("PHANSALKAR", Algorithms::PHANSALKAR)
 		.value("WELLNER", Algorithms::WELLNER)
 		.value("BRADLEY", Algorithms::BRADLEY)
-		.value("FENG", Algorithms::FENG);
+		.value("FENG", Algorithms::FENG)
+		.value("XDOG", Algorithms::XDOG);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];
@@ -234,6 +266,11 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.field("pseudoPrecision", &PseudoPerformance::PseudoPrecision)
 		.field("pseudoRecall", &PseudoPerformance::PseudoRecall);
 	function("calculatePseudoPerformance", &CalculatePseudoPerformance, allow_raw_pointers());
+
+	value_object<PseudoWeightsText>("PseudoWeightsText")
+		.field("precision", &PseudoWeightsText::precision)
+		.field("recall", &PseudoWeightsText::recall);
+	function("generatePseudoWeights", &GeneratePseudoWeights, allow_raw_pointers());
 
 	enum_<GrayscaleAlgorithms>("Grayscale.Algorithms")
 		.value("MEAN", GrayscaleAlgorithms::MEAN)

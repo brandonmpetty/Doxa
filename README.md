@@ -28,6 +28,7 @@ It is written in C++ but supports multiple language bindings.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
 * Phansalkar - "Adaptive Local Thresholding for Detection of Nuclei in Diversely Stained Cytology Images", 2011.
+* XDoG - "XDoG: An eXtended difference-of-Gaussians compendium including advanced image stylization", 2012.
 * ISauvola - "ISauvola: Improved Sauvola’s Algorithm for Document Image Binarization", 2016.
 * WAN - "Binarization of Document Image Using Optimum Threshold Modification", 2018.
 
@@ -136,7 +137,7 @@ python build-bench/_deps/googlebenchmark-src/tools/compare.py benchmarks before.
 ### Performance Analysis
 Another thing that sets ΔBF apart is its focus on binarization performance.  This makes it incredibly simple to see how your changes affect the overall quality of an algorithm.  All DIBCO metric algorithms, past and present, are provided.  ΔBF's metrics are significantly faster than calling DIBCO_metrics.exe directly.
 
-**NOTE** - DIBCO Weight generation still requires [BinEvalWeights](https://github.com/kzagoris/DibcoEvaluation/tree/master/Prerequisites/BinEvalWeights)
+**NOTE** - DIBCO pseudo-Recall / pseudo-Precision weight maps are now generated natively by ΔBF and are bit-exact with the reference BinEvalWeights.exe - no external tool required!
 
 ## License
 CC0 - Brandon M. Petty, 2026
