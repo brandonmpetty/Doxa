@@ -540,10 +540,15 @@ namespace Doxa
 			const auto off = [&](const int x, const int y)
 				{ return x < 0 || x >= w || y < 0 || y >= h || !(raster[static_cast<size_t>(y) * w + x] & bit); };
 
+			// A frontier cell carries its (x, y) with the linear index, so the hot sub-pass never
+			// divides/mods the index back into coordinates (Neighbors and the neighbor walk both
+			// need the coordinates).
+			struct Cell { int i, x, y; };
+
 			// Seed the frontier with every boundary pixel of the layer.
-			std::vector<int> frontier;
-			std::vector<int> dead;
-			std::vector<int> next;
+			std::vector<Cell> frontier;
+			std::vector<Cell> dead;
+			std::vector<Cell> next;
 			std::vector<uint8_t> queued(raster.Size(), 0);
 			for (int y = 0; y < h; ++y)
 			{
@@ -556,41 +561,43 @@ namespace Doxa
 					if ((raster[i] & bit) &&
 						(off(x, y - 1) || off(x + 1, y - 1) || off(x + 1, y) || off(x + 1, y + 1) ||
 						 off(x, y + 1) || off(x - 1, y + 1) || off(x - 1, y) || off(x - 1, y - 1)))
-						{ 
-							frontier.push_back(i); queued[i] = 1;
+						{
+							frontier.push_back({ i, x, y }); queued[i] = 1;
 						}
 				}
 			}
-				
+
 
 			// One batched Zhang-Suen sub-pass over the frontier: mark, delete together, carry
-			// survivors forward, and add the neighbors a deletion newly exposed.
+			// survivors forward, and add the neighbors a deletion newly exposed.  Deletion is
+			// batched (every cell tests the pre-deletion raster), so the sub-pass is independent of
+			// frontier order -- the skeleton is identical.
 			const auto subpass = [&](const std::array<uint8_t, 256>& table) -> bool
 			{
 				dead.clear();
-				for (const int i : frontier)
-					if ((raster[i] & bit) && table[Neighbors(raster, i % w, i / w, bit)] == 0x00) dead.push_back(i);
-				
+				for (const Cell& c : frontier)
+					if ((raster[c.i] & bit) && table[Neighbors(raster, c.x, c.y, bit)] == 0x00) dead.push_back(c);
+
 				if (dead.empty()) return false;
 
-				for (const int i : dead) { raster[i] = static_cast<uint8_t>(raster[i] & ~bit); queued[i] = 0; }
+				for (const Cell& c : dead) { raster[c.i] = static_cast<uint8_t>(raster[c.i] & ~bit); queued[c.i] = 0; }
 
 				next.clear();
-				for (const int i : frontier) if (raster[i] & bit) next.push_back(i);
-				for (const int i : dead)
+				for (const Cell& c : frontier) if (raster[c.i] & bit) next.push_back(c);
+				for (const Cell& c : dead)
 				{
-					const int x = i % w;
-					const int y = i / w;
 					for (int dy = -1; dy <= 1; ++dy)
 					{
+						const int ny = c.y + dy;
+						if (ny < 0 || ny >= h) continue;
+						const int nrow = ny * w;
 						for (int dx = -1; dx <= 1; ++dx)
 						{
-							const int nx = x + dx;
-							const int ny = y + dy;
-							if ((dx || dy) && nx >= 0 && nx < w && ny >= 0 && ny < h)
+							const int nx = c.x + dx;
+							if ((dx || dy) && nx >= 0 && nx < w)
 							{
-								const int ni = ny * w + nx;
-								if ((raster[ni] & bit) && !queued[ni]) { queued[ni] = 1; next.push_back(ni); }
+								const int ni = nrow + nx;
+								if ((raster[ni] & bit) && !queued[ni]) { queued[ni] = 1; next.push_back({ ni, nx, ny }); }
 							}
 						}
 					}
