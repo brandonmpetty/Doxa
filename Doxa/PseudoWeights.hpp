@@ -903,22 +903,25 @@ namespace Doxa
 			const int C = (row - 1 >= 0)         ? -1 : 0;   // up
 			const int D = (row + 1 <= height - 1)?  1 : 0;   // down
 
-			struct Check { int sr, sc, nidx; };
-			const Check checks[8] = {
-				{ row + C, col,     (row + C) * width + col      },   // top
-				{ row + D, col,     (row + D) * width + col      },   // bottom
-				{ row,     col + A,  row      * width + col + A  },   // left
-				{ row,     col + B,  row      * width + col + B  },   // right
-				{ row + C, col + A, (row + C) * width + col + A  },   // top-left
-				{ row + D, col + B, (row + D) * width + B        },   // bottom-right (see note above)
-				{ row + D, col + A, (row + D) * width + col + A  },   // bottom-left
-				{ row + C, col + B, (row + C) * width + col + B  },   // top-right
-			};
+			const int up   = (row + C) * width;   // row bases, computed once
+			const int mid  =  row      * width;
+			const int down = (row + D) * width;
 
 			int count = 0;
 			int last = -1;
-			for (const Check& k : checks)
-				if (overlay[static_cast<size_t>(k.sr) * width + k.sc] & kSkeleton) { ++count; last = factor[k.nidx]; }
+			const auto hit = [&](const int skelIdx, const int factorIdx)   // skeleton neighbor? inherit its factor
+			{
+				if (overlay[static_cast<size_t>(skelIdx)] & kSkeleton) { ++count; last = factor[factorIdx]; }
+			};
+
+			hit(up   + col,     up   + col);      // top
+			hit(down + col,     down + col);      // bottom
+			hit(mid  + col + A, mid  + col + A);   // left
+			hit(mid  + col + B, mid  + col + B);   // right
+			hit(up   + col + A, up   + col + A);   // top-left
+			hit(down + col + B, down + B);        // bottom-right: factor read at +B, NOT +col+B (the asymmetry above)
+			hit(down + col + A, down + col + A);   // bottom-left
+			hit(up   + col + B, up   + col + B);   // top-right
 
 			return (count == 1) ? last : -1;
 		}
