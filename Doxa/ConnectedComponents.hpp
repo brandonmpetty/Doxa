@@ -70,6 +70,30 @@ namespace Doxa
 				items[L].averageStrokeWidth =
 					items[L].pixelCount ? static_cast<double>(sum[L]) / items[L].pixelCount : 0.0;
 		}
+		/// <summary>
+		/// Visits every label-owned pixel of every component in component -> row ->
+		/// column order, passing the component, the (x, y) and the linear index i.  The
+		/// window is clamped to the component's own bounds; the order matters for the
+		/// in-place passes that read their already-updated up/left neighbours.
+		/// </summary>
+		template <typename Visitor>
+		void ForEachPixel(Visitor&& visit) const
+		{
+			for (const Component& c : *this)
+			{
+				const int x0 = c.bounds.upperLeft.x, x1 = c.bounds.bottomRight.x;
+				const int y0 = c.bounds.upperLeft.y, y1 = c.bounds.bottomRight.y;
+				for (int y = y0; y <= y1; ++y)
+				{
+					const int row = y * width;
+					for (int x = x0; x <= x1; ++x)
+					{
+						const int i = row + x;
+						if (labels[i] == c.label) visit(c, x, y, i);
+					}
+				}
+			}
+		}
 	};
 
 	/// <summary>
@@ -89,8 +113,33 @@ namespace Doxa
 			const Pixel8 foreground = Palette::Black,
 			const bool connectivity8 = true)
 		{
-			const int width = image.width;
-			const int height = image.height;
+			return Generate(image.width, image.height, connectivity8,
+				[&](const int i) { return image.data[i] == foreground; });
+		}
+
+		/// <summary>
+		/// Labels straight from a 0/1 mask (target picks which value is foreground), so
+		/// the background can be labelled from the foreground mask -- no inverted image.
+		/// </summary>
+		static Components Generate(
+			const std::vector<uint8_t>& mask,
+			const uint8_t target,
+			const int width,
+			const int height,
+			const bool connectivity8 = true)
+		{
+			return Generate(width, height, connectivity8,
+				[&](const int i) { return mask[i] == target; });
+		}
+
+	private:
+		template <typename IsForeground>
+		static Components Generate(
+			const int width,
+			const int height,
+			const bool connectivity8,
+			IsForeground isForeground)
+		{
 			const int size = width * height;
 
 			Components result;
@@ -113,7 +162,7 @@ namespace Doxa
 				for (int x = 0; x < width; ++x)
 				{
 					const int idx = y * width + x;
-					if (image.Pixel(x, y) != foreground) continue;
+					if (!isForeground(idx)) continue;
 
 					int n[4];
 					int cnt = 0;
