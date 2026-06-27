@@ -805,6 +805,10 @@ namespace Doxa
 				const uint8_t d = D[i];
 				if (!HasDistance(d)) return;
 				const uint8_t reach = skeletonDistance[i];
+				// Skip the empty inner rings: for a non-skeleton center skeletonDistance is the
+				// exact distance to the nearest skeleton, a proven lower bound on the first ring; a
+				// skeleton center self-hits at R=0, so start there.
+				const int startR = (overlay[i] & kSkeleton) ? 0 : skeletonDistance[i];
 				int foundR = -1;
 				const bool found = FirstNonEmptyRing(c, x, y, width, [&](const int j)
 				{
@@ -812,7 +816,7 @@ namespace Doxa
 					const uint8_t dq = D[j];
 					factor[j] = static_cast<uint8_t>(reach >= dq ? dq + 1 : dq);
 					return true;
-				}, &foundR);
+				}, &foundR, startR);
 				ringRadius[i] = found ? static_cast<uint16_t>(foundR) : kUnreached;
 			});
 
