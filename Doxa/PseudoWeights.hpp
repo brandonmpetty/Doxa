@@ -440,7 +440,7 @@ namespace Doxa
 		/// changes the result, which must stay bit-exact with the DIBCO reference weight files.
 		/// </summary>
 		template <typename Visit>
-		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit)
+		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit, int* outRadius = nullptr)
 		{
 			const int bxmin = c.bounds.upperLeft.x;
 			const int bxmax = c.bounds.bottomRight.x;
@@ -470,9 +470,37 @@ namespace Doxa
 				for (int col = xlo + 1; col < xhi; ++col) cell(col, yhi);
 				cell(xlo, ylo); cell(xlo, yhi); cell(xhi, ylo); cell(xhi, yhi);
 
-				if (found) return true;
+				if (found) { if (outRadius) *outRadius = R; return true; }
 				if (xlo == bxmin && xhi == bxmax && ylo == bymin && yhi == bymax) return false;
 			}
+		}
+
+		/// <summary>
+		/// Re-walks EXACTLY the ring at radius R -- the same bbox-clamped perimeter (and cell order)
+		/// FirstNonEmptyRing visits at that R -- calling visit(j) for each cell.  This lets a second
+		/// pass re-walk a ring a prior FirstNonEmptyRing already located (its returned outRadius)
+		/// without regrowing from R = 0.  The cell SET is identical, so an order-independent reducer
+		/// (e.g. a max) over it stays bit-exact; do not use it where per-cell write order matters.
+		/// </summary>
+		template <typename Visit>
+		static void ScanRingAt(const Component& c, const int ax, const int ay, const int R, const int width, Visit&& visit)
+		{
+			int xlo = ax - R;
+			int xhi = ax + R;
+			int ylo = ay - R;
+			int yhi = ay + R;
+			if (xlo < c.bounds.upperLeft.x)   xlo = c.bounds.upperLeft.x;
+			if (xhi > c.bounds.bottomRight.x) xhi = c.bounds.bottomRight.x;
+			if (ylo < c.bounds.upperLeft.y)   ylo = c.bounds.upperLeft.y;
+			if (yhi > c.bounds.bottomRight.y) yhi = c.bounds.bottomRight.y;
+
+			const auto cell = [&](const int col, const int row) { visit(row * width + col); };
+
+			for (int row = ylo + 1; row < yhi; ++row) cell(xlo, row);
+			for (int row = ylo + 1; row < yhi; ++row) cell(xhi, row);
+			for (int col = xlo + 1; col < xhi; ++col) cell(col, ylo);
+			for (int col = xlo + 1; col < xhi; ++col) cell(col, yhi);
+			cell(xlo, ylo); cell(xlo, yhi); cell(xhi, ylo); cell(xhi, yhi);
 		}
 
 		// --- thinning kernel (bespoke, minimal, in place) -----------------------------
@@ -716,8 +744,14 @@ namespace Doxa
 		{
 			Bytes skeletonDistance;
 			SkeletonDistance(skeletonDistance, D, overlay);
-			MedialFactor(medialFactor, D, skeletonDistance, overlay, components);
-			Normalization(NR, D, medialFactor, overlay, components);
+
+			// MedialFactor and Normalization ring the SAME skeleton over the SAME centers to the
+			// SAME first-non-empty radius.  MedialFactor grows from R = 0 (its per-cell write order
+			// matters) and records that radius here; Normalization (a per-cell max, order-free)
+			// re-walks just that ring instead of regrowing.  kUnreached = no skeleton in the bbox.
+			Words ringRadius(D.width, D.height, kUnreached);
+			MedialFactor(medialFactor, D, skeletonDistance, overlay, components, ringRadius);
+			Normalization(NR, D, medialFactor, overlay, components, ringRadius);
 		}
 
 		/// <summary>
@@ -749,7 +783,7 @@ namespace Doxa
 		/// -> row -> column order, last writer wins); (endpoint) every skeleton pixel that is a
 		/// Lee-Chen termination point inherits that neighbor's factor + 1.
 		/// </summary>
-		static void MedialFactor(Bytes& factor, const Bytes& D, const Bytes& skeletonDistance, const Mask& overlay, const Components& components)
+		static void MedialFactor(Bytes& factor, const Bytes& D, const Bytes& skeletonDistance, const Mask& overlay, const Components& components, Words& ringRadius)
 		{
 			const int width = D.width;
 			const int height = D.height;
@@ -760,19 +794,21 @@ namespace Doxa
 			// cross-section pass: each center writes the skeleton pixels on its first non-empty
 			// ring (idempotent per cell, so last-writer-wins across centers).  The component ->
 			// row -> column order is part of the result -- do not convert to a per-skeleton-pixel
-			// gather.
+			// gather.  The found radius is recorded for Normalization to re-walk.
 			components.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
 				const uint8_t d = D[i];
 				if (!HasDistance(d)) return;
 				const uint8_t reach = skeletonDistance[i];
-				FirstNonEmptyRing(c, x, y, width, [&](const int j)
+				int foundR = -1;
+				const bool found = FirstNonEmptyRing(c, x, y, width, [&](const int j)
 				{
 					if (!(overlay[j] & kSkeleton)) return false;
 					const uint8_t dq = D[j];
 					factor[j] = static_cast<uint8_t>(reach >= dq ? dq + 1 : dq);
 					return true;
-				});
+				}, &foundR);
+				ringRadius[i] = found ? static_cast<uint16_t>(foundR) : kUnreached;
 			});
 
 			// endpoint pass
@@ -790,7 +826,7 @@ namespace Doxa
 		/// window; then a propagation pass spreads a stroke's peak along it, so a break is
 		/// penalized equally regardless of the local stroke width.
 		/// </summary>
-		static void Normalization(Words& NR, const Bytes& D, const Bytes& factor, const Mask& overlay, const Components& components)
+		static void Normalization(Words& NR, const Bytes& D, const Bytes& factor, const Mask& overlay, const Components& components, const Words& ringRadius)
 		{
 			const int width = D.width;
 			const int height = D.height;
@@ -799,15 +835,16 @@ namespace Doxa
 			components.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
 				if (!HasDistance(D[i])) return;
+				const uint16_t R = ringRadius[i];
+				if (R == kUnreached) { NR[i] = 0; return; }   // MedialFactor found no skeleton in the bbox
 				int best = -1;
-				const bool found = FirstNonEmptyRing(c, x, y, width, [&](const int j)
+				ScanRingAt(c, x, y, static_cast<int>(R), width, [&](const int j)
 				{
-					if (!(overlay[j] & kSkeleton)) return false;
+					if (!(overlay[j] & kSkeleton)) return;
 					const int v = static_cast<int>(D[j]) * static_cast<int>(factor[j]);
 					if (v > best) best = v;
-					return true;
 				});
-				NR[i] = found ? static_cast<uint16_t>(best) : 0;
+				NR[i] = static_cast<uint16_t>(best);
 			});
 
 			// propagation: a pixel whose NR differs from all four (set) clamped neighbors inherits
