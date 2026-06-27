@@ -484,6 +484,19 @@ namespace Doxa
 		{
 			const int w = m.width;
 			const int h = m.height;
+
+			// Interior fast path: when none of the eight neighbors can fall off the raster, read
+			// them straight off contiguous memory with no per-neighbor clamping.  Bit packing is
+			// identical to the bounds-checked path below (P2 N, P3 NE, ... P9 NW).
+			if (x > 0 && x < w - 1 && y > 0 && y < h - 1)
+			{
+				const uint8_t* d = m.data.data() + static_cast<size_t>(y) * w + x;
+				return static_cast<uint8_t>(
+					 ((d[-w]     & bit) ? 1 : 0)       | (((d[-w + 1] & bit) ? 1 : 0) << 1) | (((d[1]      & bit) ? 1 : 0) << 2) |
+					(((d[w + 1]  & bit) ? 1 : 0) << 3) | (((d[w]      & bit) ? 1 : 0) << 4) | (((d[w - 1]  & bit) ? 1 : 0) << 5) |
+					(((d[-1]     & bit) ? 1 : 0) << 6) | (((d[-w - 1] & bit) ? 1 : 0) << 7));
+			}
+
 			const auto on = [&](const int xx, const int yy) -> int
 				{ return (xx >= 0 && xx < w && yy >= 0 && yy < h && (m(xx, yy) & bit)) ? 1 : 0; };
 			return static_cast<uint8_t>(
