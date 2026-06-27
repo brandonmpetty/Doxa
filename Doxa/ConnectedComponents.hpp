@@ -26,11 +26,11 @@ namespace Doxa
 		Region        bounds;                  // inclusive bounding box (upperLeft / bottomRight)
 		Region::Point seed;                    // raster-first pixel: always a top-edge contour point
 		int           pixelCount = 0;          // ink pixels (NOT bounds.Area(), which is the box)
-		double        averageStrokeWidth = 0.0;// assigned by AssignAverageStrokeWidth, not by labelling
+		int           strokeWidth = 0;         // Gsw_fg: 2*floor(mean medial factor over the skeleton), set by the measure
 	};
 
 	/// <summary>
-	/// The result of one labelling: the label image (0 = background, 1..N) plus
+	/// The result of one labeling: the label image (0 = background, 1..N) plus
 	/// the per-component records, indexed by label so items[L] is O(1) (items[0]
 	/// is unused).  A plain value you pass around and range-iterate -- not a
 	/// manager.  Cross-component relations (does a component of G overlap one of
@@ -45,7 +45,6 @@ namespace Doxa
 		std::vector<Component> items;          // size N+1, items[0] unused
 
 		int Count() const { return static_cast<int>(items.size()) - 1; }
-		int LabelAt(int x, int y) const { return labels[y * width + x]; }
 		const Component& operator[](int label) const { return items[label]; }
 
 		// Range-for visits real components only (skips the unused items[0]).
@@ -55,26 +54,10 @@ namespace Doxa
 		std::vector<Component>::iterator end()   { return items.end(); }
 
 		/// <summary>
-		/// Fills each component's averageStrokeWidth from a stroke-width image.
-		/// One pass; the denominator (pixelCount) is already on the record.
-		/// </summary>
-		void AssignAverageStrokeWidth(const std::vector<uint16_t>& strokeWidth)
-		{
-			std::vector<uint64_t> sum(items.size(), 0);
-			for (size_t i = 0; i < labels.size(); ++i)
-			{
-				const int L = labels[i];
-				if (L) sum[L] += strokeWidth[i];
-			}
-			for (int L = 1; L <= Count(); ++L)
-				items[L].averageStrokeWidth =
-					items[L].pixelCount ? static_cast<double>(sum[L]) / items[L].pixelCount : 0.0;
-		}
-		/// <summary>
 		/// Visits every label-owned pixel of every component in component -> row ->
 		/// column order, passing the component, the (x, y) and the linear index i.  The
 		/// window is clamped to the component's own bounds; the order matters for the
-		/// in-place passes that read their already-updated up/left neighbours.
+		/// in-place passes that read their already-updated up/left neighbors.
 		/// </summary>
 		template <typename Visitor>
 		void ForEachPixel(Visitor&& visit) const
@@ -97,12 +80,12 @@ namespace Doxa
 	};
 
 	/// <summary>
-	/// Two-pass union-find connected-component labelling, reading a ground-truth
+	/// Two-pass union-find connected-component labeling, reading a ground-truth
 	/// Image directly -- no intermediate mask, since the Image already is one.
 	/// foreground selects the ink value (Palette::Black for DIBCO ground truth;
 	/// pass Palette::White to label the inverted image for the background pass).
 	/// connectivity8 sets the foreground rule; pass false (4-connectivity) when
-	/// labelling an inverted image, to keep the 8/4 foreground/background
+	/// labeling an inverted image, to keep the 8/4 foreground/background
 	/// topology consistent.
 	/// </summary>
 	class ConnectedComponents
@@ -119,7 +102,7 @@ namespace Doxa
 
 		/// <summary>
 		/// Labels straight from a 0/1 mask (target picks which value is foreground), so
-		/// the background can be labelled from the foreground mask -- no inverted image.
+		/// the background can be labeled from the foreground mask -- no inverted image.
 		/// </summary>
 		static Components Generate(
 			const std::vector<uint8_t>& mask,
@@ -156,7 +139,7 @@ namespace Doxa
 			auto Find = [&parent](int a) { while (parent[a] != a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
 			auto Union = [&](int a, int b) { a = Find(a); b = Find(b); if (a != b) parent[std::max(a, b)] = std::min(a, b); };
 
-			// Pass 1: provisional labels from visited neighbours (W, N[, NW, NE]).
+			// Pass 1: provisional labels from visited neighbors (W, N[, NW, NE]).
 			for (int y = 0; y < height; ++y)
 			{
 				for (int x = 0; x < width; ++x)
