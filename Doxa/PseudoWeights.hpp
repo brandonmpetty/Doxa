@@ -350,9 +350,10 @@ namespace Doxa
 			// Fig. 14d), the second uses the inter-component gap there and the stroke reach else.
 			Bytes mergeMarker(width, height, 0);
 			Bytes NPfinal(width, height, 0);
+			Words reachCache(width, height, kUnreached);  // MarkMerges records reach; Normalize reuses it
 			const PrecisionRing ringInputs{ strokeWidthMap, ov, recall.components.labels, Dp, NP, mergeMarker };
-			PrecisionNormalizationPass(mergeMarker, PrecisionPass::MarkMerges, ringInputs, invComponents);
-			PrecisionNormalizationPass(NPfinal, PrecisionPass::Normalize, ringInputs, invComponents);
+			PrecisionNormalizationPass(mergeMarker, reachCache, PrecisionPass::MarkMerges, ringInputs, invComponents);
+			PrecisionNormalizationPass(NPfinal, reachCache, PrecisionPass::Normalize, ringInputs, invComponents);
 
 			// Stored precision weight = PW - 1 = D/NP, capped at 2 (Eq. 10).
 			pw.assign(size, 0.0);
@@ -996,7 +997,7 @@ namespace Doxa
 		};
 
 		// One precision pass over the background components (gate: label-owned, Dp in [1,249]).
-		static void PrecisionNormalizationPass(Bytes& out, const PrecisionPass pass, const PrecisionRing& in, const Components& invComponents)
+		static void PrecisionNormalizationPass(Bytes& out, Words& reachCache, const PrecisionPass pass, const PrecisionRing& in, const Components& invComponents)
 		{
 			const int width = in.Dp.width;
 			const int height = in.Dp.height;
@@ -1005,7 +1006,7 @@ namespace Doxa
 			{
 				if (!HasDistance(in.Dp[i])) return;
 
-				out[i] = static_cast<uint8_t>(PrecisionNormalizationRing(in, c, x, y, pass, width, height));
+				out[i] = static_cast<uint8_t>(PrecisionNormalizationRing(in, reachCache, c, x, y, pass, width, height));
 			});
 		}
 
@@ -1015,8 +1016,28 @@ namespace Doxa
 		// -> 0;  MarkMerges -> adjacent ? np : 0;  Normalize -> (a merge was marked within
 		// Chebyshev radius (reach - dp) of the center && np < reach) ? np : reach   (Eq. 11:
 		// min(Gc_sw, Gsw_bg)).  No contour in the bbox -> 0.
-		static int PrecisionNormalizationRing(const PrecisionRing& in, const Component& c, const int ax, const int ay, const PrecisionPass pass, const int width, const int height)
+		//
+		// The ring's reach (and "found") is a pure function of read-only inputs identical in both
+		// passes, so MarkMerges records it in reachCache (kUnreached == "no contour found") and
+		// Normalize reuses it -- the second pass does no ring search at all.
+		static int PrecisionNormalizationRing(const PrecisionRing& in, Words& reachCache, const Component& c, const int ax, const int ay, const PrecisionPass pass, const int width, const int height)
 		{
+			const int i = ay * width + ax;
+
+			if (pass == PrecisionPass::Normalize)
+			{
+				const uint16_t cached = reachCache[i];
+				if (cached == kUnreached) return 0;                       // MarkMerges found no contour
+				const int reach = cached;
+				const int dp = in.Dp[i];
+				if (dp > reach) return 0;
+				const int np = in.NP[i];
+				const int diff = reach - dp;
+				const bool merging = AnyWithin(in.mergeMarker, ax, ay, diff, width, height);
+				return ((merging && np < reach) ? np : reach) & 0xFF;
+			}
+
+			// MarkMerges: the single ring search, recording reach for Normalize.
 			int reach = -1;
 			int firstLabel = -1;
 			bool adjacent = false;
@@ -1033,19 +1054,13 @@ namespace Doxa
 
 				return true;
 			});
+			reachCache[i] = found ? static_cast<uint16_t>(reach) : kUnreached;
 			if (!found) return 0;
 
-			const int i = ay * width + ax;
 			const int dp = in.Dp[i];
 			const int np = in.NP[i];   // NP is integer-valued (sqrt-rounded above)
 			if (dp > reach) return 0;
-			if (pass == PrecisionPass::MarkMerges)
-				return (adjacent ? np : 0) & 0xFF;
-
-			const int diff = reach - dp;
-			const bool merging = AnyWithin(in.mergeMarker, ax, ay, diff, width, height);
-
-			return ((merging && np < reach) ? np : reach) & 0xFF;
+			return (adjacent ? np : 0) & 0xFF;
 		}
 
 		// True iff any nonzero pixel of map lies within Chebyshev distance `radius` of (col,row),
