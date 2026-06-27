@@ -351,7 +351,7 @@ namespace Doxa
 			Bytes mergeMarker(width, height, 0);
 			Bytes NPfinal(width, height, 0);
 			Words reachCache(width, height, kUnreached);  // MarkMerges records reach; Normalize reuses it
-			const PrecisionRing ringInputs{ strokeWidthMap, ov, recall.components.labels, Dp, NP, mergeMarker };
+			const PrecisionRing ringInputs{ strokeWidthMap, ov, recall.components.labels, Dp, NP, mergeMarker, recall.contourDistance };
 			PrecisionNormalizationPass(mergeMarker, reachCache, PrecisionPass::MarkMerges, ringInputs, invComponents);
 			PrecisionNormalizationPass(NPfinal, reachCache, PrecisionPass::Normalize, ringInputs, invComponents);
 
@@ -439,15 +439,20 @@ namespace Doxa
 		/// to the component bbox.  Do not "optimize" it into a Voronoi / nearest-owner map: that
 		/// changes the result, which must stay bit-exact with the DIBCO reference weight files.
 		/// </summary>
+		// startR lets a caller skip an initial run of rings it can PROVE are empty -- e.g. a
+		// distance transform gives the exact distance to the nearest feature, so no feature lies on
+		// any ring closer than that (every clamped perimeter cell at ring R is within Chebyshev
+		// distance R of the center).  Starting there is bit-exact; passing too large an startR is
+		// NOT (it would skip the true first ring), so only feed a proven lower bound.
 		template <typename Visit>
-		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit, int* outRadius = nullptr)
+		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit, int* outRadius = nullptr, const int startR = 0)
 		{
 			const int bxmin = c.bounds.upperLeft.x;
 			const int bxmax = c.bounds.bottomRight.x;
 			const int bymin = c.bounds.upperLeft.y;
 			const int bymax = c.bounds.bottomRight.y;
 
-			for (int R = 0; ; ++R)
+			for (int R = startR; ; ++R)
 			{
 				bool found = false;
 				int xlo = ax - R;
@@ -1031,6 +1036,7 @@ namespace Doxa
 			const Bytes&            Dp;               // background distance
 			const Words&            NP;               // background normalization (sqrt-rounded)
 			const Bytes&            mergeMarker;      // where adjacent components meet
+			const Words&            contourDistance;  // Chebyshev distance to the contour: the ring's start radius
 		};
 
 		// One precision pass over the background components (gate: label-owned, Dp in [1,249]).
@@ -1074,7 +1080,9 @@ namespace Doxa
 				return ((merging && np < reach) ? np : reach) & 0xFF;
 			}
 
-			// MarkMerges: the single ring search, recording reach for Normalize.
+			// MarkMerges: the single ring search, recording reach for Normalize.  The contour
+			// distance transform is the exact distance to the nearest contour, hence a proven lower
+			// bound on the first non-empty ring -- start there and skip the empty inner rings.
 			int reach = -1;
 			int firstLabel = -1;
 			bool adjacent = false;
@@ -1090,7 +1098,7 @@ namespace Doxa
 				else if (L != firstLabel) adjacent = true;
 
 				return true;
-			});
+			}, nullptr, in.contourDistance[i]);
 			reachCache[i] = found ? static_cast<uint16_t>(reach) : kUnreached;
 			if (!found) return 0;
 
