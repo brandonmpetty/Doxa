@@ -212,16 +212,16 @@ namespace Doxa
 		static bool HasDistance(const uint8_t d) { return d != 0 && d < kOutsideRegion; }
 
 		/// <summary>
-		/// The recall-side products the precision side reuses: the contour, its distance
-		/// transform, the component labeling and the medial factor (the precision contour IS
-		/// the recall contour -- the single ground-truth text boundary).
+		/// The recall-side products the precision side actually reuses: the overlay (its contour
+		/// and skeleton), the component labeling, and the contour's distance transform -- the
+		/// precision contour IS the recall contour, the single ground-truth text boundary.  The
+		/// medial factor is NOT here: it stays a recall local (only AssignStrokeWidths reads it).
 		/// </summary>
 		struct RecallArtifacts
 		{
 			Mask       overlay;           // kInk | kContour | kSkeleton -- Figure 11(a)+(b) on one raster
 			Components components;        // Gcc labeling (Eq. 4-5, 12-17)
 			Words      contourDistance;   // chessboard transform of the contour, reused for the background D
-			Bytes      medialFactor;      // the per-skeleton factor whose product with D realises NR
 		};
 
 		// ============================================================================
@@ -276,10 +276,11 @@ namespace Doxa
 			ForegroundDistanceMap(D, ov, recall.contourDistance, recall.components);
 
 			Words NR;
-			MedialNormalization(recall.medialFactor, NR, D, ov, recall.components);
+			Bytes medialFactor;                        // recall-local: feeds AssignStrokeWidths, then dies here
+			MedialNormalization(medialFactor, NR, D, ov, recall.components);
 
 			// Gsw_fg per component (Fig. 15a), stored on each Component for the precision pass.
-			AssignStrokeWidths(recall.components, recall.medialFactor, ov);
+			AssignStrokeWidths(recall.components, medialFactor, ov);
 
 			// GW = D / NR (Eq. 2).  EnsureComponentSeeds guarantees a skeleton per component, so
 			// NR > 0 at every ink pixel; the guard is defense-in-depth.
@@ -335,7 +336,7 @@ namespace Doxa
 			// The background medial normalization, same routine as recall.  It accumulates an
 			// area (~R^2); NP per Eq. 11 is a stroke width, so take the square root back to a
 			// radius at every in-region background pixel.
-			Bytes invMedialFactor;
+			Bytes invMedialFactor;                     // the spine's intermediate factor; precision needs only NP
 			Words NP;
 			MedialNormalization(invMedialFactor, NP, Dp, bg, invComponents);
 			invComponents.ForEachPixel([&](const Component&, int, int, int i)
