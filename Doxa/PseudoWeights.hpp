@@ -682,11 +682,12 @@ namespace Doxa
 		static constexpr std::array<uint8_t, 256> kZhangSuen2 = skel::Table(2);
 
 		/// <summary>
-		/// Guarantees every component owns at least one skeleton pixel when thinning left it
-		/// empty (a small symmetric blob the look-up pass erodes to nothing).  Forces the
-		/// (rounded) centroid pixel, falling back to the raster-first seed if the centroid lands
-		/// off a non-convex blob.  The centroid is computed only for the (rare) skeleton-less
-		/// components, over the component's own bounding box.
+		/// Guarantees every component keeps at least one skeleton pixel when the thinning erodes
+		/// a small blob to nothing.  Seeds the component centroid -- the integer mean of its
+		/// pixel positions.  Matching the DIBCO reference weight files, the seed is placed one
+		/// pixel down and to the right of the integer mean when that pixel is foreground, and at
+		/// the integer mean itself otherwise.  Computed only for the (rare) skeleton-less
+		/// components, over each component's own bounding box.
 		/// </summary>
 		static void EnsureComponentSeeds(Mask& skeleton, const uint8_t bit, const Components& components)
 		{
@@ -708,13 +709,16 @@ namespace Doxa
 					for (int x = c.bounds.upperLeft.x; x <= c.bounds.bottomRight.x; ++x)
 						if (components.labels[static_cast<size_t>(y) * width + x] == c.label) { sumX += x; sumY += y; ++count; }
 
-				const int cx = static_cast<int>(std::llround(static_cast<double>(sumX) / count));
-				const int cy = static_cast<int>(std::llround(static_cast<double>(sumY) / count));
-				if (cx >= 0 && cx < width && cy >= 0 && cy < height &&
-					components.labels[static_cast<size_t>(cy) * width + cx] == c.label)
+				const int mx = static_cast<int>(sumX / count);   // integer mean position (x)
+				const int my = static_cast<int>(sumY / count);   // integer mean position (y)
+				// Seed one pixel down-and-right of the mean when that pixel is foreground (the
+				// DIBCO reference convention), else at the mean itself.
+				const int cx = mx + 1;
+				const int cy = my + 1;
+				if (cx < width && cy < height && components.labels[static_cast<size_t>(cy) * width + cx] != 0)
 					skeleton[static_cast<size_t>(cy) * width + cx] |= bit;
 				else
-					skeleton[static_cast<size_t>(c.seed.y) * width + c.seed.x] |= bit;
+					skeleton[static_cast<size_t>(my) * width + mx] |= bit;
 			}
 		}
 
@@ -997,22 +1001,53 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// D(x,y) for the background (Eq. 10): the distance to the SAME ground-truth contour
-		/// (reused transform), with bgSkel&amp;contour -> 1, taken only inside the Gsw_bg region;
-		/// beyond the region the out-of-region marker stands in for PW = 1; ink pixels are 0.
-		/// Then the medial-ridge adjustment on the background skeleton.
+		/// The Chebyshev radius at which a square window grown about (x, y), clamped to the image,
+		/// first covers the WHOLE of bounds b -- all four sides reaching the box at once -- or a
+		/// value past any in-image distance if it never does.  Each side either fixes the radius
+		/// (an interior side, met at one radius) or sets a lower bound (a side already on the image
+		/// border, which the clamp holds from some radius on); the window fills the box only when
+		/// the fixing sides agree and every bound is met.
+		/// </summary>
+		static int BoxFillRadius(const int x, const int y, const Region& b, const int width, const int height)
+		{
+			const int never = width + height;                       // beyond any in-image Chebyshev distance
+			int fixed = -1, lower = 0;
+			bool consistent = true;
+			const auto side = [&](const bool onBorder, const int k)
+			{
+				if (onBorder) { if (k > lower) lower = k; }
+				else if (fixed < 0) fixed = k;
+				else if (fixed != k) consistent = false;
+			};
+			side(b.upperLeft.x   == 0,          x - b.upperLeft.x);
+			side(b.bottomRight.x == width - 1,  b.bottomRight.x - x);
+			side(b.upperLeft.y   == 0,          y - b.upperLeft.y);
+			side(b.bottomRight.y == height - 1, b.bottomRight.y - y);
+			if (!consistent) return never;
+			const int r = (fixed >= 0) ? fixed : lower;
+			return (r >= lower) ? r : never;
+		}
+
+		/// <summary>
+		/// D(x,y) for the background (Eq. 10): each background pixel's Chebyshev distance to the
+		/// SAME ground-truth contour (reused transform), taken only inside the Gsw_bg region;
+		/// beyond it the out-of-region marker stands in for PW = 1; ink pixels are 0.  A pixel whose
+		/// growing measurement window fills its WHOLE background component before reaching any
+		/// contour gets distance 0 -- the surrounding contour lies entirely outside the component's
+		/// box, as for a one-pixel hole or the center of a small square gap.  Then the medial-ridge
+		/// adjustment on the background skeleton.
 		/// </summary>
 		static void BackgroundDistanceMap(Bytes& Dp, const Mask& overlay, const Mask& bg, const Mask& region, const Words& contourDistance, const Components& invComponents)
 		{
-			const int size = overlay.Size();
-			Dp.Resize(overlay.width, overlay.height, 0);
-			for (int i = 0; i < size; ++i)
+			const int width = overlay.width;
+			const int height = overlay.height;
+			Dp.Resize(width, height, 0);                                               // ink (unlabeled) stays 0
+			invComponents.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
-				if (overlay[i] & kInk) continue;                                       // ink pixel -> 0
-				Dp[i] = ((bg[i] & kSkeleton) && (overlay[i] & kContour)) ? 1            // (disjoint: never taken)
-				      : region[i] ? static_cast<uint8_t>(contourDistance[i])           // in-region distance (< 250)
-				      : kOutsideRegion;                                                 // beyond the stroke reach
-			}
+				if (!region[i]) { Dp[i] = kOutsideRegion; return; }                    // beyond the stroke reach
+				const int d = contourDistance[i];                                      // distance to nearest contour
+				Dp[i] = (BoxFillRadius(x, y, c.bounds, width, height) < d) ? 0 : static_cast<uint8_t>(d);
+			});
 			MedialRidgeAdjust(Dp, bg, invComponents);
 		}
 
