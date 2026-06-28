@@ -306,11 +306,9 @@ namespace Doxa
 			const int size = width * height;
 			const Mask& ov = recall.overlay;
 
-			// Gsw_fg (stored on each component in recall) carried along the contour, and the
-			// Gsw_bg region it reaches into the background (Fig. 15a-b).
-			Bytes strokeWidthMap;                      // Gsw_fg carried along each component's contour
-			StrokeWidthMap(strokeWidthMap, ov, recall.components);
-
+			// The Gsw_bg region the foreground strokes reach into the background (Fig. 15a-b).  The
+			// per-component Gsw_fg the precision ring needs is read straight off each Component
+			// (strokeWidth) via its label, so no separate stroke-width image is materialized.
 			Mask region;                               // Gsw_bg region (Eq. 10, Fig. 15b)
 			BackgroundStrokeRegion(region, ov, recall.components);
 
@@ -351,7 +349,7 @@ namespace Doxa
 			Bytes mergeMarker(width, height, 0);
 			Bytes NPfinal(width, height, 0);
 			Words reachCache(width, height, kUnreached);  // MarkMerges records reach; Normalize reuses it
-			const PrecisionRing ringInputs{ strokeWidthMap, ov, recall.components.labels, Dp, NP, mergeMarker, recall.contourDistance };
+			const PrecisionRing ringInputs{ ov, recall.components, Dp, NP, mergeMarker, recall.contourDistance };
 			PrecisionNormalizationPass(mergeMarker, reachCache, PrecisionPass::MarkMerges, ringInputs, invComponents);
 			PrecisionNormalizationPass(NPfinal, reachCache, PrecisionPass::Normalize, ringInputs, invComponents);
 
@@ -967,17 +965,6 @@ namespace Doxa
 		//  Pseudo-Precision cascade:  Gsw region  ->  Dp  ->  NP = min(Gc_sw, Gsw_bg)
 		// ============================================================================
 
-		// Carry each component's Gsw_fg along its CONTOUR -- the only place the precision ring
-		// reads it (low byte, matching the stored map).
-		static void StrokeWidthMap(Bytes& strokeWidthMap, const Mask& overlay, const Components& components)
-		{
-			strokeWidthMap.Resize(components.width, components.height, 0);
-			components.ForEachPixel([&](const Component& c, int, int, int i)
-			{
-				if (overlay[i] & kContour) strokeWidthMap[i] = static_cast<uint8_t>(c.strokeWidth & 0xFF);
-			});
-		}
-
 		// Gsw_bg region (Eq. 10, Fig. 15b): a background pixel inside SOME component's bounding
 		// box dilated by 2 * its stroke width on every side (clamped to the image) is "reached"
 		// by that component's stroke; outside every such box, PW = 1.
@@ -1037,13 +1024,12 @@ namespace Doxa
 		// and the ring don't thread a dozen parameters.  All outlive the passes.
 		struct PrecisionRing
 		{
-			const Bytes&            strokeWidthMap;   // Gsw_fg carried along the fg contour
-			const Mask&             overlay;          // the recall overlay, rung over its kContour
-			const std::vector<int>& componentLabels;  // fg labels, to spot merging
-			const Bytes&            Dp;               // background distance
-			const Words&            NP;               // background normalization (sqrt-rounded)
-			const Bytes&            mergeMarker;      // where adjacent components meet
-			const Words&            contourDistance;  // Chebyshev distance to the contour: the ring's start radius
+			const Mask&       overlay;          // the recall overlay, rung over its kContour
+			const Components& components;       // fg records: strokeWidth (-> reach) and label (-> merging), by labels[j]
+			const Bytes&      Dp;               // background distance
+			const Words&      NP;               // background normalization (sqrt-rounded)
+			const Bytes&      mergeMarker;      // where adjacent components meet
+			const Words&      contourDistance;  // Chebyshev distance to the contour: the ring's start radius
 		};
 
 		// One precision pass over the background components (gate: label-owned, Dp in [1,249]).
@@ -1061,7 +1047,7 @@ namespace Doxa
 		}
 
 		// Rings on the ground-truth contour; for each contour pixel q on the first non-empty ring
-		// collect strokeWidthMap[q] (max -> reach) and whether two distinct components appear
+		// collect its component's Gsw_fg (items[labels[q]].strokeWidth, max -> reach) and whether two distinct components appear
 		// (adjacent -> merge risk).  Then, with dp = Dp[center] and np = NP[center]:  dp > reach
 		// -> 0;  MarkMerges -> adjacent ? np : 0;  Normalize -> (a merge was marked within
 		// Chebyshev radius (reach - dp) of the center && np < reach) ? np : reach   (Eq. 11:
@@ -1096,10 +1082,10 @@ namespace Doxa
 			const bool found = FirstNonEmptyRing(c, ax, ay, width, [&](const int j)
 			{
 				if (!(in.overlay[j] & kContour)) return false;
-				const int v = in.strokeWidthMap[j];
+				const int L = in.components.labels[j];                            // contour pixel -> its component
+				const int v = in.components.items[L].strokeWidth & 0xFF;          // its Gsw_fg (low byte, as stored)
 
 				if (v > reach) reach = v;
-				const int L = in.componentLabels[j];
 
 				if (firstLabel < 0) firstLabel = L;
 				else if (L != firstLabel) adjacent = true;
