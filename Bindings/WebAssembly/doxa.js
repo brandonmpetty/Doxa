@@ -100,23 +100,12 @@ const Doxa = {
 				},
 
 				/**
-				 * Calculate performance metrics comparing a binary image against ground truth.
-				 * If precision/recall weight texts are provided, pseudo metrics are included.
+				 * Calculate standard performance metrics comparing a binary image against ground truth.
 				 * @param {Doxa.Image} groundTruth - Ground truth binary image
 				 * @param {Doxa.Image} binary - Binary image to evaluate
-				 * @param {string} precisionWeightsText - Optional precision weights (enables pseudo metrics)
-				 * @param {string} recallWeightsText - Optional recall weights (enables pseudo metrics)
-				 * @returns {object} Performance metrics (accuracy, fm, precision, recall, mcc, psnr, nrm, drdm, and optionally pseudoFM, pseudoPrecision, pseudoRecall)
+				 * @returns {object} Performance metrics (accuracy, fm, precision, recall, mcc, psnr, nrm, drdm)
 				 */
-				calculatePerformance: function(groundTruth, binary, precisionWeightsText, recallWeightsText) {
-					if (precisionWeightsText && recallWeightsText) {
-						return Doxa.Wasm.calculatePseudoPerformance(
-							groundTruth.heapPtr, binary.heapPtr,
-							binary.width, binary.height,
-							precisionWeightsText, recallWeightsText
-						);
-					}
-
+				calculatePerformance: function(groundTruth, binary) {
 					return Doxa.Wasm.calculatePerformance(
 						groundTruth.heapPtr, binary.heapPtr,
 						binary.width, binary.height
@@ -124,11 +113,28 @@ const Doxa = {
 				},
 
 				/**
-				 * Generate pseudo precision/recall weights from a ground truth image.
-				 * Returns DIBCO-format weight text, just as if read from .dat files, ready
-				 * to pass to calculatePerformance for pseudo metrics - no .dat file required.
+				 * Calculate performance metrics including the pseudo metrics.
+				 * Pass weights from generatePseudoWeights to reuse one ground truth's maps
+				 * across many images; omit them to have the maps generated on the spot.
 				 * @param {Doxa.Image} groundTruth - Ground truth binary image
-				 * @returns {{precision: string, recall: string}} Weight text for calculatePerformance
+				 * @param {Doxa.Image} binary - Binary image to evaluate
+				 * @param {{precision: Float64Array, recall: Float64Array}} [weights] - Optional precomputed weights
+				 * @returns {object} Performance metrics (accuracy, fm, precision, recall, mcc, psnr, nrm, drdm, pseudoFM, pseudoPrecision, pseudoRecall)
+				 */
+				calculatePseudoPerformance: function(groundTruth, binary, weights) {
+					return Doxa.Wasm.calculatePseudoPerformance(
+						groundTruth.heapPtr, binary.heapPtr,
+						binary.width, binary.height,
+						weights?.precision, weights?.recall
+					);
+				},
+
+				/**
+				 * Generate pseudo precision/recall weights from a ground truth image.
+				 * Returns { precision, recall } Float64Arrays, ready to pass to
+				 * calculatePseudoPerformance for pseudo metrics - no .dat file required.
+				 * @param {Doxa.Image} groundTruth - Ground truth binary image
+				 * @returns {{precision: Float64Array, recall: Float64Array}} Weights for calculatePseudoPerformance
 				 */
 				generatePseudoWeights: function(groundTruth) {
 					return Doxa.Wasm.generatePseudoWeights(

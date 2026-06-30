@@ -70,15 +70,17 @@ describe("Doxa Binarization Class Test Suite", function() {
         expect(metrics.psnr).toBeCloseTo(16.329, 3);
     });
 
-    it("Binarization calculatePerformance with pseudo metrics runs successfully", async function() {
+    it("Binarization calculatePseudoPerformance with supplied weights runs successfully", async function() {
 
         const groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
         const binaryImage = await readImage('../../README/2JohnC1V3-Sauvola.png');
 
-        const pWeightsText = fs.readFileSync(path.resolve(__dirname, '../../../Doxa.Test/Resources/2JohnC1V3-GroundTruth_PWeights.dat'), 'utf8');
-        const rWeightsText = fs.readFileSync(path.resolve(__dirname, '../../../Doxa.Test/Resources/2JohnC1V3-GroundTruth_RWeights.dat'), 'utf8');
+        // Parse the reference .dat weight files into Float64Arrays
+        const parseWeights = text => new Float64Array(text.trim().split(/\s+/).map(Number));
+        const precision = parseWeights(fs.readFileSync(path.resolve(__dirname, '../../../Doxa.Test/Resources/2JohnC1V3-GroundTruth_PWeights.dat'), 'utf8'));
+        const recall = parseWeights(fs.readFileSync(path.resolve(__dirname, '../../../Doxa.Test/Resources/2JohnC1V3-GroundTruth_RWeights.dat'), 'utf8'));
 
-        const metrics = doxa.calculatePerformance(groundTruthImage, binaryImage, pWeightsText, rWeightsText);
+        const metrics = doxa.calculatePseudoPerformance(groundTruthImage, binaryImage, { precision, recall });
 
         expect(metrics.pseudoFM).toBeCloseTo(93.393, 2);
         expect(metrics.pseudoRecall).toBeCloseTo(92.7954, 2);
@@ -90,15 +92,29 @@ describe("Doxa Binarization Class Test Suite", function() {
         const groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
         const binaryImage = await readImage('../../README/2JohnC1V3-Sauvola.png');
 
-        // Generate weight text from just the ground truth (no .dat file)
+        // Generate weight maps from just the ground truth (no .dat file)
         const weights = doxa.generatePseudoWeights(groundTruthImage);
 
-        expect(typeof weights.precision).toBe('string');
-        expect(typeof weights.recall).toBe('string');
+        expect(weights.precision).toBeInstanceOf(Float64Array);
+        expect(weights.recall).toBeInstanceOf(Float64Array);
+        expect(weights.precision.length).toBe(groundTruthImage.size);
+        expect(weights.recall.length).toBe(groundTruthImage.size);
 
-        // Generated weights produce the same pseudo metrics as the reference .dat files
-        const metrics = doxa.calculatePerformance(
-            groundTruthImage, binaryImage, weights.precision, weights.recall);
+        // Reusing generated weights produces the same pseudo metrics as the reference .dat files
+        const metrics = doxa.calculatePseudoPerformance(groundTruthImage, binaryImage, weights);
+
+        expect(metrics.pseudoFM).toBeCloseTo(93.393, 2);
+        expect(metrics.pseudoRecall).toBeCloseTo(92.7954, 2);
+        expect(metrics.pseudoPrecision).toBeCloseTo(93.9983, 2);
+    });
+
+    it("Binarization calculatePseudoPerformance generates weights on demand", async function() {
+
+        const groundTruthImage = await readImage('../../README/2JohnC1V3-GroundTruth.png');
+        const binaryImage = await readImage('../../README/2JohnC1V3-Sauvola.png');
+
+        // No weights supplied: the C++ generates them internally from the ground truth
+        const metrics = doxa.calculatePseudoPerformance(groundTruthImage, binaryImage);
 
         expect(metrics.pseudoFM).toBeCloseTo(93.393, 2);
         expect(metrics.pseudoRecall).toBeCloseTo(92.7954, 2);
