@@ -20,7 +20,7 @@ It is written in C++ but supports multiple language bindings.
 * Sauvola - "Adaptive document image binarization", 1999.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
 * Feng - "Adaptive Binarization Method for Document Image Analysis", 2004.
-* Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
+* Gatos - "Adaptive degraded document image binarization", 2006. (Partial)
 * Bradley - "Adaptive Thresholding Using the Integral Image", 2007.
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
 * AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
@@ -56,6 +56,24 @@ What sets this binarization library apart is that it is intended to be used by t
 Instead of being relegated to MATLAB, or obfuscated by mathematics in a research paper, a lot of effort has gone into exposing these binarization techniques in an open and transparent way.
 A key objective in designing this framework was to make it modular and as easy to use as possible, without sacrificing speed and without depending heavily on 3rd party frameworks.
 This library is also heavily unit tested to help ensure quality, and to quickly spot problems after experimenting with the codebase.
+
+### ✨ New in v0.9.8 — BinBench CLI
+
+📊 **BinBench** is a command-line swiss army knife for binarization research — binarize, convert grayscale, score against ground truth, and generate pseudo-F weight maps, all from one small, open, cross-platform script powered by ΔBF.
+
+BinBench was built to be **bit-exact**<sup>1</sup> with `DIBCO_metrics.exe` and `BinEvalWeights.exe`, so the community's standard metrics run anywhere Python does — no closed source Windows binary required. Thanks to the ΔBF, BinBench is so well optimized it can calculate all metrics faster than DIBCO_metrics can with pre-computed weights!
+
+```
+python binbench.py evaluate gt.bmp binary.bmp -m accuracy,fm,pseudo-fm,drdm,psnr
+
+image       accuracy↑      fm↑  pseudo-fm↑   drdm↓    psnr↑
+----------  ---------  -------  ----------  ------  -------
+binary.bmp    97.6715  93.2047     93.3930  1.9519  16.3292
+```
+
+👉 See **[CLI/README.md](CLI/README.md)** for the full tour: 18 algorithms, 10 grayscale conversions, and 11 metrics.
+
+<small>1. *Slight floating point drift was found in DIBCO_metrics's DRDM.  BinBench is not bit-exact here as it strives to be as accurate as possible.*</small>
 
 ### Example
 This short example shows you how easy it is to use ΔBF to process an image.
