@@ -23,8 +23,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanCalc.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanVarianceCalc.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ClassifiedPerformance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ConnectedComponents.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ContrastImage.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Convolution.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DRDM.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)EdgeDetector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Feng.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Gatos.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Grayscale.hpp" />
@@ -42,6 +45,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Parameters.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PNM.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DIBCOUtils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PseudoWeights.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Region.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sauvola.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SIMD.h" />
@@ -54,5 +58,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Filter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Wolf.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Phansalkar.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)XDoG.hpp" />
   </ItemGroup>
 </Project>

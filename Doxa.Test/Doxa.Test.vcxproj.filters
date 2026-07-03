@@ -23,6 +23,10 @@
     <ClCompile Include="DIBCOUtilsTests.cpp" />
     <ClCompile Include="FilterTests.cpp" />
     <ClCompile Include="WellnerTests.cpp" />
+    <ClCompile Include="ConvolutionTests.cpp" />
+    <ClCompile Include="EdgeDetectorTests.cpp" />
+    <ClCompile Include="PseudoWeightsTests.cpp" />
+    <ClCompile Include="SuTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageFixture.hpp" />
