@@ -78,7 +78,6 @@ add_executable(
   FilterTests.cpp
   ConvolutionTests.cpp
   EdgeDetectorTests.cpp
-  ThinningTests.cpp
   PseudoWeightsTests.cpp
 )
 

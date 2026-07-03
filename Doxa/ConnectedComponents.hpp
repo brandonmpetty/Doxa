@@ -10,15 +10,11 @@
 #include "Palette.hpp"
 #include "Region.hpp"
 
-
+// NOTE: This ConnectedComponents code is special purposed for generating Pseudo Weights.
 namespace Doxa
 {
 	/// <summary>
-	/// A single connected component (foreground blob) and the few facts every
-	/// downstream measure asks of it: its bounding box, its pixel count, a
-	/// guaranteed-on-the-contour entry point, and (filled later, once a stroke
-	/// width image exists) its average stroke width.  The record carries no
-	/// pixel data of its own -- the parent Components owns the label image.
+	/// A single connected component representing a glyph, or part of a glyph.
 	/// </summary>
 	struct Component
 	{

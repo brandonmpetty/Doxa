@@ -34,7 +34,6 @@
 #include <XDoG.hpp>
 #include <Filter.hpp>
 #include <EdgeDetector.hpp>
-#include <Thinning.hpp>
 #include <PseudoWeights.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>

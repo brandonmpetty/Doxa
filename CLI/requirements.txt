@@ -1,0 +1,8 @@
+# BinBench CLI runtime dependencies.
+# Install:  pip install -r cli/requirements.txt
+#
+# doxapy is the Python binding for the Δoxa Binarization Framework.
+# v0.9.8 is the first release supporting the generation of pf-measure weights.
+doxapy>=0.9.8
+numpy>=1.21
+Pillow>=9.0

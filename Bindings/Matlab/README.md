@@ -68,10 +68,13 @@ img = Doxa.Image(gray_array);
 % Calculate metrics
 metrics = Doxa.calculatePerformance(gt, binary);
 
-% With weight files
+% Calculate metrics with weights
+[pw, rw] = Doxa.generatePseudoWeights(testCase.TestData.groundTruth);
+metrics = Doxa.calculatePerformance(gt, binary, precisionWeights=pw, recallWeights=rw);
+
+% Read pre-calculated weights from file
 pw = Doxa.readWeights('precision_weights.dat');
 rw = Doxa.readWeights('recall_weights.dat');
-metrics = Doxa.calculatePerformance(gt, binary, precisionWeights=pw, recallWeights=rw);
 ```
 
 **Metrics:** accuracy, fm, recall, precision, psnr, nrm, mcc, drdm, pseudoFM, pseudoPrecision, pseudoRecall
