@@ -37,8 +37,9 @@ namespace Doxa::UnitTests
 		const int nubn = DRDMTestHarness::NUBN_STD(gtImage, 8);
 
 		// DRDM - Value optained from the DIBCO perf tool
+		// NOTE: DIBCO's DRDM metric is less accurate due to float drift.
 		EXPECT_NEAR(1.9519, drdm, 0.0001);
-		EXPECT_EQ(4122339441, sumDRDk);
+		EXPECT_EQ(4122339146460ULL, sumDRDk);
 		EXPECT_EQ(2112, nubn);
 	}
 
@@ -72,7 +73,7 @@ namespace Doxa::UnitTests
 
 		double drdm = DRDM::CalculateDRDM(groundTruthImage, expImage);
 
-		EXPECT_EQ((double)(72357 + 72357 + 32359) / 1000000, drdm);
+		EXPECT_EQ((double)(72357071 + 72357071 + 32359066) / 1000000000, drdm);
 	}
 
 	TEST(DRDMTests, NUBNUniformityCountTest)

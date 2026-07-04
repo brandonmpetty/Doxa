@@ -45,6 +45,16 @@ if(DOXA_BUILD_PYTHON AND NOT EMSCRIPTEN)
     set_tests_properties(python_tests PROPERTIES
         ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/Bindings/Python/dist"
     )
+
+    # BinBench CLI spec suite (shells out to CLI/binbench.py, which uses doxapy).
+    # Gated on the Python build so it can find the freshly-built wheel in dist/.
+    add_test(NAME binbench_cli_tests
+        COMMAND ${Python_EXECUTABLE} -m unittest discover -s CLI/test -p "test_*.py" -v
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(binbench_cli_tests PROPERTIES
+        ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/Bindings/Python/dist;DOXAPY_PATH=${CMAKE_SOURCE_DIR}/Bindings/Python/dist"
+    )
 endif()
 
 # MATLAB MEX Bindings (native build only)

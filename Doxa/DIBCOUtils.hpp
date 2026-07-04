@@ -4,7 +4,10 @@
 #define DIBCOUTILS_HPP
 
 #include <fstream>
+#include <iomanip>
 #include <istream>
+#include <limits>
+#include <ostream>
 #include <vector>
 
 
@@ -46,6 +49,21 @@ namespace Doxa
 			}
 
 			return values;
+		}
+
+		/// <summary>
+		/// Write weights to a stream in the DIBCO whitespace-separated format.
+		/// The inverse of ReadWeights; full double precision keeps the round-trip lossless.
+		/// </summary>
+		static void WriteWeights(std::ostream& stream, const std::vector<double>& weights)
+		{
+			stream << std::setprecision(std::numeric_limits<double>::max_digits10);
+
+			for (size_t i = 0; i < weights.size(); ++i)
+			{
+				if (i) stream << ' ';
+				stream << weights[i];
+			}
 		}
 	};
 }

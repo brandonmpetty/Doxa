@@ -8,7 +8,7 @@
 #include "Palette.hpp"
 #include "Region.hpp"
 #include "Image.hpp"
-#include "WienerFilter.hpp"
+#include "Filter.hpp"
 
 
 namespace Doxa
@@ -35,7 +35,7 @@ namespace Doxa
 
 			// Step 1 - Pre-processing: Run greyscale through Wiener Filter
 			Image filteredImage(Algorithm::grayScaleImageIn);
-			WienerFilter::Filter(filteredImage, Algorithm::grayScaleImageIn, 3);
+			Filter::Wiener(filteredImage, Algorithm::grayScaleImageIn, 3);
 
 			// Step 2 - Rough estimation of foreground regions: Apply Sauvola binarization
 			Sauvola algorithm;  // TODO - Allow this algorithm to be swapped with any in the library

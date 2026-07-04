@@ -1,10 +1,27 @@
 #include "pch.h"
 #include "TestUtilities.hpp"
-#include <WienerFilter.hpp>
+#include <Filter.hpp>
 
 
 namespace Doxa::UnitTests
 {
+	TEST(FilterTests, FilterGaussianUniformPreservationTest)
+	{
+		// A uniform input must remain uniform after Gaussian blur, since
+		// the kernel sums to 1.  Confirms both the kernel normalization
+		// and clamp-to-edge border handling.
+		const int W = 7, H = 7;
+		std::vector<Pixel8> uniform(W * H, 128);
+
+		Image in(W, H, uniform.data());
+		Image out(W, H);
+
+		Filter::Gaussian(out, in, 5, 0.0);
+
+		for (int i = 0; i < out.size; ++i)
+			EXPECT_EQ(128, out.data[i]) << "Pixel " << i << " not preserved";
+	}
+
 	// A Wiener filter (per MATLAB's wiener2) is an adaptive denoiser.
 	// For each pixel, given local mean (m) and local variance (v):
 	//
@@ -13,7 +30,7 @@ namespace Doxa::UnitTests
 	//   - All windows that don't see the bright pixel have v=0, output = m = input.
 	//   - The 9 windows containing the bright pixel get smoothed: the bright pixel
 	//     is pulled down toward its local mean, the 8 neighbors nudged up.
-	TEST(WienerFilterTests, WienerFilterCenterPixelTest)
+	TEST(FilterTests, FilterWienerCenterPixelTest)
 	{
 		const Pixel8 data[] = {
 			50, 50, 50,  50, 50, 50, 50,
@@ -49,7 +66,7 @@ namespace Doxa::UnitTests
 		const Image inputImage(7, 7, data);
 		Image outputImage(7, 7);
 
-		WienerFilter::Filter(outputImage, inputImage, 3);
+		Filter::Wiener(outputImage, inputImage, 3);
 
 		TestUtilities::AssertImageData(outputImage, expected);
 	}

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <optional>
+#include <type_traits>
 #include <vector>
 #include "Types.hpp"
 
@@ -108,8 +109,24 @@ namespace Doxa
 		}
 
 		/// <summary>
+		/// Ensure accuracy (round not truncate) when converting to an 8-bit Pixel value.
+		/// truncation biases dark by ~0.5 LSB)
+		/// </summary>
+		template<typename T>
+		static inline constexpr T Quantize(double value)
+		{
+			if constexpr (std::is_integral_v<T>)
+			{
+				return static_cast<T>(value + 0.5);
+			}
+
+			return static_cast<T>(value);
+		}
+
+		/// <summary>
 		/// The formula used by the Qt framework which is used by our default.
 		/// Note: There are serious unanswered questions around this formula.
+		/// Deliberately truncates (integer math) to stay bit-exact with Qt's qGray.
 		/// </summary>
 		template<typename T>
 		static inline constexpr T Qt(T r, T g, T b)
@@ -124,7 +141,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T Mean(T r, T g, T b)
 		{
-			return (r + g + b) / 3;
+			return Quantize<T>((r + g + b) / 3.0);
 		}
 
 		/// <summary>
@@ -135,7 +152,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T BT601(T r, T g, T b)
 		{
-			return 0.2989 * r + 0.5865 * g + 0.1144 * b;
+			return Quantize<T>(0.299 * r + 0.587 * g + 0.114 * b);
 		}
 
 		/// <summary>
@@ -147,7 +164,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T BT709(T r, T g, T b)
 		{
-			return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+			return Quantize<T>(0.2126 * r + 0.7152 * g + 0.0722 * b);
 		}
 
 		/// <summary>
@@ -158,7 +175,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T BT2100(T r, T g, T b)
 		{
-			return 0.2627 * r + 0.6780 * g + 0.0593 * b;
+			return Quantize<T>(0.2627 * r + 0.6780 * g + 0.0593 * b);
 		}
 
 		/// <summary>
@@ -178,7 +195,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T Luster(T r, T g, T b)
 		{
-			return (std::max({ r, g, b }) + std::min({ r, g, b })) / 2;
+			return Quantize<T>((std::max({ r, g, b }) + std::min({ r, g, b })) / 2.0);
 		}
 
 		/// <summary>
@@ -189,7 +206,7 @@ namespace Doxa
 		template<typename T>
 		static inline constexpr T MinAvg(T r, T g, T b)
 		{
-			return (Mean(r, g, b) + std::min({ r, g, b })) / 2;
+			return Quantize<T>((Mean(r, g, b) + std::min({ r, g, b })) / 2.0);
 		}
 
 		/// <summary>
@@ -340,7 +357,7 @@ namespace Doxa
 
 			for (int i = 0, offset = 0; i < size; ++i, offset += channels)
 			{
-				output[i] = static_cast<Pixel8>(
+				output[i] = Quantize<Pixel8>(
 					Lightness((*m_lut)[input[offset]], (*m_lut)[input[offset + 1]], (*m_lut)[input[offset + 2]]) * scale);
 			}
 		}
@@ -369,7 +386,7 @@ namespace Doxa
 
 			for (int i = 0; i < size; ++i)
 			{
-				output[i] = static_cast<Pixel8>((values[i] - min) * scale);
+				output[i] = Quantize<Pixel8>((values[i] - min) * scale);
 			}
 		}
 	};

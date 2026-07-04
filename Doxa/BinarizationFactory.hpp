@@ -21,6 +21,7 @@
 #include "Wellner.hpp"
 #include "Bradley.hpp"
 #include "Feng.hpp"
+#include "XDoG.hpp"
 
 
 namespace Doxa
@@ -44,6 +45,7 @@ namespace Doxa
 		WELLNER = 14,
 		BRADLEY = 15,
 		FENG = 16,
+		XDOG = 17,
 	};
 
 
@@ -109,6 +111,9 @@ namespace Doxa
 				break;
 			case FENG:
 				algorithmPtr = new Feng();
+				break;
+			case XDOG:
+				algorithmPtr = new XDoG();
 				break;
 			}
 

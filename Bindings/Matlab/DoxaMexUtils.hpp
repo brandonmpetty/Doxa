@@ -10,6 +10,7 @@
 #include "Doxa/ClassifiedPerformance.hpp"
 #include "Doxa/DRDM.hpp"
 #include "Doxa/Grayscale.hpp"
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -141,6 +142,18 @@ namespace DoxaMexUtils
     }
 
     /// <summary>
+    /// Converts a std::vector of doubles to a Matlab double column vector.
+    /// No transpose: the flat row-major weight vector matches a column vector's
+    /// linear order and the layout produced by readWeights / consumed by calculatePerformance.
+    /// </summary>
+    inline mxArray* DoubleVectorToMxArray(const std::vector<double>& vec)
+    {
+        mxArray* arr = mxCreateDoubleMatrix(vec.size(), 1, mxREAL);
+        std::copy(vec.begin(), vec.end(), mxGetPr(arr));
+        return arr;
+    }
+
+    /// <summary>
     /// Converts a Matlab struct into a Doxa::ParameterMap.
     /// </summary>
     /// <summary>
@@ -199,7 +212,7 @@ namespace DoxaMexUtils
             {"WAN", Doxa::Algorithms::WAN},         {"GATOS", Doxa::Algorithms::GATOS},
             {"ADOTSU", Doxa::Algorithms::ADOTSU},   {"PHANSALKAR", Doxa::Algorithms::PHANSALKAR},
             {"WELLNER", Doxa::Algorithms::WELLNER}, {"BRADLEY", Doxa::Algorithms::BRADLEY},
-            {"FENG", Doxa::Algorithms::FENG}
+            {"FENG", Doxa::Algorithms::FENG},       {"XDOG", Doxa::Algorithms::XDOG}
         };
 
         auto it = algorithmMap.find(algorithmStr);

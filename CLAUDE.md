@@ -15,8 +15,8 @@ The project uses CMake presets for unified builds. All commands run from the pro
 ```bash
 # Build and run C++ unit tests
 cmake --preset cpp-tests
-cmake --build build --config Release
-ctest --test-dir build -C Release
+cmake --build build-cpp-tests --config Release
+ctest --test-dir build-cpp-tests -C Release
 
 # Build and test Python bindings
 cmake --preset python
