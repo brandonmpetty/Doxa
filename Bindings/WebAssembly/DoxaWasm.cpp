@@ -1,13 +1,13 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
-#include <sstream>
+#include <emscripten/val.h>
 //#include <iostream>
 
 #include "../../Doxa/BinarizationFactory.hpp"
 #include "../../Doxa/ClassifiedPerformance.hpp"
 #include "../../Doxa/DRDM.hpp"
-#include "../../Doxa/DIBCOUtils.hpp"
 #include "../../Doxa/Grayscale.hpp"
+#include "../../Doxa/PseudoWeights.hpp"
 
 //#include "../Doxa/PNM.hpp"
 using namespace Doxa;
@@ -46,6 +46,18 @@ struct PseudoPerformance
 	double PseudoRecall;
 };
 
+/// <summary>
+/// Copy a weight map into a newly allocated, JS-owned Float64Array.
+/// typed_memory_view is a transient view over the vector; Float64Array.set copies
+/// the bytes out before the vector is destroyed, so the returned array owns its data.
+/// </summary>
+val ToFloat64Array(const std::vector<double>& weights)
+{
+	val array = val::global("Float64Array").new_(weights.size());
+	array.call<void>("set", val(typed_memory_view(weights.size(), weights.data())));
+	return array;
+}
+
 Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, const int width, const int height)
 {
 	Image groundTruthImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(groundTruthData));
@@ -72,22 +84,28 @@ Performance CalculatePerformance(intptr_t groundTruthData, intptr_t binaryData, 
 PseudoPerformance CalculatePseudoPerformance(
 	intptr_t groundTruthData, intptr_t binaryData,
 	const int width, const int height,
-	const std::string& precisionWeightsText,
-	const std::string& recallWeightsText)
+	val precisionWeights,
+	val recallWeights)
 {
 	Image groundTruthImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(groundTruthData));
 	Image binaryImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(binaryData));
 
-	// Parse weight text via DIBCOUtils
-	std::stringstream precisionStream(precisionWeightsText);
-	std::stringstream recallStream(recallWeightsText);
-	const size_t allocatedSize = static_cast<size_t>(width) * height;
-	auto precisionWeights = DIBCOUtils::ReadWeights(precisionStream, allocatedSize);
-	auto recallWeights = DIBCOUtils::ReadWeights(recallStream, allocatedSize);
+	// Weights are optional. When not supplied, generate them on the spot from the ground
+	// truth so the image-sized maps never have to cross the JS boundary just to come back.
+	std::vector<double> precision, recall;
+	if (precisionWeights.isUndefined() || recallWeights.isUndefined())
+	{
+		PseudoWeights::Generate(recall, precision, groundTruthImage);
+	}
+	else
+	{
+		precision = convertJSArrayToNumberVector<double>(precisionWeights);
+		recall = convertJSArrayToNumberVector<double>(recallWeights);
+	}
 
 	// Compute weighted classifications
 	ClassifiedPerformance::Classifications classifications;
-	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights);
+	ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precision, recall);
 
 	PseudoPerformance perf;
 	perf.Accuracy = ClassifiedPerformance::CalculateAccuracy(classifications);
@@ -103,6 +121,25 @@ PseudoPerformance CalculatePseudoPerformance(
 	perf.PseudoRecall = ClassifiedPerformance::CalculatePseudoRecall(classifications);
 
 	return perf;
+}
+
+
+/// <summary>
+/// Generate the pseudo precision and recall weight maps from a Ground Truth image,
+/// returned as a { precision, recall } pair of Float64Arrays. Pass the object straight
+/// to calculatePseudoPerformance to reuse one ground truth's maps across many images.
+/// </summary>
+val GeneratePseudoWeights(intptr_t groundTruthData, const int width, const int height)
+{
+	Image groundTruthImage = Image::Reference(width, height, reinterpret_cast<Pixel8*>(groundTruthData));
+
+	std::vector<double> gw, pw;
+	PseudoWeights::Generate(gw, pw, groundTruthImage);
+
+	val weights = val::object();
+	weights.set("precision", ToFloat64Array(pw));
+	weights.set("recall", ToFloat64Array(gw));
+	return weights;
 }
 
 
@@ -204,7 +241,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.value("PHANSALKAR", Algorithms::PHANSALKAR)
 		.value("WELLNER", Algorithms::WELLNER)
 		.value("BRADLEY", Algorithms::BRADLEY)
-		.value("FENG", Algorithms::FENG);
+		.value("FENG", Algorithms::FENG)
+		.value("XDOG", Algorithms::XDOG);
     EM_ASM(
         Module['Binarization']['Algorithms'] = Module['Binarization.Algorithms'];
         delete Module['Binarization.Algorithms'];
@@ -234,6 +272,8 @@ EMSCRIPTEN_BINDINGS(doxa_wasm) {
 		.field("pseudoPrecision", &PseudoPerformance::PseudoPrecision)
 		.field("pseudoRecall", &PseudoPerformance::PseudoRecall);
 	function("calculatePseudoPerformance", &CalculatePseudoPerformance, allow_raw_pointers());
+
+	function("generatePseudoWeights", &GeneratePseudoWeights, allow_raw_pointers());
 
 	enum_<GrayscaleAlgorithms>("Grayscale.Algorithms")
 		.value("MEAN", GrayscaleAlgorithms::MEAN)

@@ -1,10 +1,10 @@
 name: Performance Benchmarks
 
+# Disabled as an automatic workflow: shared GitHub-hosted runners are noisy and
+# not suited to performance measurement. Kept for on-demand runs only — launch
+# manually from the Actions tab (Run workflow) when a benchmark run is wanted.
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_dispatch:
 
 permissions:
   contents: write

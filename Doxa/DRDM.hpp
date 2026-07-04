@@ -15,7 +15,17 @@ namespace Doxa
 {
 	/// <summary>
 	/// The Distance-Reciprocal Distortion Measure (DRDM) Algorithm: Haiping Lu, Jian Wang, A.C. Kot, Y.Q. Shi
-	/// </summary>
+	///
+    /// Accuracy Note:
+    /// This implementation will differ from the DIBO metrics implementation by roughly ~1e-5.
+    /// Their MATLAB implemenation suffers from float drift while ours offers full precision.
+    /// Cause: Their "sum_DRDk = sum_DRDk + DRDk" accumulates the ENTIRE image in float32.
+    /// Real world exmple: Our 1.9521414 (1.9521) vs DIBCO Metrics 1.9521665 (1.9522)
+    /// 
+    /// Also, the original author's MATLAB implementation, Haiping Lu, over penalizes edge pixels in a way that
+    /// would make following its implementation differ too greatly from DIBCO's numbers.
+    /// 
+    /// </summary>
 	/// <remarks>"An Objective Distortion Measure for Binary Document Images Based on Human Visual Perception", 2002.</remarks>
 	class DRDM
 	{
@@ -24,30 +34,30 @@ namespace Doxa
 		{
 			const uint64_t sumDRDk = SumDRDkForMismatchedPixels(controlImage, experimentImage);
 
-			// To avoid rounding issues we are using ints instead of doubles, which we accomplished by using a 1000000 multiplier.
-			return sumDRDk / (double)(NUBN(controlImage) * 1000000);
+			// The weights are pre-scaled by 1e9 (see Wm), so divide it back out here.
+			return sumDRDk / (double)(NUBN(controlImage) * 1000000000ULL);
 		}
 
 	protected:
         static constexpr int N = 5;
         static constexpr int R = N / 2;
 
-        // Normalized Weighted Matrix
-        // Values have been multiplied by 1000000 in order to avoid slight rounding errors with doubles.
-        // These values are more granular than the example matrix given in the research paper.
-        // If you use those values, you will hit rounding problems with their sample data because they are actually using more
-        // precise Normalized Matrix values when calculating DRD than what is provided in that example.
+        // Normalized Weighted Matrix (reciprocal Euclidean distance to the center, normalized to sum of 1).
+        // Values are pre-multiplied by 1,000,000,000 so the whole calculation stays in exact integers and
+        // avoids the floating-point drift described above. 9 significant figures track DRDM to ~1e-9.
+        //
+        // Overflow: This supports images up to ~1.8e10 pixels (~135000 x 135000) - an 18 gigapixel image.
         static constexpr uint32_t Wm[N * N] = {
-            25582, 32359, 36179, 32359, 25582,
-            32359, 51164, 72357, 51164, 32359,
-            36179, 72357,     0, 72357, 36179,
-            32359, 51164, 72357, 51164, 32359,
-            25582, 32359, 36179, 32359, 25582
+            25582088, 32359066, 36178535, 32359066, 25582088,
+            32359066, 51164175, 72357071, 51164175, 32359066,
+            36178535, 72357071,        0, 72357071, 36178535,
+            32359066, 51164175, 72357071, 51164175, 32359066,
+            25582088, 32359066, 36178535, 32359066, 25582088
         };
 
         /// <summary>
 		/// Sum DRDk for all mismatched pixels between control and experiment images.
-        /// This is an optimized algorithm,
+        /// This is an optimized algorithm.
 		/// </summary>
         static uint64_t SumDRDkForMismatchedPixels(const Image& control, const Image& experiment)
         {

@@ -239,6 +239,23 @@ namespace Doxa::Benchmarks
 	}
 	BENCHMARK(BM_Feng);
 
+	static void BM_XDoG(benchmark::State& state)
+	{
+		const Image image = ReadTestImage();
+		const Parameters parameters({
+			{ "sigma", 0.5 }, { "k", 1.6 }, { "tau", 0.98 },
+			{ "epsilon", -0.1 }, { "phi", 200.0 }
+		});
+
+		for (auto _ : state) {
+			Image result = XDoG::ToBinaryImage(image, parameters);
+			benchmark::DoNotOptimize(result.data);
+		}
+
+		state.SetBytesProcessed(int64_t(state.iterations()) * image.size);
+	}
+	BENCHMARK(BM_XDoG);
+
 	static void BM_AdOtsu(benchmark::State& state)
 	{
 		const Image image = ReadTestImage();

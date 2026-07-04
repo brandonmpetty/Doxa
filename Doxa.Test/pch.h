@@ -30,6 +30,11 @@
 #include <Wellner.hpp>
 #include <Bradley.hpp>
 #include <Feng.hpp>
+#include <Convolution.hpp>
+#include <XDoG.hpp>
+#include <Filter.hpp>
+#include <EdgeDetector.hpp>
+#include <PseudoWeights.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>
 #include <DIBCOUtils.hpp>

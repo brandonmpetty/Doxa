@@ -63,6 +63,24 @@ class DoxaPyTests(unittest.TestCase):
         self.assertIsNone(diff.getbbox())
 
 
+    def test_xdog(self):
+
+        # XDoG is an edge-based algorithm with its own parameter set
+        image = read_image("2JohnC1V3.ppm")
+
+        params = {"sigma": 1.0, "k": 1.8, "p": 35.0, "epsilon": 0.20, "phi": 10.0}
+        binary_image = doxapy.to_binary(doxapy.Binarization.Algorithms.XDOG, image, params)
+
+        # Compare against our control
+        expected_image_path = os.path.join(RESOURCES_DIR, os.path.basename("2JohnC1V3-XDoG.pbm"))
+        expected_image = Image.open(expected_image_path)
+
+        output_image = Image.fromarray(binary_image)
+
+        diff = ImageChops.difference(expected_image, output_image)
+        self.assertIsNone(diff.getbbox())
+
+
     def test_performance(self):
 
         # Setup
@@ -110,6 +128,29 @@ class DoxaPyTests(unittest.TestCase):
         performance = doxapy.calculate_performance(groundtruth_image, image, p_weights, r_weights)
 
         # Assert pseudo metrics
+        self.assertAlmostEqual(performance.get("pseudo_fm"), 93.393, 2)
+        self.assertAlmostEqual(performance.get("pseudo_recall"), 92.7954, 2)
+        self.assertAlmostEqual(performance.get("pseudo_precision"), 93.9983, 2)
+
+
+    def test_generate_pseudo_weights(self):
+
+        # Setup
+        image = read_image("2JohnC1V3.ppm")
+        groundtruth_image = read_image("2JohnC1V3-GroundTruth.pbm")
+        params = {"window": 27, "k": 0.10}
+        doxapy.update_to_binary(doxapy.Binarization.Algorithms.SAUVOLA, image, params)
+
+        # Generate pseudo weights from just the ground truth (no .dat file)
+        p_weights, r_weights = doxapy.generate_pseudo_weights(groundtruth_image)
+
+        # Weights cover every pixel
+        self.assertEqual(len(p_weights), groundtruth_image.size)
+        self.assertEqual(len(r_weights), groundtruth_image.size)
+
+        # Generated weights produce the same pseudo metrics as the reference .dat files
+        performance = doxapy.calculate_performance(groundtruth_image, image, p_weights, r_weights)
+
         self.assertAlmostEqual(performance.get("pseudo_fm"), 93.393, 2)
         self.assertAlmostEqual(performance.get("pseudo_recall"), 92.7954, 2)
         self.assertAlmostEqual(performance.get("pseudo_precision"), 93.9983, 2)
