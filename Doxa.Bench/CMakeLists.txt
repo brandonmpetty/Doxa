@@ -38,6 +38,7 @@ add_executable(
   CalculatorBenchmarks.cpp
   BinarizationBenchmarks.cpp
   PseudoWeightsBenchmarks.cpp
+  MorphologyBenchmarks.cpp
 )
 
 target_include_directories(doxa_bench PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

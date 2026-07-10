@@ -3,7 +3,7 @@
 #ifndef ISAUVOLA_HPP
 #define ISAUVOLA_HPP
 
-#include <unordered_set>
+#include <vector>
 #include "Sauvola.hpp"
 #include "ContrastImage.hpp"
 //#include "Morphology.hpp"
@@ -81,63 +81,38 @@ namespace Doxa
 		/// <param name="startIdx">A foreground pixel location to start the trace.</param>
 		void Spider(Image& binaryImageOut, const Image& binaryImageIn, const int startIdx)
 		{
-			std::unordered_set<int> pixelPositions = { startIdx };
+			const int width = binaryImageIn.width;
 
-			// Initialize our Start Index
+			// The output image doubles as our visited set, so each pixel is stacked at most once
+			std::vector<int> stack = { startIdx };
 			binaryImageOut.data[startIdx] = Palette::Black;
 
-			// If we find an attached cell that hasn't been analyzed, mark it and add it to our list
-			auto processCell = [&](const int position)
-			{
-				if (Palette::Black == binaryImageIn.data[position] &&
-					Palette::White == binaryImageOut.data[position])
-				{
-					binaryImageOut.data[position] = Palette::Black;
-					pixelPositions.insert(position);
-				}
-			};
-
-			// Process a Row of our 3x3 window from Left to Right
-			auto processRow = [&](int position, const bool checkLeft, const bool checkCenter, bool const checkRight) 
-			{
-				// Start on the Left
-				if (checkLeft)
-					processCell(position);
-
-				// Move to Center
-				++position;
-				if (checkCenter)
-					processCell(position);
-
-				// Move to Right
-				if (checkRight)
-					processCell(++position); // Note: Position is incremented
-			};
-
-			// Iterate through all of the black pixels, forming a 3x3 search window.
-			// This loop may keep adding to that list when a black neighbor is found.
-			while (!pixelPositions.empty())
+			while (!stack.empty())
 			{
 				// Pop target position index
-				const int idx = *pixelPositions.begin();
-				pixelPositions.erase(pixelPositions.begin());
+				const int idx = stack.back();
+				stack.pop_back();
 
-				// Build Coordinates and detect if we are on the far left or right
-				const int top = idx - binaryImageIn.width;
-				const int bottom = idx + binaryImageIn.width;
-				const bool checkLeft = idx % binaryImageIn.width;
-				const bool checkRight = (idx + 1) % binaryImageIn.width;
+				// Clamp the 3x3 search window to the image edges
+				const int x = idx % width;
+				const int left = x > 0 ? -1 : 0;
+				const int right = x + 1 < width ? 1 : 0;
+				const int top = idx < width ? idx : idx - width;
+				const int bottom = idx + width < binaryImageIn.size ? idx + width : idx;
 
-				// Process Top Row
-				if (top > 0)
-					processRow(top - 1, checkLeft, true, checkRight);
-
-				// Process Center Row
-				processRow(idx - 1, checkLeft, false, checkRight);
-
-				// Process Bottom Row
-				if (bottom < binaryImageIn.size)
-					processRow(bottom - 1, checkLeft, true, checkRight);
+				for (int row = top; row <= bottom; row += width)
+				{
+					for (int position = row + left; position <= row + right; ++position)
+					{
+						// If an attached cell hasn't been traced, mark it and add it to the stack
+						if (Palette::Black == binaryImageIn.data[position] &&
+							Palette::White == binaryImageOut.data[position])
+						{
+							binaryImageOut.data[position] = Palette::Black;
+							stack.push_back(position);
+						}
+					}
+				}
 			}
 		}
 	};

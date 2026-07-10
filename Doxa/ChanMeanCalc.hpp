@@ -3,6 +3,9 @@
 #ifndef CHANMEANCALC_HPP
 #define CHANMEANCALC_HPP
 
+#include <algorithm>
+#include <cstdint>
+#include <vector>
 #include "Image.hpp"
 
 
@@ -26,102 +29,67 @@ namespace Doxa
 			});
 		}
 
+
 		template<typename Processor>
 		void Iterate(const Image& grayScaleImageIn, const int windowSize, Processor processor)
 		{
 			// Setup constants
 			const int width = grayScaleImageIn.width;
 			const int height = grayScaleImageIn.height;
-			const int leftWindow = (windowSize + 1) / 2;
-			const int rightWindow = windowSize - leftWindow;
-			const int dr1 = rightWindow;
-			const int dr2 = width - rightWindow + 1;
+			const int above = (windowSize + 1) / 2;	// Window rows above the pixel, and columns to its left
+			const int below = windowSize - above;	// Window rows below the pixel, and columns to its right
+			const Pixel8* input = grayScaleImageIn.data;
 
-			// Initialize structure
-			uint16_t* integral = new uint16_t[width + 1];
-			memset(integral, 0, (width + 1) * sizeof(uint16_t));
+			// Vertical window sums, one per column, zero padded on the left and right.
+			std::vector<int32_t> sums(width + windowSize, 0);
+			const std::vector<Pixel8> zeroRow(width, 0);
+			int32_t* const colSum = sums.data() + above;
 
-			// Starting at the top of the image, sum the columns to half our window height.
-			// Note that Left and Right Window names are synonymous with Top and Bottom since this is a square window.
-			// Our structures have now been primed.
-			for (int y = 0, ind = 0; y < rightWindow; ++y)
+			// Slide the window down the image one row at a time.
+			// The first iterations, y < 0, prime the columns before the first window is complete.
+			for (int y = -below, position = 0; y < height; ++y)
 			{
-				for (int x = 1; x <= width; x++, ind++)
+				// Add the row entering the window and subtract the row leaving it.
+				// Past the top and bottom of the image, an all-zero row stands in.
+				const Pixel8* enter = y + below < height ? input + (y + below) * width : zeroRow.data();
+				const Pixel8* leave = y >= above ? input + (y - above) * width : zeroRow.data();
+
+				for (int x = 0; x < width; ++x)
 				{
-					integral[x] += grayScaleImageIn.data[ind];
+					colSum[x] += enter[x] - leave[x];
+				}
+
+				if (y < 0) continue;
+
+				const int rows = (std::min)(y + below, height - 1) - (std::max)(y - above, -1);
+
+				// Prime the sliding sum with the columns under the right half of the window.
+				int64_t sum = 0;
+				for (int x = 0; x < below; ++x)
+				{
+					sum += colSum[x];
+				}
+
+				// Slide the window across the row, adding the column entering it and subtracting the
+				// column leaving it.  The pixel count only changes near the left and right edges, so
+				// the reciprocal is cached; the branch predictor learns the pattern instantly.
+				int lastCols = 0;
+				double invCount = 0.0;
+				for (int x = 0; x < width; ++x, ++position)
+				{
+					const int xBelow = x + below;
+					const int xAbove = x - above;
+
+					sum += colSum[xBelow] - colSum[xAbove];
+
+					const int cols = (std::min)(xBelow, width - 1) - (std::max)(xAbove, -1);
+					if (cols != lastCols) { invCount = 1.0 / (rows * cols); lastCols = cols; }
+
+					const double mean = sum * invCount;
+
+					processor(mean, position);
 				}
 			}
-
-			for (int y = 0, ind = 0; y < height; ++y)
-			{
-				const int winTop = std::max(y - leftWindow, -1);
-				const int winBottom = std::min(height - 1, y + rightWindow);
-
-				// As our windows slides down, these two blocks will remove the top row from our structure and add on the bottom row.
-				if (y >= leftWindow) {
-					for (int x = 1, index = winTop * width; x <= width; ++x, ++index)
-					{ 
-						integral[x] -= grayScaleImageIn.data[index];
-					}
-				}
-
-				if (y + rightWindow < height)
-				{
-					for (int x = 1, index = winBottom * width; x <= width; ++x, ++index)
-					{
-						integral[x] += grayScaleImageIn.data[index];
-					}
-				}
-
-				// At this point we slide our window from left to right.
-				// We calculate the sums for the first half of our window.
-				int sum = 0;
-				for (int x = 1; x <= dr1; x++)
-				{
-					sum += integral[x];
-				}
-
-				// Cache the reciprocal of `area` so the per-pixel mean can
-				// multiply instead of divide.  area only changes at the
-				// left/right edges of the row; the interior holds a constant
-				// (winBottom - winTop) * windowSize.  Branch predictor learns
-				// the pattern instantly.
-				int lastArea = 0;
-				double invArea = 0.0;
-
-				// As our window moves across, we are now able to use our sums to calculate mean, variance, etc.
-				// This happens until the right most edge of our windows hits the end of the image.
-				for (int x = 1; x < dr2; ++x, ++ind)
-				{
-					const int winLeft = std::max(x - leftWindow, 0);
-					const int winRight = x + rightWindow;
-					const int area = (winBottom - winTop)*(winRight - winLeft);
-					sum += integral[winRight] - integral[winLeft];
-
-					if (area != lastArea) { invArea = 1.0 / area; lastArea = area; }
-					const double mean = (double)sum * invArea;
-
-					processor(mean, ind);
-				}
-
-				// Now that our windows is sliding through the right side of the image, we have to remove the left most column.
-				// As we do that, we are able to continue with our calculation.
-				for (int x = dr2; x <= width; ++x, ++ind)
-				{
-					const int winLeft = std::max(x - leftWindow, 0);
-					const int winRight = width;
-					const int area = (winBottom - winTop)*(winRight - winLeft);
-					sum -= integral[winLeft];
-
-					if (area != lastArea) { invArea = 1.0 / area; lastArea = area; }
-					const double mean = (double)sum * invArea;
-
-					processor(mean, ind);
-				}
-			}
-
-			// Free up our dynamically allocated structures
-			delete[] integral;
 		}
 	};
 }

@@ -15,13 +15,15 @@
 
 namespace Doxa
 {
-	// Bespoke Zhang-Suen 1984 deletion rule + the two sub-iteration look-up tables for
-	// PseudoWeights' skeleton -- minimal and special-purpose, so the header carries its own
-	// thinning.  Delete (0x00) iff B(P1) in [2,6], exactly one 0->1 transition around the
-	// 8-ring, and the sub-iteration's two corner triples are clear; else keep (0xFF).  Bit
-	// order matches PseudoWeights::Neighbors.  (Free functions, pre-class, so the static
-	// constexpr tables can be initialized from them -- MSVC won't call an in-class constexpr
-	// member from a sibling data-member initializer.)
+	/// <summary>
+	/// The Zhang-Suen deletion rule and its two sub-iteration look-up tables, the first stage
+	/// of the PseudoWeights skeleton.  A pixel is deleted when it has two to six neighbors,
+	/// exactly one background-to-ink transition around them, and the sub-iteration's corner
+	/// conditions hold.  Rule returns 0x00 to delete and 0xFF to keep, with the neighbor bit
+	/// order of PseudoWeights::Neighbors.  These live outside the class so its static tables
+	/// can be initialized at compile time.
+	/// </summary>
+	/// <remarks>"A Fast Parallel Algorithm for Thinning Digital Patterns", 1984.</remarks>
 	namespace skel
 	{
 		constexpr uint8_t Rule(const uint8_t a, const int subIter)
@@ -65,60 +67,35 @@ namespace Doxa
 	}
 
 	/// <summary>
-	/// Generates the two ground-truth weight maps behind the pseudo-metrics of
-	/// Ntirogiannis, Gatos & Pratikakis, "Performance Evaluation Methodology for
-	/// Historical Document Image Binarization," IEEE TIP 22(2), 2013:
+	/// Pseudo F-Measure Weights: K. Ntirogiannis, B. Gatos, I. Pratikakis
+	/// Generates the two ground-truth weight maps behind the pseudo Recall and Precision
+	/// metrics, bit-exact with the DIBCO reference weight files: RWeights.dat stores GW,
+	/// and PWeights.dat stores PW - 1.
 	///
-	///   GW(x,y) - the weighted ground truth, for pseudo-Recall    (Eq. 2, 3)
-	///   PW(x,y) - the background weight map,  for pseudo-Precision (Eq. 10, 11)
+	/// Pseudo-Recall weighs each ink pixel by its distance from the text contour, normalized
+	/// across the stroke, so that missing the core of a stroke costs more than shaving its
+	/// edge: GW = D / NR (Eq. 2, 3).  Pseudo-Precision weighs the background near the text the
+	/// same way, about the same contour, normalized by stroke width and capped where
+	/// components approach one another, so that false ink costs the most between close
+	/// strokes: PW = 1 + D / NP (Eq. 10, 11).
 	///
-	///   Rps = sum(B . GW) / sum(GW)         Pps = sum(G . B . PW) / sum(B . PW)
-	///
-	/// are then trivial reductions over these maps and the binarized image B.
-	/// (RWeights.dat stores GW; PWeights.dat stores PW - 1.)  The maps produced here are
-	/// bit-exact with the DIBCO reference weight files.
-	///
-	/// THE PIPELINE.  Both measures run ONE machinery -- distance-from-contour, then a
-	/// stroke-width normalization along the line normal to the skeleton -- once on the
-	/// FOREGROUND (recall) and once on the BACKGROUND (precision), about the SAME contour:
-	///
-	///   ground-truth G  --ConnectedComponents + one setup sweep-->
-	///   overlay { kInk, kContour, kSkeleton }              (Fig. 11a,b; Thin erodes kSkeleton)
-	///        |
-	///        +-- D  = Chebyshev distance from the contour     ForegroundDistanceMap  (Eq. 2, Fig. 11c)
-	///        +-- NR = stroke-width cross-section normalizer    MedialNormalization    (Eq. 3)
-	///        v
-	///   GW = D / NR  -- pseudo-Recall weight                   ComputeRecall          (Eq. 2)
-	///
-	///   Precision runs the same D and normalizer on the BACKGROUND skeleton, the normalizer
-	///   capped by the distance to neighboring components:
-	///   PW - 1 = Dp / NP,  NP = min(Gc_sw, Gsw_bg)             ComputePrecision       (Eq. 10-11, Fig. 15)
-	///
-	/// Generate() runs recall, then reuses its contour, distance transform, component
-	/// labeling and medial factor for precision.
-	///
-	/// Vocabulary, following the paper's Section III:
-	///   D    = Chebyshev distance map from the contour points        (Eq. 2, Fig. 10c)
-	///   S    = skeleton of the ground-truth text                     (Fig. 10b)
-	///   NR   = Normalization type I, so D sums to 1 along the cross  (Eq. 3, Fig. 7)
-	///   GW   = D / NR                                                (Eq. 2)
-	///   NP   = min(Gc_sw, Gsw_bg) background normalization           (Eq. 11)
-	///   PW   = 1 + D / NP                                            (Eq. 10)
-	///
-	/// The skeleton follows the paper's reference [60] = Lee, Chen, "Recognition of
-	/// handwritten Chinese characters via short line segments," Pattern Recognition 25(5),
-	/// 1992 (Table 1 look-up, termination points).  The thinning is a bespoke, minimal,
-	/// in-place kernel carried here (see skel:: and Thin), so the only collaborator is
-	/// ConnectedComponents (the labeling Gcc).  Everything else lives here.
+	/// Both sides run one machinery: label the components, thin the text to its skeleton,
+	/// measure the distance from the contour, then normalize along the stroke's cross section.
+	/// Generate runs the recall side once and reuses its contour, distances, and labeling for
+	/// the precision side.  The skeleton follows the paper's reference: Zhang-Suen thinning
+	/// finished by the Lee-Chen simple-point table and termination points.
 	/// </summary>
+	/// <remarks>
+	/// "Performance Evaluation Methodology for Historical Document Image Binarization", 2013.
+	/// "Recognition of Handwritten Chinese Characters via Short Line Segments", 1992.
+	/// </remarks>
 	class PseudoWeights
 	{
 	public:
 		/// <summary>
-		/// Both weight maps.  gw is GW(x,y) (Eq. 2); pw is the stored precision weight
-		/// PW(x,y) - 1 = D/NP capped at 2 (Eq. 10/11), which is the value
-		/// ClassifiedPerformance consumes -- the full pseudo-Precision weight is pw + 1.
-		/// foreground selects the ink value (Palette::Black for DIBCO ground truth).
+		/// Generates both weight maps.  gw receives GW (Eq. 2); pw receives the stored form
+		/// PW - 1, capped at 2 (Eq. 10, 11), which is the value ClassifiedPerformance consumes.
+		/// foreground selects the ink value, Palette::Black for the DIBCO ground truth.
 		/// The recall chain is computed once and reused by the precision side.
 		/// </summary>
 		static void Generate(
@@ -132,8 +109,8 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// GW(x,y) only (Eq. 2) -- the pseudo-Recall weight map, reproducing
-		/// &lt;gt&gt;_RWeights.dat.  Background pixels are 0 (the domain of GW).
+		/// The pseudo-Recall weight map GW alone (Eq. 2), reproducing &lt;gt&gt;_RWeights.dat.
+		/// Background pixels are 0.
 		/// </summary>
 		static void RecallWeights(
 			std::vector<double>& gw,
@@ -144,9 +121,9 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// PW(x,y) - 1 only -- the pseudo-Precision weight map, reproducing
-		/// &lt;gt&gt;_PWeights.dat.  Precision needs the entire recall chain, so this simply
-		/// runs Generate and keeps the precision map; prefer Generate for both.
+		/// The pseudo-Precision weight map PW - 1 alone, reproducing &lt;gt&gt;_PWeights.dat.
+		/// Precision needs the entire recall chain, so this runs Generate and keeps the
+		/// precision map; prefer Generate when both are wanted.
 		/// </summary>
 		static void PrecisionWeights(
 			std::vector<double>& pw,
@@ -163,10 +140,9 @@ namespace Doxa
 		// ============================================================================
 
 		/// <summary>
-		/// A typed raster that carries its own dimensions, so the pipeline below speaks in
-		/// fields instead of (vector, width, height) triples.  operator[] is the linear index
-		/// the traversals already carry; operator() is (x, y).  Zero-cost: every access
-		/// inlines to data[y * width + x], exactly as the hand-indexed code.
+		/// A typed raster that carries its own dimensions, so the pipeline below passes fields
+		/// instead of (vector, width, height) triples.  operator[] takes the linear index the
+		/// traversals already carry; operator() takes (x, y).
 		/// </summary>
 		template <typename T>
 		struct Field
@@ -191,9 +167,9 @@ namespace Doxa
 		using Bytes = Field<uint8_t>;    // small-valued byte maps: D, factor, stroke widths, NP work
 		using Words = Field<uint16_t>;   // values that can exceed 255: distance transforms, NR/NP
 
-		// The overlay raster -- Figure 11(a)+(b) in one byte per pixel.  A pixel is ink iff it
-		// carries any flag, so the background is simply overlay == 0 (no separate mask) and the
-		// component labeller reads it directly; "removed" interior ink is kInk without kSkeleton.
+		// The overlay raster, Figure 11(a) and (b) in one byte per pixel.  A pixel is ink when
+		// any flag is set, so the background is simply overlay == 0 and the component labeler
+		// reads the raster directly.  Ink the thinning removed keeps kInk and loses kSkeleton.
 		static constexpr uint8_t kInk      = 0x01;  // original ink: the GW domain (Eq. 2)
 		static constexpr uint8_t kContour  = 0x02;  // contour point (Fig. 10b)
 		static constexpr uint8_t kSkeleton = 0x04;  // skeleton S(x,y), eroded in place from kInk
@@ -202,36 +178,36 @@ namespace Doxa
 		// relaxation never overflows.
 		static constexpr uint16_t kUnreached = 0xFFFF;
 
-		// 250: a background pixel beyond every component's stroke reach -- outside the Gsw_bg
-		// region, where the paper sets PW = 1 (Eq. 10), i.e. the stored weight is 0.  Real
-		// strokes never reach this far, so it doubles as an out-of-domain marker.
+		// A background pixel beyond every component's stroke reach, outside the Gsw_bg region
+		// where the paper sets PW = 1 (Eq. 10) and the stored weight is 0.  Real strokes never
+		// reach 250 pixels, so the value doubles as an out-of-domain marker.
 		static constexpr uint8_t kOutsideRegion = 0xFA;
 
-		// A pixel carries a usable distance when D is in [1, 249]: nonzero (in the weight
-		// domain) and below the out-of-region marker.
+		/// <summary>
+		/// A pixel carries a usable distance when D is in [1, 249]: nonzero and in the region.
+		/// </summary>
 		static bool HasDistance(const uint8_t d) { return d != 0 && d < kOutsideRegion; }
 
 		/// <summary>
-		/// The recall-side products the precision side actually reuses: the overlay (its contour
-		/// and skeleton), the component labeling, and the contour's distance transform -- the
-		/// precision contour IS the recall contour, the single ground-truth text boundary.  The
-		/// medial factor is NOT here: it stays a recall local (only AssignStrokeWidths reads it).
+		/// The recall-side products the precision side reuses: the overlay's contour and
+		/// skeleton, the component labeling, and the contour's distance transform.  The
+		/// precision contour is the recall contour, the one ground-truth text boundary.
 		/// </summary>
 		struct RecallArtifacts
 		{
-			Mask       overlay;           // kInk | kContour | kSkeleton -- Figure 11(a)+(b) on one raster
+			Mask       overlay;           // kInk | kContour | kSkeleton, Figure 11(a) and (b) on one raster
 			Components components;        // Gcc labeling (Eq. 4-5, 12-17)
 			Words      contourDistance;   // chessboard transform of the contour, reused for the background D
 		};
 
 		// ============================================================================
-		//  The two measures (orchestration -- the Figure 11 / Figure 15 cascades)
+		//  The two measures
 		// ============================================================================
 
 		/// <summary>
-		/// Pseudo-Recall pipeline (Eq. 2-3).  D = distance from the contour; the medial
-		/// normalization NR along the line normal to the skeleton; GW = D/NR.  Fills gw and
-		/// returns the artifacts the precision side reuses.
+		/// The pseudo-Recall pipeline (Eq. 2, 3, Fig. 11): the distance from the contour, the
+		/// medial normalization along the skeleton, then GW = D / NR.  Fills gw and returns
+		/// the artifacts the precision side reuses.
 		/// </summary>
 		static RecallArtifacts ComputeRecall(
 			std::vector<double>& gw,
@@ -250,8 +226,11 @@ namespace Doxa
 			// frame is background).  Contour is found here, with the thinning seed, in one pass.
 			Mask& ov = recall.overlay;
 			ov.Resize(width, height, 0);
+			
 			const auto ink = [&](const int x, const int y)
-				{ return x >= 0 && x < width && y >= 0 && y < height && groundTruth.data[y * width + x] == foreground; };
+			{
+				return x >= 0 && x < width && y >= 0 && y < height && groundTruth.data[y * width + x] == foreground;
+			};
 			
 			for (int y = 0; y < height; ++y)
 			{
@@ -261,8 +240,10 @@ namespace Doxa
 				{
 					const int i = row + x;
 					if (groundTruth.data[i] != foreground) continue;
+
 					ov[i] = kInk | kSkeleton;
-					if (!ink(x, y - 1) || !ink(x, y + 1) || !ink(x - 1, y) || !ink(x + 1, y)) ov[i] |= kContour;
+					if (!ink(x, y - 1) || !ink(x, y + 1) || !ink(x - 1, y) || !ink(x + 1, y))
+						ov[i] |= kContour;
 				}
 			}
 
@@ -292,11 +273,11 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// Pseudo-Precision pipeline (Eq. 9-11).  The background is weighted by its distance
-		/// from the ground-truth contour, normalized so the weight grows toward the midline
-		/// between neighboring components and is capped where a component's stroke no longer
-		/// reaches (Eq. 10).  Runs the same distance/normalization machinery as recall, on the
-		/// background, then combines it with the recall-side stroke widths.
+		/// The pseudo-Precision pipeline (Eq. 9-11, Fig. 15).  The background near the text is
+		/// weighted by its distance from the ground-truth contour, normalized so the weight
+		/// grows toward the midline between components and is capped where a stroke no longer
+		/// reaches.  Runs the recall machinery on the background, then folds in the recall-side
+		/// stroke widths.
 		/// </summary>
 		static void ComputePrecision(
 			std::vector<double>& pw,
@@ -317,17 +298,20 @@ namespace Doxa
 			// inverted image materialized.
 			Components invComponents = ConnectedComponents::Generate(ov.data, /*background*/ 0, width, height, /*8-conn*/ true);
 
-			// Background skeleton, thinned in place on its own raster: the kSkeleton seed on every
-			// background pixel except the frame (which the thinner treats as background), then
-			// thinned -- no inverted-image, invFrame or padding copy.
+			// The background skeleton, thinned in place on its own raster: the kSkeleton seed on
+			// every interior background pixel, then thinned.  The frame stays off, matching the
+			// reference, which treats the image frame as background.
 			Mask bg(width, height, 0);
-			for (int i = 0; i < size; ++i) if (ov[i] == 0) bg[i] = kSkeleton;
-			for (int x = 0; x < width; ++x) { bg[x] = 0; bg[static_cast<size_t>(height - 1) * width + x] = 0; }
-			for (int y = 0; y < height; ++y) { bg[static_cast<size_t>(y) * width] = 0; bg[static_cast<size_t>(y) * width + width - 1] = 0; }
+			for (int y = 1; y < height - 1; ++y)
+			{
+				const int row = y * width;
+				for (int x = 1; x < width - 1; ++x)
+					if (ov[row + x] == 0) bg[row + x] = kSkeleton;
+			}
 			Thin(bg, kSkeleton);
 			EnsureComponentSeeds(bg, kSkeleton, invComponents);
 
-			// D for the background, measured from the SAME ground-truth contour (Eq. 10), gated
+			// D for the background, measured from the same ground-truth contour (Eq. 10), gated
 			// to the Gsw_bg region (beyond it the sentinel marks PW = 1).  The contour distance
 			// transform is reused from the recall pass.
 			Bytes Dp;
@@ -341,18 +325,18 @@ namespace Doxa
 			MedialNormalization(invMedialFactor, NP, Dp, bg, invComponents);
 			invComponents.ForEachPixel([&](const Component&, int, int, int i)
 			{
-				if (HasDistance(Dp[i])) NP[i] = static_cast<uint16_t>(std::floor(std::sqrt(static_cast<double>(NP[i])) + 0.5));
+				if (HasDistance(Dp[i])) NP[i] = 
+					static_cast<uint16_t>(std::floor(std::sqrt(static_cast<double>(NP[i])) + 0.5));
 			});
 
-			// NP = min(Gc_sw, Gsw_bg) (Eq. 11), via two component-local ring passes over the
-			// background: the first marks where adjacent components meet (the merging case,
-			// Fig. 14d), the second uses the inter-component gap there and the stroke reach else.
+			// NP = min(Gc_sw, Gsw_bg) (Eq. 11) in two component-local passes: MarkMerges runs
+			// the one ring search, caching each pixel's stroke reach and marking where
+			// components meet (the merging case, Fig. 14); NormalizeNP then combines them.
 			Bytes mergeMarker(width, height, 0);
 			Bytes NPfinal(width, height, 0);
-			Words reachCache(width, height, kUnreached);  // MarkMerges records reach; Normalize reuses it
-			const PrecisionRing ringInputs{ ov, recall.components, Dp, NP, mergeMarker, recall.contourDistance };
-			PrecisionNormalizationPass(mergeMarker, reachCache, PrecisionPass::MarkMerges, ringInputs, invComponents);
-			PrecisionNormalizationPass(NPfinal, reachCache, PrecisionPass::Normalize, ringInputs, invComponents);
+			Words reachCache(width, height, kUnreached);  // MarkMerges records reach; NormalizeNP reuses it
+			MarkMerges(mergeMarker, reachCache, ov, recall.components, Dp, NP, recall.contourDistance, invComponents);
+			NormalizeNP(NPfinal, Dp, NP, mergeMarker, reachCache, invComponents);
 
 			// Stored precision weight = PW - 1 = D/NP, capped at 2 (Eq. 10).
 			pw.assign(size, 0.0);
@@ -365,14 +349,14 @@ namespace Doxa
 		}
 
 		// ============================================================================
-		//  Generic raster toolkit (reusable primitives, not paper-specific)
+		//  Raster toolkit
 		// ============================================================================
 
 		/// <summary>
-		/// Exact chessboard (Chebyshev) distance to the nearest seed (seed == the `bit` flag set
-		/// in feature).  A forward raster pass over the four causal neighbors then a backward
-		/// pass over the four anticausal neighbors yields the exact distance in one allocation,
-		/// no queue.  Distance is 0 on the seeds, rising outward.
+		/// The exact chessboard (Chebyshev) distance to the nearest pixel carrying `bit`.
+		/// A forward pass over the four causal neighbors and a backward pass over the four
+		/// anticausal neighbors give the exact distance in two sweeps, no queue.
+		/// Distance is 0 on the seeds, rising outward.
 		/// </summary>
 		static void ChebyshevDistance(Words& distance, const Mask& feature, const uint8_t bit)
 		{
@@ -385,109 +369,68 @@ namespace Doxa
 			const auto relax = [&](const int idx, const int neighbor)
 			{
 				const uint16_t cand = distance[neighbor];
-				if (cand != kUnreached && cand + 1 < distance[idx]) distance[idx] = cand + 1;
+				if (cand != kUnreached && cand + 1 < distance[idx])
+					distance[idx] = cand + 1;
 			};
 
-			for (int y = 0; y < height; ++y)             // forward: NW, N, NE, W
+			// forward: NW, N, NE, W
+			for (int y = 0; y < height; ++y)
 			{
 				const int row = y * width;
 				for (int x = 0; x < width; ++x)
 				{
 					const int idx = row + x;
 					if (distance[idx] == 0) continue;
+
 					if (y > 0)
 					{
 						relax(idx, idx - width);
 						if (x > 0)         relax(idx, idx - width - 1);
 						if (x < width - 1) relax(idx, idx - width + 1);
 					}
+
 					if (x > 0) relax(idx, idx - 1);
 				}
 			}
 
-			for (int y = height - 1; y >= 0; --y)        // backward: SE, S, SW, E
+			// backward: SE, S, SW, E
+			for (int y = height - 1; y >= 0; --y)
 			{
 				const int row = y * width;
 				for (int x = width - 1; x >= 0; --x)
 				{
 					const int idx = row + x;
 					if (distance[idx] == 0) continue;
+
 					if (y < height - 1)
 					{
 						relax(idx, idx + width);
 						if (x < width - 1) relax(idx, idx + width + 1);
 						if (x > 0)         relax(idx, idx + width - 1);
 					}
+
 					if (x < width - 1) relax(idx, idx + 1);
 				}
 			}
 		}
 
 		/// <summary>
-		/// The one ring scan every component-local worker shares.  Grows a square window
-		/// R = 0,1,2..., clamped to the component bbox, scanning only the outer ring at each R;
-		/// calls visit(j) for each ring cell (j = its linear index), where visit returns true if
-		/// that cell qualifies.  Stops at the first R whose ring has at least one qualifying cell
-		/// (returns true), or when the full bbox has been scanned with none (returns false).
-		/// Per-cell work lives in the visitor; clamping makes a degenerate ring revisit cells,
-		/// which is harmless because every visitor's accumulation is idempotent (a fixed write, a
-		/// max, or a test).
-		///
-		/// IMPORTANT: this is NOT a nearest-feature lookup.  It aggregates over EVERY feature on
-		/// the first non-empty ring (all equidistant pixels participate) and the ring is clamped
-		/// to the component bbox.  Do not "optimize" it into a Voronoi / nearest-owner map: that
-		/// changes the result, which must stay bit-exact with the DIBCO reference weight files.
+		/// What one ScanRingAt walk saw: whether any cell qualified, and whether the clamped
+		/// window covered the whole component bounds, so no larger ring can add cells.
 		/// </summary>
-		// startR lets a caller skip an initial run of rings it can PROVE are empty -- e.g. a
-		// distance transform gives the exact distance to the nearest feature, so no feature lies on
-		// any ring closer than that (every clamped perimeter cell at ring R is within Chebyshev
-		// distance R of the center).  Starting there is bit-exact; passing too large an startR is
-		// NOT (it would skip the true first ring), so only feed a proven lower bound.
-		template <typename Visit>
-		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit, int* outRadius = nullptr, const int startR = 0)
-		{
-			const int bxmin = c.bounds.upperLeft.x;
-			const int bxmax = c.bounds.bottomRight.x;
-			const int bymin = c.bounds.upperLeft.y;
-			const int bymax = c.bounds.bottomRight.y;
-
-			for (int R = startR; ; ++R)
-			{
-				bool found = false;
-				int xlo = ax - R;
-				int xhi = ax + R;
-				int ylo = ay - R;
-				int yhi = ay + R;
-				if (xlo < bxmin) xlo = bxmin;
-				if (xhi > bxmax) xhi = bxmax;
-				if (ylo < bymin) ylo = bymin;
-				if (yhi > bymax) yhi = bymax;
-
-				const auto cell = [&](const int col, const int row)
-				{
-					if (visit(row * width + col)) found = true;
-				};
-
-				for (int row = ylo + 1; row < yhi; ++row) cell(xlo, row);
-				for (int row = ylo + 1; row < yhi; ++row) cell(xhi, row);
-				for (int col = xlo + 1; col < xhi; ++col) cell(col, ylo);
-				for (int col = xlo + 1; col < xhi; ++col) cell(col, yhi);
-				cell(xlo, ylo); cell(xlo, yhi); cell(xhi, ylo); cell(xhi, yhi);
-
-				if (found) { if (outRadius) *outRadius = R; return true; }
-				if (xlo == bxmin && xhi == bxmax && ylo == bymin && yhi == bymax) return false;
-			}
-		}
+		struct RingScan { bool found; bool coveredBounds; };
 
 		/// <summary>
-		/// Re-walks EXACTLY the ring at radius R -- the same bbox-clamped perimeter (and cell order)
-		/// FirstNonEmptyRing visits at that R -- calling visit(j) for each cell.  This lets a second
-		/// pass re-walk a ring a prior FirstNonEmptyRing already located (its returned outRadius)
-		/// without regrowing from R = 0.  The cell SET is identical, so an order-independent reducer
-		/// (e.g. a max) over it stays bit-exact; do not use it where per-cell write order matters.
+		/// Walks the square perimeter of radius R about (ax, ay), clamped to the component
+		/// bounds: the four edges, then the four corners, in a fixed cell order.  visit(j)
+		/// receives each cell's linear index and returns whether that cell qualifies.
+		/// The cell set at a radius never depends on how the ring was found, so a later pass
+		/// may re-walk a ring an earlier search located, as long as its reduction does not
+		/// depend on cell order.  Clamping can make a degenerate ring revisit cells, which is
+		/// harmless because every visitor here accumulates idempotently.
 		/// </summary>
 		template <typename Visit>
-		static void ScanRingAt(const Component& c, const int ax, const int ay, const int R, const int width, Visit&& visit)
+		static RingScan ScanRingAt(const Component& c, const int ax, const int ay, const int R, const int width, Visit&& visit)
 		{
 			int xlo = ax - R;
 			int xhi = ax + R;
@@ -498,73 +441,132 @@ namespace Doxa
 			if (ylo < c.bounds.upperLeft.y)   ylo = c.bounds.upperLeft.y;
 			if (yhi > c.bounds.bottomRight.y) yhi = c.bounds.bottomRight.y;
 
-			const auto cell = [&](const int col, const int row) { visit(row * width + col); };
+			bool found = false;
+			const auto cell = [&](const int col, const int row)
+			{
+				if (visit(row * width + col)) found = true;
+			};
 
 			for (int row = ylo + 1; row < yhi; ++row) cell(xlo, row);
 			for (int row = ylo + 1; row < yhi; ++row) cell(xhi, row);
 			for (int col = xlo + 1; col < xhi; ++col) cell(col, ylo);
 			for (int col = xlo + 1; col < xhi; ++col) cell(col, yhi);
 			cell(xlo, ylo); cell(xlo, yhi); cell(xhi, ylo); cell(xhi, yhi);
+
+			return { 
+				found,
+			    xlo == c.bounds.upperLeft.x && xhi == c.bounds.bottomRight.x &&
+			    ylo == c.bounds.upperLeft.y && yhi == c.bounds.bottomRight.y
+			};
 		}
 
-		// --- thinning kernel (bespoke, minimal, in place) -----------------------------
+		/// <summary>
+		/// The ring search every component-local pass shares.  Grows ScanRingAt's ring from
+		/// startR until a ring holds at least one qualifying cell (returns true and the radius
+		/// in outRadius), or until the whole bounding box was scanned empty (returns false).
+		/// Every qualifying cell on the found ring is visited, not just the nearest; do not
+		/// replace this with a nearest-feature lookup, which changes the result and breaks
+		/// parity with the reference weight files.  startR must be a proven lower bound, such
+		/// as an exact distance transform value; a larger start would skip the true first ring.
+		/// </summary>
+		template <typename Visit>
+		static bool FirstNonEmptyRing(const Component& c, const int ax, const int ay, const int width, Visit&& visit, int* outRadius = nullptr, const int startR = 0)
+		{
+			for (int R = startR; ; ++R)
+			{
+				const RingScan ring = ScanRingAt(c, ax, ay, R, width, visit);
 
-		// 8-neighbor packing of (x, y) on the `bit` layer: bits 0..7 = P2(N) P3(NE) P4(E)
-		// P5(SE) P6(S) P7(SW) P8(W) P9(NW).  Out-of-bounds reads as background, so the kernel
-		// thins in place on the real raster -- no padding buffer, the image frame is background,
-		// and a border stroke still thins.
+				if (ring.found) { if (outRadius) *outRadius = R; return true; }
+				if (ring.coveredBounds) return false;
+			}
+
+			return false; // Should never hit
+		}
+
+		// --- Thinning kernel --------------------------------------------------------
+
+		/// <summary>
+		/// The 8 neighbors of (x, y) on the `bit` layer packed into one byte, bits 0-7 holding
+		/// P2 (north) through P9 (northwest) clockwise.  Out of bounds reads as background, so
+		/// thinning runs in place on the real raster and a stroke on the image border still
+		/// thins.
+		/// </summary>
 		static uint8_t Neighbors(const Mask& m, const int x, const int y, const uint8_t bit)
 		{
 			const int w = m.width;
 			const int h = m.height;
 
-			// Interior fast path: when none of the eight neighbors can fall off the raster, read
-			// them straight off contiguous memory with no per-neighbor clamping.  Bit packing is
-			// identical to the bounds-checked path below (P2 N, P3 NE, ... P9 NW).
+			// Interior fast path: all eight neighbors are on the raster, so read them straight
+			// off contiguous memory with no per-neighbor clamping.
 			if (x > 0 && x < w - 1 && y > 0 && y < h - 1)
 			{
 				const uint8_t* d = m.data.data() + static_cast<size_t>(y) * w + x;
+				const auto at = [&](const int offset) -> int { return (d[offset] & bit) ? 1 : 0; };
+
 				return static_cast<uint8_t>(
-					 ((d[-w]     & bit) ? 1 : 0)       | (((d[-w + 1] & bit) ? 1 : 0) << 1) | (((d[1]      & bit) ? 1 : 0) << 2) |
-					(((d[w + 1]  & bit) ? 1 : 0) << 3) | (((d[w]      & bit) ? 1 : 0) << 4) | (((d[w - 1]  & bit) ? 1 : 0) << 5) |
-					(((d[-1]     & bit) ? 1 : 0) << 6) | (((d[-w - 1] & bit) ? 1 : 0) << 7));
+					(at(-w)     << 0) |   // P2 north
+					(at(-w + 1) << 1) |   // P3 northeast
+					(at(1)      << 2) |   // P4 east
+					(at(w + 1)  << 3) |   // P5 southeast
+					(at(w)      << 4) |   // P6 south
+					(at(w - 1)  << 5) |   // P7 southwest
+					(at(-1)     << 6) |   // P8 west
+					(at(-w - 1) << 7));   // P9 northwest
 			}
 
+			// Border path: an off-raster neighbor reads as background.
 			const auto on = [&](const int xx, const int yy) -> int
-				{ return (xx >= 0 && xx < w && yy >= 0 && yy < h && (m(xx, yy) & bit)) ? 1 : 0; };
+			{ 
+				return (xx >= 0 && xx < w && yy >= 0 && yy < h && (m(xx, yy) & bit)) ? 1 : 0;
+			};
+
 			return static_cast<uint8_t>(
-				 on(x,     y - 1)        | (on(x + 1, y - 1) << 1) | (on(x + 1, y    ) << 2) |
-				(on(x + 1, y + 1) << 3)  | (on(x,     y + 1) << 4) | (on(x - 1, y + 1) << 5) |
-				(on(x - 1, y    ) << 6)  | (on(x - 1, y - 1) << 7));
+				(on(x,     y - 1) << 0) |   // P2 north
+				(on(x + 1, y - 1) << 1) |   // P3 northeast
+				(on(x + 1, y    ) << 2) |   // P4 east
+				(on(x + 1, y + 1) << 3) |   // P5 southeast
+				(on(x,     y + 1) << 4) |   // P6 south
+				(on(x - 1, y + 1) << 5) |   // P7 southwest
+				(on(x - 1, y    ) << 6) |   // P8 west
+				(on(x - 1, y - 1) << 7));   // P9 northwest
 		}
 
-		// One sequential in-place simple-point pass: delete as we scan, so a later pixel sees the
-		// hole -- the correct order for the Table-1 simple-point table.
+		/// <summary>
+		/// One sequential, in-place deletion pass over the whole raster.  A deleted pixel is
+		/// seen by the pixels after it, the order the Lee-Chen Table 1 expects.
+		/// </summary>
 		static bool TablePass(Mask& s, const uint8_t bit, const std::array<uint8_t, 256>& table)
 		{
 			bool removed = false;
 			const int w = s.width;
 			const int h = s.height;
+			
 			for (int y = 0; y < h; ++y)
+			{
+				const int row = y * w;
+
 				for (int x = 0; x < w; ++x)
 				{
-					const int i = y * w + x;
-					if ((s[i] & bit) && table[Neighbors(s, x, y, bit)] == 0x00) { s[i] = static_cast<uint8_t>(s[i] & ~bit); removed = true; }
+					const int i = row + x;
+					if ((s[i] & bit) && table[Neighbors(s, x, y, bit)] == 0x00)
+					{
+						s[i] = static_cast<uint8_t>(s[i] & ~bit);
+						removed = true;
+					}
 				}
+			}
+
 			return removed;
 		}
 
 		/// <summary>
-		/// Thin the `bit` layer of `raster` to the Lee-Chen 1992 skeleton, in place: Zhang-Suen
-		/// erodes the boundary to a fixed point, then the Table-1 simple-point pass
-		/// (kLeeChenTable1) tidies it to a fixed point.  Bounds-aware -- no padding, the frame is
-		/// background, and 8-connected components thin independently (they never touch).
-		///
-		/// The Zhang-Suen sweeps run over an ACTIVE FRONTIER: only a boundary pixel can ever be
-		/// deleted (an interior pixel has all eight neighbors set, so B(P1) = 8 > 6), and
-		/// deleting one exposes its neighbors, which join the frontier.  Each sweep costs the
-		/// shrinking boundary, not the whole page -- identical output, far less work for the
-		/// large background.  (The short Table-1 cleanup stays a full in-place sweep.)
+		/// Thins the `bit` layer of the raster to the Lee-Chen skeleton, in place: Zhang-Suen
+		/// erodes the boundary to a fixed point, then the Table 1 pass tidies it to a fixed
+		/// point.  No padding is needed; the image frame reads as background.
+		/// The Zhang-Suen sweeps run over an active frontier of boundary pixels, since an
+		/// interior pixel can never be deleted and a deletion only exposes its own neighbors.
+		/// Each sweep costs the shrinking boundary rather than the whole page, and the result
+		/// is identical to sweeping the full raster.
 		/// </summary>
 		static void Thin(Mask& raster, const uint8_t bit)
 		{
@@ -573,9 +575,15 @@ namespace Doxa
 			const auto off = [&](const int x, const int y)
 				{ return x < 0 || x >= w || y < 0 || y >= h || !(raster[static_cast<size_t>(y) * w + x] & bit); };
 
-			// A frontier cell carries its (x, y) with the linear index, so the hot sub-pass never
-			// divides/mods the index back into coordinates (Neighbors and the neighbor walk both
-			// need the coordinates).
+			// A boundary pixel has at least one of its eight neighbors off the layer.
+			const auto boundary = [&](const int x, const int y)
+			{
+				return off(x, y - 1) || off(x + 1, y - 1) || off(x + 1, y) || off(x + 1, y + 1) ||
+				       off(x, y + 1) || off(x - 1, y + 1) || off(x - 1, y) || off(x - 1, y - 1);
+			};
+
+			// A frontier cell carries its coordinates with the linear index, so the hot pass
+			// never divides an index back into (x, y).
 			struct Cell { int i, x, y; };
 
 			// Seed the frontier with every boundary pixel of the layer.
@@ -591,20 +599,18 @@ namespace Doxa
 				{
 					const int i = row + x;
 
-					if ((raster[i] & bit) &&
-						(off(x, y - 1) || off(x + 1, y - 1) || off(x + 1, y) || off(x + 1, y + 1) ||
-						 off(x, y + 1) || off(x - 1, y + 1) || off(x - 1, y) || off(x - 1, y - 1)))
-						{
-							frontier.push_back({ i, x, y }); queued[i] = 1;
-						}
+					if ((raster[i] & bit) && boundary(x, y))
+					{
+						frontier.push_back({ i, x, y });
+						queued[i] = 1;
+					}
 				}
 			}
 
 
-			// One batched Zhang-Suen sub-pass over the frontier: mark, delete together, carry
-			// survivors forward, and add the neighbors a deletion newly exposed.  Deletion is
-			// batched (every cell tests the pre-deletion raster), so the sub-pass is independent of
-			// frontier order -- the skeleton is identical.
+			// One batched Zhang-Suen sub-pass over the frontier: mark, delete together, keep the
+			// survivors, and queue the neighbors a deletion exposed.  Every cell tests the raster
+			// before any deletion, so the pass is independent of frontier order.
 			const auto subpass = [&](const std::array<uint8_t, 256>& table) -> bool
 			{
 				dead.clear();
@@ -623,6 +629,7 @@ namespace Doxa
 					{
 						const int ny = c.y + dy;
 						if (ny < 0 || ny >= h) continue;
+
 						const int nrow = ny * w;
 						for (int dx = -1; dx <= 1; ++dx)
 						{
@@ -652,11 +659,10 @@ namespace Doxa
 			while (TablePass(raster, bit, kLeeChenTable1)) {}
 		}
 
-		// Lee-Chen 1992 Table 1 (page 544): the 256-entry simple-point deletion table.
-		// Index = (P9 P8 P7 P6) << 4 | (P5 P4 P3 P2); 0x00 deletes P1, 0xFF keeps it, 0x01 marks
-		// a point Zhang-Suen already removed (treated as keep).  This is the table that reproduces
-		// the DIBCO weight files (it differs from a textbook Lee-Chen post-pass table in four
-		// entries: 0x0E, 0x45, 0x54, 0xE0).
+		// Lee-Chen Table 1: the 256-entry simple-point deletion table, indexed by the packed
+		// neighborhood.  0x00 deletes the pixel, 0xFF keeps it, and 0x01 marks a configuration
+		// Zhang-Suen already removed, treated as keep.  Four entries differ from the published
+		// table (0x0E, 0x45, 0x54, 0xE0); these reproduce the DIBCO reference weight files.
 		static constexpr std::array<uint8_t, 256> kLeeChenTable1 = {{
 			0xFF, 0xFF, 0xFF, 0x01, 0xFF, 0x00, 0x01, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x01,
 			0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x01, 0x01,
@@ -676,38 +682,57 @@ namespace Doxa
 			0x01, 0x01, 0xFF, 0x01, 0x00, 0xFF, 0x00, 0xFF, 0x01, 0x01, 0xFF, 0x00, 0x01, 0xFF, 0x00, 0xFF,
 		}};
 
-		// The two Zhang-Suen sub-iteration tables (compile-time from skel::Rule), run over the
-		// frontier to a fixed point before the Table-1 pass above.
+		// The two Zhang-Suen sub-iteration tables, built at compile time from skel::Rule.
 		static constexpr std::array<uint8_t, 256> kZhangSuen1 = skel::Table(1);
 		static constexpr std::array<uint8_t, 256> kZhangSuen2 = skel::Table(2);
 
 		/// <summary>
-		/// Guarantees every component keeps at least one skeleton pixel when the thinning erodes
-		/// a small blob to nothing.  Seeds the component centroid -- the integer mean of its
-		/// pixel positions.  Matching the DIBCO reference weight files, the seed is placed one
-		/// pixel down and to the right of the integer mean when that pixel is foreground, and at
-		/// the integer mean itself otherwise.  Computed only for the (rare) skeleton-less
-		/// components, over each component's own bounding box.
+		/// Guarantees every component keeps at least one skeleton pixel when thinning erodes a
+		/// small blob to nothing.  The seed lands one pixel down and right of the component's
+		/// integer mean position when that pixel is foreground, and on the mean itself
+		/// otherwise, matching the reference weight files.
 		/// </summary>
 		static void EnsureComponentSeeds(Mask& skeleton, const uint8_t bit, const Components& components)
 		{
 			const int width = skeleton.width;
 			const int height = skeleton.height;
-			const int n = static_cast<int>(components.items.size());
 
-			std::vector<uint8_t> hasSkeleton(n, 0);
-			components.ForEachPixel([&](const Component& c, int, int, int i) { if (skeleton[i] & bit) hasSkeleton[c.label] = 1; });
-
+			// Find the skeleton-less components first, against the raster as thinned: a seed may
+			// land outside its own component and must not suppress another component's seeding.
+			std::vector<const Component*> needSeed;
 			for (const Component& c : components)
 			{
-				if (hasSkeleton[c.label]) continue;
+				bool hasSkeleton = false;
+				for (int y = c.bounds.upperLeft.y; y <= c.bounds.bottomRight.y && !hasSkeleton; ++y)
+				{
+					for (int x = c.bounds.upperLeft.x; x <= c.bounds.bottomRight.x; ++x)
+					{
+						const size_t i = static_cast<size_t>(y) * width + x;
+						if (components.labels[i] == c.label && (skeleton[i] & bit))
+						{
+							hasSkeleton = true;
+							break;
+						}
+					}
+				}
+
+				if (!hasSkeleton) needSeed.push_back(&c);
+			}
+
+			for (const Component* seedless : needSeed)
+			{
+				const Component& c = *seedless;
 
 				long long sumX = 0;
 				long long sumY = 0;
 				long long count = 0;
+
 				for (int y = c.bounds.upperLeft.y; y <= c.bounds.bottomRight.y; ++y)
 					for (int x = c.bounds.upperLeft.x; x <= c.bounds.bottomRight.x; ++x)
-						if (components.labels[static_cast<size_t>(y) * width + x] == c.label) { sumX += x; sumY += y; ++count; }
+						if (components.labels[static_cast<size_t>(y) * width + x] == c.label)
+						{ 
+							sumX += x; sumY += y; ++count; 
+						}
 
 				const int mx = static_cast<int>(sumX / count);   // integer mean position (x)
 				const int my = static_cast<int>(sumY / count);   // integer mean position (y)
@@ -723,12 +748,13 @@ namespace Doxa
 		}
 
 		// ============================================================================
-		//  Pseudo-Recall cascade:  D  ->  NR  ->  Gsw_fg
+		//  The pseudo-Recall pipeline
 		// ============================================================================
 
 		/// <summary>
-		/// D(x,y) for the foreground (Eq. 2, Fig. 10c): the contour distance (reused transform),
-		/// with skel&amp;contour -> 1, masked to the foreground, then the medial-ridge adjustment.
+		/// D for the foreground (Eq. 2, Fig. 11c): the contour distance transform masked to the
+		/// ink, except that a contour pixel that is also skeleton reads 1, then the medial-ridge
+		/// adjustment.
 		/// </summary>
 		static void ForegroundDistanceMap(Bytes& D, const Mask& overlay, const Words& contourDistance, const Components& components)
 		{
@@ -743,29 +769,28 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// From the distance map D and the skeleton, produce the per-skeleton medial factor and
-		/// the normalization NR (Eq. 3 / Normalization type I): the distance-to-skeleton driven
-		/// factor, the maximal D*factor along the local cross-section, and a propagation along the
-		/// stroke so each break is penalized equally.
+		/// From the distance map D and the skeleton, the medial factor along the skeleton and
+		/// the normalization NR (Eq. 3): the largest weighted distance across the local stroke
+		/// cross section, then a propagation along the stroke so each break in it is penalized
+		/// equally.
 		/// </summary>
 		static void MedialNormalization(Bytes& medialFactor, Words& NR, const Bytes& D, const Mask& overlay, const Components& components)
 		{
 			Bytes skeletonDistance;
 			SkeletonDistance(skeletonDistance, D, overlay);
 
-			// MedialFactor and Normalization ring the SAME skeleton over the SAME centers to the
-			// SAME first-non-empty radius.  MedialFactor grows from R = 0 (its per-cell write order
-			// matters) and records that radius here; Normalization (a per-cell max, order-free)
-			// re-walks just that ring instead of regrowing.  kUnreached = no skeleton in the bbox.
+			// MedialFactor and Normalization ring the same skeleton about the same centers to the
+			// same radius.  MedialFactor grows the ring and records the radius it found here;
+			// Normalization, an order-free max, re-walks just that ring instead of regrowing.
 			Words ringRadius(D.width, D.height, kUnreached);
 			MedialFactor(medialFactor, D, skeletonDistance, overlay, components, ringRadius);
 			Normalization(NR, D, medialFactor, overlay, components, ringRadius);
 		}
 
 		/// <summary>
-		/// distance-to-skeleton: the chessboard distance from each pixel to the nearest skeleton
-		/// point, with skel&amp;!contour -> 1 (skel&amp;contour stays 0 via the self-hit), masked
-		/// to pixels carrying a distance.
+		/// The chessboard distance from each pixel to the nearest skeleton point, masked to the
+		/// pixels carrying a distance.  A skeleton pixel off the contour reads 1; a skeleton
+		/// pixel on the contour reads 0.
 		/// </summary>
 		static void SkeletonDistance(Bytes& skeletonDistance, const Bytes& D, const Mask& overlay)
 		{
@@ -784,12 +809,13 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// The per-skeleton medial factor whose product with D realises NR (Eq. 3).  Starts as a
-		/// copy of the skeleton, then: (cross-section) every pixel with a distance writes, over
-		/// the first non-empty ring of its component window, factor[q] = D[q] +
-		/// (skeletonDistance[center] >= D[q] ? 1 : 0) for each skeleton q on that ring (component
-		/// -> row -> column order, last writer wins); (endpoint) every skeleton pixel that is a
-		/// Lee-Chen termination point inherits that neighbor's factor + 1.
+		/// The medial factor along the skeleton, whose product with D realizes NR (Eq. 3).
+		/// Skeleton pixels start at 1.  Every pixel carrying a distance then writes to each
+		/// skeleton pixel on the first non-empty ring of its component window: that pixel's own
+		/// distance, plus one when the writer sits at least that far from the skeleton.  Later
+		/// writers win, in component, row, column order, and that order is part of the result.
+		/// Finally, each termination point of the skeleton inherits its lone neighbor's factor
+		/// plus one.
 		/// </summary>
 		static void MedialFactor(Bytes& factor, const Bytes& D, const Bytes& skeletonDistance, const Mask& overlay, const Components& components, Words& ringRadius)
 		{
@@ -799,44 +825,48 @@ namespace Doxa
 			factor.Resize(width, height, 0);
 			for (int i = 0; i < size; ++i) factor[i] = (overlay[i] & kSkeleton) ? 1 : 0;   // skeleton pixels = 1, else 0
 
-			// cross-section pass: each center writes the skeleton pixels on its first non-empty
-			// ring (idempotent per cell, so last-writer-wins across centers).  The component ->
-			// row -> column order is part of the result -- do not convert to a per-skeleton-pixel
-			// gather.  The found radius is recorded for Normalization to re-walk.
+			// Cross-section pass: each center writes the skeleton pixels on its first non-empty
+			// ring.  The traversal order is part of the result; do not convert this scatter into
+			// a per-skeleton gather.  The found radius is recorded for Normalization to re-walk.
 			components.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
 				const uint8_t d = D[i];
 				if (!HasDistance(d)) return;
+
 				const uint8_t reach = skeletonDistance[i];
-				// Skip the empty inner rings: for a non-skeleton center skeletonDistance is the
-				// exact distance to the nearest skeleton, a proven lower bound on the first ring; a
-				// skeleton center self-hits at R=0, so start there.
-				const int startR = (overlay[i] & kSkeleton) ? 0 : skeletonDistance[i];
+				// Skip the empty inner rings: for a non-skeleton center, reach is the exact
+				// distance to the nearest skeleton, a proven lower bound on the first ring; a
+				// skeleton center hits itself at radius 0, so start there.
+				const int startR = (overlay[i] & kSkeleton) ? 0 : reach;
 				int foundR = -1;
+
 				const bool found = FirstNonEmptyRing(c, x, y, width, [&](const int j)
 				{
 					if (!(overlay[j] & kSkeleton)) return false;
 					const uint8_t dq = D[j];
 					factor[j] = static_cast<uint8_t>(reach >= dq ? dq + 1 : dq);
+					
 					return true;
 				}, &foundR, startR);
+
 				ringRadius[i] = found ? static_cast<uint16_t>(foundR) : kUnreached;
 			});
 
-			// endpoint pass
+			// Endpoint pass: termination points inherit their lone neighbor's factor plus one.
 			components.ForEachPixel([&](const Component&, int x, int y, int i)
 			{
 				if (!(overlay[i] & kSkeleton)) return;
+
 				const int v = TerminationPointFactor(factor, overlay, x, y, width, height);
 				if (v > 0) factor[i] = static_cast<uint8_t>(v + 1);
 			});
 		}
 
 		/// <summary>
-		/// NR(x,y) -- Normalization type I (Eq. 3, Fig. 7).  For each pixel with a distance, the
-		/// MAX of D*factor over the skeleton pixels on the first non-empty ring of its component
-		/// window; then a propagation pass spreads a stroke's peak along it, so a break is
-		/// penalized equally regardless of the local stroke width.
+		/// NR, Normalization type I (Eq. 3, Fig. 7): for each pixel carrying a distance, the
+		/// largest weighted distance over the skeleton pixels on the first non-empty ring of
+		/// its component window; then a propagation pass spreads a stroke's peak along it, so a
+		/// break is penalized equally regardless of the local stroke width.
 		/// </summary>
 		static void Normalization(Words& NR, const Bytes& D, const Bytes& factor, const Mask& overlay, const Components& components, const Words& ringRadius)
 		{
@@ -847,21 +877,27 @@ namespace Doxa
 			components.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
 				if (!HasDistance(D[i])) return;
+
 				const uint16_t R = ringRadius[i];
 				if (R == kUnreached) { NR[i] = 0; return; }   // MedialFactor found no skeleton in the bbox
+				
 				int best = -1;
 				ScanRingAt(c, x, y, static_cast<int>(R), width, [&](const int j)
 				{
-					if (!(overlay[j] & kSkeleton)) return;
+					if (!(overlay[j] & kSkeleton)) return false;
+
 					const int v = static_cast<int>(D[j]) * static_cast<int>(factor[j]);
 					if (v > best) best = v;
+
+					return true;
 				});
+
 				NR[i] = static_cast<uint16_t>(best);
 			});
 
-			// propagation: a pixel whose NR differs from all four (set) clamped neighbors inherits
-			// its left neighbor's NR (which may already be updated this sweep), spreading the peak
-			// cross-section along the stroke.
+			// Propagation: a pixel whose NR differs from all four set neighbors inherits its left
+			// neighbor's NR, which may already be updated this sweep, spreading the peak cross
+			// section along the stroke.
 			components.ForEachPixel([&](const Component&, int x, int y, int i)
 			{
 				if (!HasDistance(D[i])) return;
@@ -871,8 +907,8 @@ namespace Doxa
 
 		/// <summary>
 		/// The medial-ridge value of D.  The paper's D is the raw contour distance; on the
-		/// skeleton ridge the true medial radius is one beyond it.  Raises a skeleton pixel's D by
-		/// 1 when it equals all four border-clamped 4-neighbors (a flat ridge).  In place, in
+		/// skeleton ridge the true medial radius is one more.  Raises a skeleton pixel's D by 1
+		/// when it equals all four border-clamped neighbors, a flat ridge.  In place, in
 		/// component order.
 		/// </summary>
 		static void MedialRidgeAdjust(Bytes& D, const Mask& overlay, const Components& components)
@@ -894,11 +930,13 @@ namespace Doxa
 			});
 		}
 
-		// Lee-Chen termination point (Fig. 3a): count the 8 border-clamped skeleton neighbors; if
-		// exactly one, return its medial factor so the endpoint can inherit it (+1).  The
-		// bottom-right neighbor's factor is read at (row+D)*W + B (the +col term differs from the
-		// other seven); this matches the DIBCO reference weight files exactly and is kept for
-		// bit-exact .dat parity.
+		/// <summary>
+		/// The Lee-Chen termination point: a skeleton pixel with exactly one skeleton neighbor
+		/// among its eight, border clamped.  Returns that neighbor's medial factor, or -1 when
+		/// the pixel is not a termination point.  The bottom-right neighbor's factor is read
+		/// from a shifted position; the asymmetry is preserved for parity with the reference
+		/// weight files.
+		/// </summary>
 		static int TerminationPointFactor(const Bytes& factor, const Mask& overlay, const int col, const int row, const int width, const int height)
 		{
 			const int A = (col - 1 >= 0)         ? -1 : 0;   // left
@@ -917,20 +955,22 @@ namespace Doxa
 				if (overlay[static_cast<size_t>(skelIdx)] & kSkeleton) { ++count; last = factor[factorIdx]; }
 			};
 
-			hit(up   + col,     up   + col);      // top
-			hit(down + col,     down + col);      // bottom
+			hit(up   + col,     up   + col);       // top
+			hit(down + col,     down + col);       // bottom
 			hit(mid  + col + A, mid  + col + A);   // left
 			hit(mid  + col + B, mid  + col + B);   // right
 			hit(up   + col + A, up   + col + A);   // top-left
-			hit(down + col + B, down + B);        // bottom-right: factor read at +B, NOT +col+B (the asymmetry above)
+			hit(down + col + B, down + B);         // bottom-right: the factor read omits the column, the preserved asymmetry
 			hit(down + col + A, down + col + A);   // bottom-left
 			hit(up   + col + B, up   + col + B);   // top-right
 
 			return (count == 1) ? last : -1;
 		}
 
-		// NR propagation predicate: true iff all four border-clamped neighbors are set
-		// (NR != 0) and NR[center] differs from every one of them.
+		/// <summary>
+		/// The NR propagation predicate: true when all four border-clamped neighbors carry a
+		/// normalization and the center differs from every one of them.
+		/// </summary>
 		static bool PropagateAlongStroke(const Words& NR, const int col, const int row, const int width, const int height)
 		{
 			const int dxL = (col - 1 >= 0)         ? -1 : 0;
@@ -949,8 +989,11 @@ namespace Doxa
 			return !(center == up || center == dn || center == lf || center == rt);
 		}
 
-		// Gsw_fg per component (Fig. 15a): 2*floor(mean medial factor over the component's
-		// skeleton), stored on each Component (recall) for the precision pass and Gsw_bg region.
+		/// <summary>
+		/// The foreground stroke width Gsw_fg per component (Fig. 15a): twice the floored mean
+		/// medial factor over the component's skeleton, stored on each Component for the
+		/// precision side.
+		/// </summary>
 		static void AssignStrokeWidths(Components& components, const Bytes& medialFactor, const Mask& overlay)
 		{
 			const int n = static_cast<int>(components.items.size());
@@ -967,12 +1010,14 @@ namespace Doxa
 		}
 
 		// ============================================================================
-		//  Pseudo-Precision cascade:  Gsw region  ->  Dp  ->  NP = min(Gc_sw, Gsw_bg)
+		//  The pseudo-Precision pipeline
 		// ============================================================================
 
-		// Gsw_bg region (Eq. 10, Fig. 15b): a background pixel inside SOME component's bounding
-		// box dilated by 2 * its stroke width on every side (clamped to the image) is "reached"
-		// by that component's stroke; outside every such box, PW = 1.
+		/// <summary>
+		/// The Gsw_bg region (Eq. 10, Fig. 15b): the background inside any component's bounding
+		/// box dilated by twice its stroke width on every side, clamped to the image.  Beyond
+		/// every such box the strokes do not reach and PW stays 1.
+		/// </summary>
 		static void BackgroundStrokeRegion(Mask& region, const Mask& overlay, const Components& components)
 		{
 			const int width = overlay.width;
@@ -1001,144 +1046,132 @@ namespace Doxa
 		}
 
 		/// <summary>
-		/// The Chebyshev radius at which a square window grown about (x, y), clamped to the image,
-		/// first covers the WHOLE of bounds b -- all four sides reaching the box at once -- or a
-		/// value past any in-image distance if it never does.  Each side either fixes the radius
-		/// (an interior side, met at one radius) or sets a lower bound (a side already on the image
-		/// border, which the clamp holds from some radius on); the window fills the box only when
-		/// the fixing sides agree and every bound is met.
+		/// The radius at which a square window grown about (x, y), clamped to the image, first
+		/// covers the whole of bounds b, or a value past any in-image distance when it never
+		/// does.  An interior side is met at exactly one radius; a side on the image border is
+		/// held by the clamp from some radius on.  The window fills the box only when the exact
+		/// sides agree and every border side is reached.
 		/// </summary>
 		static int BoxFillRadius(const int x, const int y, const Region& b, const int width, const int height)
 		{
 			const int never = width + height;                       // beyond any in-image Chebyshev distance
 			int fixed = -1, lower = 0;
 			bool consistent = true;
+
 			const auto side = [&](const bool onBorder, const int k)
 			{
 				if (onBorder) { if (k > lower) lower = k; }
 				else if (fixed < 0) fixed = k;
 				else if (fixed != k) consistent = false;
 			};
+
 			side(b.upperLeft.x   == 0,          x - b.upperLeft.x);
 			side(b.bottomRight.x == width - 1,  b.bottomRight.x - x);
 			side(b.upperLeft.y   == 0,          y - b.upperLeft.y);
 			side(b.bottomRight.y == height - 1, b.bottomRight.y - y);
+
 			if (!consistent) return never;
+
 			const int r = (fixed >= 0) ? fixed : lower;
 			return (r >= lower) ? r : never;
 		}
 
 		/// <summary>
-		/// D(x,y) for the background (Eq. 10): each background pixel's Chebyshev distance to the
-		/// SAME ground-truth contour (reused transform), taken only inside the Gsw_bg region;
-		/// beyond it the out-of-region marker stands in for PW = 1; ink pixels are 0.  A pixel whose
-		/// growing measurement window fills its WHOLE background component before reaching any
-		/// contour gets distance 0 -- the surrounding contour lies entirely outside the component's
-		/// box, as for a one-pixel hole or the center of a small square gap.  Then the medial-ridge
-		/// adjustment on the background skeleton.
+		/// D for the background (Eq. 10): each background pixel's distance to the same
+		/// ground-truth contour, inside the Gsw_bg region only; beyond the region the
+		/// out-of-region marker stands for PW = 1, and ink stays 0.  A pixel whose window fills
+		/// its whole background component before reaching a contour reads 0, as in a one-pixel
+		/// hole.  Then the medial-ridge adjustment on the background skeleton.
 		/// </summary>
 		static void BackgroundDistanceMap(Bytes& Dp, const Mask& overlay, const Mask& bg, const Mask& region, const Words& contourDistance, const Components& invComponents)
 		{
 			const int width = overlay.width;
 			const int height = overlay.height;
-			Dp.Resize(width, height, 0);                                               // ink (unlabeled) stays 0
+			Dp.Resize(width, height, 0);
+			                                          // ink (unlabeled) stays 0
 			invComponents.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
 				if (!region[i]) { Dp[i] = kOutsideRegion; return; }                    // beyond the stroke reach
 				const int d = contourDistance[i];                                      // distance to nearest contour
 				Dp[i] = (BoxFillRadius(x, y, c.bounds, width, height) < d) ? 0 : static_cast<uint8_t>(d);
 			});
+
 			MedialRidgeAdjust(Dp, bg, invComponents);
 		}
 
-		// The two precision normalization passes (Eq. 11).  The first marks where the background
-		// ring touches two distinct components (the merging case); the second produces NP, using
-		// the marked inter-component gap where merging looms and the stroke reach elsewhere.
-		enum class PrecisionPass { MarkMerges, Normalize };
-
-		// The rasters the precision ring reads, bundled (held by const reference) so the passes
-		// and the ring don't thread a dozen parameters.  All outlive the passes.
-		struct PrecisionRing
+		/// <summary>
+		/// The first precision normalization pass and its only ring search (Eq. 11).  Each
+		/// in-region background pixel rings the ground-truth contour, starting at its exact
+		/// contour distance.  The widest stroke width found on the ring becomes the pixel's
+		/// stroke reach, cached for NormalizeNP.  A pixel farther out than its reach stays
+		/// unmarked; within reach, a ring touching two different components marks the merging
+		/// case of Fig. 14 with the pixel's background normalization.
+		/// </summary>
+		static void MarkMerges(Bytes& mergeMarker, Words& reachCache, const Mask& overlay, const Components& components, const Bytes& Dp, const Words& NP, const Words& contourDistance, const Components& invComponents)
 		{
-			const Mask&       overlay;          // the recall overlay, rung over its kContour
-			const Components& components;       // fg records: strokeWidth (-> reach) and label (-> merging), by labels[j]
-			const Bytes&      Dp;               // background distance
-			const Words&      NP;               // background normalization (sqrt-rounded)
-			const Bytes&      mergeMarker;      // where adjacent components meet
-			const Words&      contourDistance;  // Chebyshev distance to the contour: the ring's start radius
-		};
-
-		// One precision pass over the background components (gate: label-owned, Dp in [1,249]).
-		static void PrecisionNormalizationPass(Bytes& out, Words& reachCache, const PrecisionPass pass, const PrecisionRing& in, const Components& invComponents)
-		{
-			const int width = in.Dp.width;
-			const int height = in.Dp.height;
+			const int width = Dp.width;
 
 			invComponents.ForEachPixel([&](const Component& c, int x, int y, int i)
 			{
-				if (!HasDistance(in.Dp[i])) return;
+				if (!HasDistance(Dp[i])) return;
 
-				out[i] = static_cast<uint8_t>(PrecisionNormalizationRing(in, reachCache, c, x, y, pass, width, height));
+				int reach = -1;
+				int firstLabel = -1;
+				bool adjacent = false;
+
+				const bool found = FirstNonEmptyRing(c, x, y, width, [&](const int j)
+				{
+					if (!(overlay[j] & kContour)) return false;
+					const int L = components.labels[j];                            // contour pixel -> its component
+					const int v = components.items[L].strokeWidth & 0xFF;          // its Gsw_fg (low byte, as stored)
+
+					if (v > reach) reach = v;
+
+					if (firstLabel < 0) firstLabel = L;
+					else if (L != firstLabel) adjacent = true;
+
+					return true;
+				}, nullptr, contourDistance[i]);
+
+				reachCache[i] = found ? static_cast<uint16_t>(reach) : kUnreached;
+				if (!found || Dp[i] > reach) return;                               // beyond the stroke reach: unmarked
+
+				mergeMarker[i] = static_cast<uint8_t>((adjacent ? NP[i] : 0) & 0xFF);
 			});
 		}
 
-		// Rings on the ground-truth contour; for each contour pixel q on the first non-empty ring
-		// collect its component's Gsw_fg (items[labels[q]].strokeWidth, max -> reach) and whether two distinct components appear
-		// (adjacent -> merge risk).  Then, with dp = Dp[center] and np = NP[center]:  dp > reach
-		// -> 0;  MarkMerges -> adjacent ? np : 0;  Normalize -> (a merge was marked within
-		// Chebyshev radius (reach - dp) of the center && np < reach) ? np : reach   (Eq. 11:
-		// min(Gc_sw, Gsw_bg)).  No contour in the bbox -> 0.
-		//
-		// The ring's reach (and "found") is a pure function of read-only inputs identical in both
-		// passes, so MarkMerges records it in reachCache (kUnreached == "no contour found") and
-		// Normalize reuses it -- the second pass does no ring search at all.
-		static int PrecisionNormalizationRing(const PrecisionRing& in, Words& reachCache, const Component& c, const int ax, const int ay, const PrecisionPass pass, const int width, const int height)
+		/// <summary>
+		/// The second precision normalization pass: NP = min(Gc_sw, Gsw_bg) (Eq. 11), pure
+		/// per-pixel arithmetic over MarkMerges' caches, no ring search.  Within the stroke
+		/// reach, a pixel takes the inter-component gap when a merge was marked nearby and the
+		/// gap is the smaller, and the stroke reach otherwise.
+		/// </summary>
+		static void NormalizeNP(Bytes& NPfinal, const Bytes& Dp, const Words& NP, const Bytes& mergeMarker, const Words& reachCache, const Components& invComponents)
 		{
-			const int i = ay * width + ax;
+			const int width = Dp.width;
+			const int height = Dp.height;
 
-			if (pass == PrecisionPass::Normalize)
+			invComponents.ForEachPixel([&](const Component&, int x, int y, int i)
 			{
+				if (!HasDistance(Dp[i])) return;
+
 				const uint16_t cached = reachCache[i];
-				if (cached == kUnreached) return 0;                       // MarkMerges found no contour
+				if (cached == kUnreached) return;   // MarkMerges found no contour
+
 				const int reach = cached;
-				const int dp = in.Dp[i];
-				if (dp > reach) return 0;
-				const int np = in.NP[i];
-				const int diff = reach - dp;
-				const bool merging = AnyWithin(in.mergeMarker, ax, ay, diff, width, height);
-				return ((merging && np < reach) ? np : reach) & 0xFF;
-			}
+				const int dp = Dp[i];
+				if (dp > reach) return;
 
-			// MarkMerges: the single ring search, recording reach for Normalize.  The contour
-			// distance transform is the exact distance to the nearest contour, hence a proven lower
-			// bound on the first non-empty ring -- start there and skip the empty inner rings.
-			int reach = -1;
-			int firstLabel = -1;
-			bool adjacent = false;
-			const bool found = FirstNonEmptyRing(c, ax, ay, width, [&](const int j)
-			{
-				if (!(in.overlay[j] & kContour)) return false;
-				const int L = in.components.labels[j];                            // contour pixel -> its component
-				const int v = in.components.items[L].strokeWidth & 0xFF;          // its Gsw_fg (low byte, as stored)
-
-				if (v > reach) reach = v;
-
-				if (firstLabel < 0) firstLabel = L;
-				else if (L != firstLabel) adjacent = true;
-
-				return true;
-			}, nullptr, in.contourDistance[i]);
-			reachCache[i] = found ? static_cast<uint16_t>(reach) : kUnreached;
-			if (!found) return 0;
-
-			const int dp = in.Dp[i];
-			const int np = in.NP[i];   // NP is integer-valued (sqrt-rounded above)
-			if (dp > reach) return 0;
-			return (adjacent ? np : 0) & 0xFF;
+				const int np = NP[i];  // integer-valued (sqrt-rounded above)
+				const bool merging = AnyWithin(mergeMarker, x, y, reach - dp, width, height);
+				NPfinal[i] = static_cast<uint8_t>(((merging && np < reach) ? np : reach) & 0xFF);
+			});
 		}
 
-		// True iff any nonzero pixel of map lies within Chebyshev distance `radius` of (col,row),
-		// over the image-clamped square window.  radius 0 -> false.
+		/// <summary>
+		/// True when any nonzero pixel of map lies within Chebyshev distance radius of
+		/// (col, row), over the image-clamped square window.  A radius of 0 finds nothing.
+		/// </summary>
 		static bool AnyWithin(const Bytes& map, const int col, const int row, const int radius, const int width, const int height)
 		{
 			if (radius == 0) return false;

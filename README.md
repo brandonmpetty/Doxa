@@ -34,7 +34,8 @@ It is written in C++ but supports multiple language bindings.
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
+* van Herk - "A fast algorithm for local minimum and maximum filters on rectangular and octagonal kernels", 1992.
+* Gil, Werman - "Computing 2-D min, median, and max filters", 1993.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
 * SIMD - Supporting: SSE2, ARM NEON, WASM SIMD128
 

@@ -25,7 +25,8 @@ DoxaPy is an image binarization library focusing on local adaptive thresholding 
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
+* van Herk - "A fast algorithm for local minimum and maximum filters on rectangular and octagonal kernels", 1992.
+* Gil, Werman - "Computing 2-D min, median, and max filters", 1993.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
 * SIMD - SSE2, ARM NEON
 
