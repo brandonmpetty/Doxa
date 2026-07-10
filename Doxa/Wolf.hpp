@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "ChanMeanVarianceCalc.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa
@@ -28,8 +28,8 @@ namespace Doxa
 			double maxVariance = std::numeric_limits<double>::min();
 
 			// Find global min value and max standard deviation value
-			Iterate(Algorithm::grayScaleImageIn, windowSize, [&](const double&, const double& variance, const int& position) {
-				
+			Iterate(Algorithm::grayScaleImageIn, windowSize, [&](const double&, const double& variance, const int& position)
+			{
 				if (variance > maxVariance) maxVariance = variance;
 
 				const double tmpMin = Algorithm::grayScaleImageIn.data[position];
@@ -38,7 +38,8 @@ namespace Doxa
 
 			const double maxStdDev = std::sqrt(maxVariance);
 
-			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int& position) {
+			Process(binaryImageOut, Algorithm::grayScaleImageIn, windowSize, [&](const double& mean, const double& variance, const int& position)
+			{
 				const double stddev = std::sqrt(variance);
 
 				return mean - k * (1 - (stddev / maxStdDev)) * (mean - min);

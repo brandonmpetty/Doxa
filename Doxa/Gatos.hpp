@@ -6,9 +6,9 @@
 #include "Types.hpp"
 #include "Sauvola.hpp"
 #include "Palette.hpp"
-#include "Region.hpp"
 #include "Image.hpp"
 #include "Filter.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa
@@ -111,34 +111,21 @@ namespace Doxa
 		// Note: backgroundImage must be a copy of grayScaleImage.  This avoids us having to set pixels for the background entirely
 		void ExtractBackground(Image& backgroundImage, const Image& filteredImage, const Image& binaryImage, const int windowSize = 51) const
 		{
-			LocalWindow::Iterate(filteredImage, windowSize, [&](const Region& window, const int& position)
-			{	
-				if (binaryImage.data[position] == Palette::Black)
+			const Pixel8* binary = binaryImage.data;
+
+			// This is usually mathematically described as:
+			//     Numerator += B(x, y) * (1 − S(x, y))
+			//     Denominator += (1 − S(x, y))
+			// This assumes that your binary image's black value is 1, and white 0.
+			// The binary image doubles as the mask: White (background) selects pixels.
+			ChanMaskedCalc<false>::Iterate(filteredImage, binaryImage, windowSize,
+				[&](const int64_t denominator, const int64_t numerator, const int position)
 				{
-					unsigned int numerator = 0;
-					unsigned int denominator = 0;
-
-					// Build a window around our black pixel and traverse it
-					LocalWindow::Iterate(filteredImage.width, window, [&](const int& windowPosition)
+					if (binary[position] == Palette::Black && denominator > 0)
 					{
-						// This is usually mathematically described as:
-						//     Numerator += B(x, y) * (1 − S(x, y))
-						//     Denominator += (1 − S(x, y))
-						// This assumes that your binary image's black value is 1, and white 0.
-						// Blindly following this mathematical formula also impacts performance!
-						if (binaryImage.data[windowPosition] == Palette::White)
-						{
-							numerator += filteredImage.data[windowPosition];
-							++denominator;
-						}
-					});
-
-					if (denominator > 0)
-					{
-						backgroundImage.data[position] = numerator / denominator;
+						backgroundImage.data[position] = static_cast<Pixel8>(numerator / denominator);
 					}
-				}
-			});
+				});
 		}
 	};
 }

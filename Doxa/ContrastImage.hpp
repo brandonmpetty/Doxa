@@ -7,7 +7,6 @@
 #include "Types.hpp"
 #include "Otsu.hpp"
 #include "Palette.hpp"
-#include "Region.hpp"
 #include "Morphology.hpp"
 
 
@@ -24,25 +23,23 @@ namespace Doxa
 		{
 			const int windowSize = 3;
 
-			Pixel8 min, max;
-
 			Image minImage(grayScaleImage.width, grayScaleImage.height);
 			Image maxImage(grayScaleImage.width, grayScaleImage.height);
 
 			Morphology::Erode(minImage, grayScaleImage, windowSize);
 			Morphology::Dilate(maxImage, grayScaleImage, windowSize);
 
-			LocalWindow::Iterate(grayScaleImage, windowSize, [&](const Region& window, const int& position) {
-
-				min = minImage.data[position];
-				max = maxImage.data[position];
+			for (int position = 0; position < grayScaleImage.size; ++position)
+			{
+				const Pixel8 min = minImage.data[position];
+				const Pixel8 max = maxImage.data[position];
 
 				const double contrastMultiplier = (double)(max - min) / (0.0001 + max + min);
 
 				// Note: The paper leaves out the fact that the Contrast Image actually has to be normalized.
 				// To normalize it back into an 8bit gray scale image, simply multiply by 255.
 				contrastImage.data[position] = 255 * contrastMultiplier;
-			});
+			}
 		}
 
 		/// <summary>

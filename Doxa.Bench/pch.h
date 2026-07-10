@@ -12,7 +12,7 @@
 #include <PNM.hpp>
 #include <Algorithm.hpp>
 #include <BinarizationFactory.hpp>
-#include <ChanMeanVarianceCalc.hpp>
+#include <ChanCalc.hpp>
 #include <IntegralImageMeanVarianceCalc.hpp>
 #include <ClassifiedPerformance.hpp>
 #include <DRDM.hpp>

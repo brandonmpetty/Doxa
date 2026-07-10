@@ -3,12 +3,13 @@
 #ifndef SU_HPP
 #define SU_HPP
 
+#include <cmath>
 #include "Types.hpp"
 #include "Otsu.hpp"
 #include "Palette.hpp"
-#include "Region.hpp"
 #include "Morphology.hpp"
 #include "ContrastImage.hpp"
+#include "ChanCalc.hpp"
 
 namespace Doxa
 {
@@ -61,55 +62,37 @@ namespace Doxa
 			minN = windowSize;
 		}
 
-		/// <summary>
-		/// Calculates Ne, meanE, and stdE in one iteration.
-		/// This is a very optimized set of calculations compared to the math found in the paper.
-		/// </summary>
-		void SuCalculations(int& Ne, double& meanE, double& stdE,
-							const Image& contrastImage, const Image& grayScaleImage,
-							const Region& window) const
-		{
-			uint64_t sumI  = 0;  // Σ I(x,y)
-			uint64_t sumI2 = 0;  // Σ I(x,y)²
-			Ne = 0;
-
-			// Single pass: accumulate first and second raw moments over high-contrast pixels.
-			// Uses identity:  Var(X) = E[X²] - (E[X])²
-			LocalWindow::Iterate(grayScaleImage.width, window, [&](const int& position)
-			{
-				if (Palette::White == contrastImage.data[position])
-				{
-					const uint32_t I = grayScaleImage.data[position]; // promote once
-					sumI  += I;
-					sumI2 += I * I;
-					++Ne;
-				}
-			});
-
-			if (Ne == 0) { meanE = 0.0; stdE = 0.0; return; }
-
-			meanE = static_cast<double>(sumI) / Ne;
-
-			// variance = ΣI²/Ne − meanE²
-			const double variance = static_cast<double>(sumI2) / Ne - meanE * meanE;
-
-			// Clamp tiny negatives from floating-point round-off (happens when true variance ≈ 0)
-			stdE = variance > 0.0 ? std::sqrt(variance) : 0.0;
-		};
-
 		void Threshold(Image& binaryImageOut, const Image& contrastImageIn, const Image& grayScaleImageIn, int windowSize, int minN) const
 		{
-			int Ne;
-			double meanE, stdE;
+			const Pixel8* gray = grayScaleImageIn.data;
 
-			LocalWindow::Iterate(grayScaleImageIn, windowSize, [&](const Region& window, const int& position)
-			{
-				SuCalculations(Ne, meanE, stdE, contrastImageIn, grayScaleImageIn, window);
+			// LocalWindow treats a window of size N as +/- N/2 inclusive, which for an even N
+			// (Su's auto-detected size is 2 x stroke width) is really a window of N + 1.
+			// ChanMaskedCalc takes the exact size, so round even sizes up to stay identical.
+			const int chanWindowSize = windowSize | 1;
 
-				binaryImageOut.data[position] =
-					(Ne >= minN && grayScaleImageIn.data[position] <= meanE + (stdE / 2)) ?
-					Palette::Black : Palette::White;
-			});
+			// The contrast image is the mask: White (high contrast) selects pixels.
+			// Ne, ΣI, and ΣI² over those pixels give the mean and standard deviation.
+			ChanMaskedCalc<true>::Iterate(grayScaleImageIn, contrastImageIn, chanWindowSize,
+				[&](const int64_t Ne, const int64_t sum, const int64_t squareSum, const int position)
+				{
+					double meanE = 0.0;
+					double stdE = 0.0;
+
+					if (Ne != 0)
+					{
+						meanE = static_cast<double>(sum) / Ne;
+
+						const double variance = static_cast<double>(squareSum) / Ne - meanE * meanE;
+
+						// Clamp tiny negatives from floating-point round-off
+						stdE = variance > 0.0 ? std::sqrt(variance) : 0.0;
+					}
+
+					binaryImageOut.data[position] =
+						(Ne >= minN && gray[position] <= meanE + (stdE / 2)) ?
+							Palette::Black : Palette::White;
+				});
 		}
 	};
 }

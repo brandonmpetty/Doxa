@@ -20,8 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Bernsen.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Bradley.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BinarizationFactory.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanCalc.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ChanMeanVarianceCalc.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ChanCalc.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ClassifiedPerformance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ConnectedComponents.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ContrastImage.hpp" />

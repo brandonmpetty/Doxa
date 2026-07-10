@@ -10,7 +10,7 @@ namespace Doxa::UnitTests
 	public:
 		SuTestHarness() : Su() {}
 		using Su::AutoDetectParameters;
-		using Su::SuCalculations;
+		using Su::Threshold;
 	};
 
 	TEST(SuTests, SuAutoDetectParametersTest)
@@ -46,7 +46,7 @@ namespace Doxa::UnitTests
 		EXPECT_EQ(6, minN);        // windowSize
 	}
 
-	TEST(SuTests, SuCalculationsTest)
+	TEST(SuTests, SuThresholdTest)
 	{
 		// Setup - 3x3 grayscale image with known values
 		Pixel8 grayData[] = {
@@ -64,25 +64,27 @@ namespace Doxa::UnitTests
 		};
 		Image contrastImage(3, 3, contrastData);
 
-		// Window covers entire image
-		Region window;
-		window.upperLeft = { 0, 0 };
-		window.bottomRight = { 2, 2 };
-
-		// Method under Test
+		// Method under Test - a 3x3 window clamped to the image edges
 		SuTestHarness su;
 		su.Initialize(grayImage);
-		int Ne;
-		double meanE, stdE;
-		su.SuCalculations(Ne, meanE, stdE, contrastImage, grayImage, window);
+		Image binaryImage(3, 3);
+		su.Threshold(binaryImage, contrastImage, grayImage, 3, 2);
 
-		// High contrast pixels (White): (0,0)=100, (0,2)=200, (1,1)=100, (2,0)=75, (2,2)=175
-		EXPECT_EQ(5, Ne);
-		EXPECT_DOUBLE_EQ(130.0, meanE);  // (100+200+100+75+175) / 5
-
+		// High contrast pixels (White):
+		//   (0,0)=100, (0,2)=200, (1,1)=100, (2,0)=75, (2,2)=175
+		// Ne = 5
+        // meanE = 130 = (100+200+100+75+175) / 5
 		// variance = sum((x-mean)^2)/Ne = (30^2 + 70^2 + 30^2 + 55^2 + 45^2)/5 = 11750/5 = 2350
 		// stdE = sqrt(2350)
-		double expectedStdE = std::sqrt(11750.0 / 5.0);
-		EXPECT_NEAR(expectedStdE, stdE, 0.001);
+		const Pixel8 expected[] = {
+			Palette::Black, Palette::Black, Palette::White,
+			Palette::Black, Palette::Black, Palette::Black,
+			Palette::Black, Palette::Black, Palette::White
+		};
+
+		for (int index = 0; index < binaryImage.size; ++index)
+		{
+			EXPECT_EQ(expected[index], binaryImage.data[index]) << "at index " << index;
+		}
 	}
 }
