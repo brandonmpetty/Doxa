@@ -315,6 +315,8 @@ ALGO_INFO = {
     "adotsu": {
         "name": "AdOtsu", "year": 2010, "authors": "R. F. Moghaddam, M. Cheriet",
         "paper": '"A multi-scale framework for adaptive binarization of degraded document images," Pattern Recognition, 2010',
+        "experimental": True,
+        "experimental_note": "under review for paper correctness; default parameters are likely correct, but k <> 1 may be off",
         "summary": "Applies Otsu's between-class variance maximization locally within a window, with a "
                    "k factor to adapt to degradation.",
         "params": [("window", "25", "Local window size (odd)."),
