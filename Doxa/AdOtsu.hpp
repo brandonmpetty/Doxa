@@ -47,7 +47,7 @@ namespace Doxa
 			globalThreshold = otsu.Threshold(Algorithm::grayScaleImageIn);
 		}
 
-		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters())
+		void ToBinary(Image& binaryImageOut, const Parameters& parameters = Parameters()) override
 		{
 			// Read parameters, utilizing defaults
 			const int windowSize = parameters.Get("window", 75);
