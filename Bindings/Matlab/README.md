@@ -18,7 +18,7 @@ ctest --test-dir build-matlab -C Release
 ### Package Toolbox (.mltbx)
 After building MEX files, create the distributable toolbox from MATLAB:
 ```matlab
-cd Bindings/Matlab
+cd build/mex/Release
 matlab.addons.toolbox.packageToolbox('Doxa.prj')
 % Produces Doxa.mltbx
 ```

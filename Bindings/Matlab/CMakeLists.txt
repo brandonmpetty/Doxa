@@ -44,13 +44,18 @@ endif()
 # Copy test files to the build directory (for CTest)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/TestDoxa.m DESTINATION ${MEX_OUTPUT_DIR})
 
-# Copy +Doxa package alongside the MEX files.
+# Copy the +Doxa package and the toolbox packaging project alongside the MEX files.
 # TARGET_FILE_DIR resolves to the correct output directory on both
 # single-config (mex/) and multi-config (mex/Release/) generators.
+# Doxa.prj packages the folder it lives in (fileset.rootdir is ${PROJECT_ROOT}),
+# so it must be staged here rather than packaged from the source tree.
 add_custom_command(TARGET image_mex POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/+Doxa
         $<TARGET_FILE_DIR:image_mex>/+Doxa
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/Doxa.prj
+        $<TARGET_FILE_DIR:image_mex>/Doxa.prj
 )
 
 # Enable testing and add the MATLAB tests to CTest
