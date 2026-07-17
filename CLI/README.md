@@ -15,7 +15,7 @@ BinBench requires Python 3.12+ and depends on Pillow, NumPy and DoxaPy libraries
 pip install -r requirements.txt
 ```
 
-Alternatively, a local Doxa Python build can be used by setting the `DOXAPY_PATH` environment variable.
+Alternatively, a local Doxa Python build can be used by setting the `DOXAPY_PATH` environment variable.  When set, it takes precedence over any pip-installed DoxaPy.
 
 ## Examples
 

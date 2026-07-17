@@ -8,7 +8,7 @@ DoxaPy is an image binarization library focusing on local adaptive thresholding 
 * Bernsen - "Dynamic thresholding of gray-level images", 1986.
 * Niblack - "An Introduction to Digital Image Processing", 1986.
 * Wellner - "Interacting with Paper on the DigitalDesk", 1994.
-* Sauvola - "Adaptive document image binarization", 1999.
+* Sauvola - "Adaptive document image binarization", 2000.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
 * Feng - "Adaptive Binarization Method for Document Image Analysis", 2004.
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)

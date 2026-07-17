@@ -65,6 +65,23 @@ namespace Doxa::UnitTests
 		//EXPECT_EQ(ClassifiedPerformance::CalculateNRM(classifications), 0.00);
 	}
 
+	TEST(ClassifiedPerformanceTests, WeightSizeMismatchTest)
+	{
+		Image control(3, 3);
+		Image experiment(3, 3);
+		control.Fill(Palette::White);
+		experiment.Fill(Palette::White);
+
+		// Weight vectors must supply one weight per pixel; anything else is rejected
+		const std::vector<double> shortWeights(4, 1.0);
+		const std::vector<double> exactWeights(9, 1.0);
+
+		ClassifiedPerformance::Classifications classifications;
+		EXPECT_FALSE(ClassifiedPerformance::CompareImages(classifications, control, experiment, shortWeights, exactWeights));
+		EXPECT_FALSE(ClassifiedPerformance::CompareImages(classifications, control, experiment, exactWeights, shortWeights));
+		EXPECT_TRUE(ClassifiedPerformance::CompareImages(classifications, control, experiment, exactWeights, exactWeights));
+	}
+
 	TEST(PerformanceTests, PseudoMetrics)
 	{
 		// NOTE: Based off of 2018 DIBCO Metrics PR sample
