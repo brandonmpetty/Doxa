@@ -144,7 +144,7 @@ sauvola.ToBinary(binaryImage, parameters);
 
 The framework includes multiple optimization strategies for local window operations:
 
-- `ChanMeanVarianceCalc.hpp` - Memory-efficient sliding window (Chan 2019)
+- `ChanCalc.hpp` - Memory-efficient sliding window sums (Chan 2019)
 - `IntegralImageMeanVarianceCalc.hpp` - Integral image acceleration (Shafait 2008)
 - `LocalWindow.hpp` - Generic window iteration template
 - `GridCalc.hpp` - Grid-based calculations

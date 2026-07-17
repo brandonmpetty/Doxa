@@ -23,6 +23,10 @@ namespace Doxa
 	///          1 + tanh(phi * (u - epsilon)) : otherwise
 	///   binary = (T < 0.5) ? Black : White
 	///
+	/// For binary output the soft threshold T collapses to a single cutoff:
+	///   T(u) < 0.5  ⟺  u < epsilon - atanh(0.5) / phi
+	/// so no per-pixel tanh is needed.
+	///
 	/// The paper assumes a CIE Lab colorspace with a focus on the
 	/// luminance channel.
 	///
@@ -63,19 +67,16 @@ namespace Doxa
 			Filter::Gaussian(blurInner, in, sizeInner, sigma);
 			Filter::Gaussian(blurOuter, in, sizeOuter, k * sigma);
 
+			// Eq. 5 + Eq. 7 folded into one linear cutoff, no per-pixel normalization.
+			const double cutoff = 255.0 * (epsilon - std::atanh(0.5) / phi);
+
 			const int N = in.size;
 			for (int i = 0; i < N; ++i)
 			{
-				// Eq. 7: S = (1 + p) * G_sigma - p * G_{k*sigma}, normalized to [0, 1]
-				const double s = ((1.0 + p) * blurInner.data[i]
-				                - p         * blurOuter.data[i]) / 255.0;
+				const double s = (1.0 + p) * blurInner.data[i]
+				               - p         * blurOuter.data[i];
 
-				// Eq. 5: soft threshold around epsilon
-				const double t = (s >= epsilon)
-					? 1.0
-					: 1.0 + std::tanh(phi * (s - epsilon));
-
-				binaryImageOut.data[i] = (t < 0.5) ? Palette::Black : Palette::White;
+				binaryImageOut.data[i] = (s < cutoff) ? Palette::Black : Palette::White;
 			}
 		}
 

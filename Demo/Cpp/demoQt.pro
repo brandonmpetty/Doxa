@@ -29,7 +29,7 @@ HEADERS += ../../Doxa/Sauvola.hpp \
            ../../Doxa/Palette.hpp \
            ../../Doxa/LocalWindow.hpp \
            ../../Doxa/Region.hpp \
-           ../../Doxa/ChanMeanVarianceCalc.hpp \
+           ../../Doxa/ChanCalc.hpp \
            ../../Doxa/ClassifiedPerformance.hpp \
            ../../Doxa/DRDM.hpp
 SOURCES += demoQt.cpp

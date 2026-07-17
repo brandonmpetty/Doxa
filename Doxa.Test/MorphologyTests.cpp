@@ -1,3 +1,4 @@
+#include <random>
 #include "pch.h"
 #include "ImageFixture.hpp"
 #include "TestUtilities.hpp"
@@ -5,15 +6,42 @@
 
 namespace Doxa::UnitTests
 {
-	class MorphologyTests : public ImageFixture {};
-
-	class MorphologyTestHarness : public Morphology
+	class MorphologyTests : public ImageFixture
 	{
-	public:
-		MorphologyTestHarness() : Morphology() {}
-		using Morphology::Morph;
-		using Morphology::IterativelyErode;
-		using Morphology::IterativelyDilate;
+	protected:
+		/// <summary>
+		/// Reference implementation: directly scan every clipped window.
+		/// Slow, but obviously correct.  Used to validate the vHGW implementation.
+		/// </summary>
+		template<typename MinMax>
+		static Image NaiveMorph(const Image& source, const int windowSize, MinMax op)
+		{
+			Image morphedImage(source.width, source.height);
+			const int half = windowSize / 2;
+
+			for (int y = 0; y < source.height; ++y)
+			{
+				for (int x = 0; x < source.width; ++x)
+				{
+					Pixel8 value = source.Pixel(x, y);
+
+					for (int wy = (std::max)(0, y - half); wy <= (std::min)(source.height - 1, y + half); ++wy)
+					{
+						for (int wx = (std::max)(0, x - half); wx <= (std::min)(source.width - 1, x + half); ++wx)
+						{
+							value = op(value, source.Pixel(wx, wy));
+						}
+					}
+
+					morphedImage.Pixel(x, y) = value;
+				}
+			}
+
+			return morphedImage;
+		}
+
+		static Pixel8 Min(const Pixel8 a, const Pixel8 b) { return (std::min)(a, b); }
+		static Pixel8 Max(const Pixel8 a, const Pixel8 b) { return (std::max)(a, b); }
 	};
 
 
@@ -95,71 +123,56 @@ namespace Doxa::UnitTests
 		TestUtilities::AssertImageData(dilatedImage, maxArray);
 	}
 
-	// TODO: Update this test to force calls to Morph(...), IterativelyDilate(...), etc using a test harness.
-	TEST_F(MorphologyTests, MorphologySpeedTest)
+	TEST_F(MorphologyTests, MorphologyReferenceComparisonTest)
 	{
-		// Find sample image
-		const std::string filePath = TestUtilities::ProjectFolder() + "2JohnC1V3.ppm";
+		// Deterministic noise with odd dimensions, to exercise partial vHGW blocks
+		Image noise(97, 61);
+		std::mt19937 prng(42);
+		for (int idx = 0; idx < noise.size; ++idx)
+		{
+			noise.data[idx] = prng() % 256;
+		}
 
-		// Read image
-		Image grayScaleImage = PNM::Read(filePath);
-		Image wanBinary(grayScaleImage.width, grayScaleImage.height);
+		Image morphedImage(noise.width, noise.height);
 
-		// Window Size 17 is the tipping for my CPU.  This will trigger the Morph algorithm to be applied.
-		Parameters parameters({ { "window", 17 },{ "k", 0.2 } });
+		// Odd and even sizes, and windows larger than the image itself
+		for (const int windowSize : { 1, 2, 3, 4, 5, 8, 9, 16, 17, 25, 60, 61, 75, 255 })
+		{
+			SCOPED_TRACE("Window Size: " + std::to_string(windowSize));
 
-		// Time algorithms
-		double wanMorphedSpeed = TestUtilities::Time([&]() {
-			Wan wan;
-			wan.Initialize(grayScaleImage);
-			wan.ToBinary(wanBinary, parameters);
-		});
+			Morphology::Erode(morphedImage, noise, windowSize);
+			TestUtilities::AssertImages(morphedImage, NaiveMorph(noise, windowSize, Min));
 
-		// This window size will trigger a manual window analysis to be ran.
-		// This is faster for small window sizes, but very costly for large windows.
-		parameters.Set("window", 15);
-		double wanSpeed = TestUtilities::Time([&]() {
-			Wan wan;
-			wan.Initialize(grayScaleImage);
-			wan.ToBinary(wanBinary, parameters);
-		});
-
-		SUCCEED() << "Morphed Wan Speed (W=17): " << wanMorphedSpeed;
-		SUCCEED() << "Manual Wan Speed (W=15): " << wanSpeed;
-		//EXPECT_TRUE(wanSpeed < wanMorphedSpeed);
+			Morphology::Dilate(morphedImage, noise, windowSize);
+			TestUtilities::AssertImages(morphedImage, NaiveMorph(noise, windowSize, Max));
+		}
 	}
 
-	TEST_F(MorphologyTests, MorphologyErodeComparisonTest)
+	TEST_F(MorphologyTests, MorphologyFixtureComparisonTest)
 	{
-		const int windowSize = 25;
 		Image morphedImage(image.width, image.height);
-		Image iterativelyMorphedImage(image.width, image.height);
 
-		// Manually find the min within each window
-		MorphologyTestHarness::IterativelyErode(iterativelyMorphedImage, image, windowSize);
+		// An odd size, and an even size like those MultiScale generates
+		for (const int windowSize : { 18, 25 })
+		{
+			SCOPED_TRACE("Window Size: " + std::to_string(windowSize));
 
-		// Utilize a Max Image to speed up the morphology transformation
-		MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
-			return *set.begin(); // Min Value
-		});
+			Morphology::Erode(morphedImage, image, windowSize);
+			TestUtilities::AssertImages(morphedImage, NaiveMorph(image, windowSize, Min));
 
-		TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
+			Morphology::Dilate(morphedImage, image, windowSize);
+			TestUtilities::AssertImages(morphedImage, NaiveMorph(image, windowSize, Max));
+		}
 	}
 
-	TEST_F(MorphologyTests, MorphologyDilateComparisonTest)
+	TEST_F(MorphologyTests, MorphologyInPlaceTest)
 	{
-		const int windowSize = 25;
-		Image morphedImage(image.width, image.height);
-		Image iterativelyMorphedImage(image.width, image.height);
+		Image expectedImage(image.width, image.height);
+		Morphology::Dilate(expectedImage, image, 25);
 
-		// Manually find the max within each window
-		MorphologyTestHarness::IterativelyDilate(iterativelyMorphedImage, image, windowSize);
+		Image morphedImage(image);
+		Morphology::Dilate(morphedImage, morphedImage, 25);
 
-		// Utilize a Max Image to speed up the morphology transformation
-		MorphologyTestHarness::Morph(morphedImage, image, windowSize, [](const std::multiset<Pixel8>& set) {
-			return *std::prev(set.end()); // Max Value
-		});
-
-		TestUtilities::AssertImages(iterativelyMorphedImage, morphedImage);
+		TestUtilities::AssertImages(morphedImage, expectedImage);
 	}
 }

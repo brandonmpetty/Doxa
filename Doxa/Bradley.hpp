@@ -4,7 +4,7 @@
 #define BRADLEY_HPP
 
 #include "Algorithm.hpp"
-#include "ChanMeanCalc.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa

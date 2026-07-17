@@ -3,6 +3,7 @@
 #ifndef OTSU_HPP
 #define OTSU_HPP
 
+#include <cstdint>
 #include "Types.hpp"
 #include "Algorithm.hpp"
 #include "Image.hpp"
@@ -29,15 +30,16 @@ namespace Doxa
 			Pixel8 threshold = 0;
 
 			// Init variables
-			int sum = 0;
-			int sumB = 0;
+			// 64bit sums: 255 * N overflows a 32bit integer for images over ~8 megapixels
+			int64_t sum = 0;
+			int64_t sumB = 0;
 			int q1 = 0;
 			double max = 0;
 
 			// Calculate sum
 			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx)
 			{
-				sum += idx * histogram[idx];
+				sum += static_cast<int64_t>(idx) * histogram[idx];
 			}
 
 			for (int idx = 0; idx < HISTOGRAM_SIZE; ++idx)
@@ -52,7 +54,7 @@ namespace Doxa
 				if (q2 == 0)
 					break;
 
-				sumB += (idx * histogram[idx]);
+				sumB += static_cast<int64_t>(idx) * histogram[idx];
 
 				const double m1m2 =
 					(double)sumB / q1 -			// Mean Background

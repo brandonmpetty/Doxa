@@ -16,16 +16,24 @@ replaces the legacy DIBCO command-line utilities with one cross-platform tool:
 Run any command with no arguments (e.g. `binbench binarize`) for its help and the
 list of algorithms; `binbench binarize --describe sauvola` describes one algorithm.
 
+Exit status: 0 on success; 1 on any error or partial result (some images
+skipped or failed); 2 on a command-line usage error.
+
 Requires Python 3.12+ (the doxapy build targets the stable cp312 ABI) plus
 numpy and Pillow. ``doxapy`` is imported normally once installed; to run against a
-local, unpublished build, set the DOXAPY_PATH environment variable to its dist folder.
+local, unpublished build, set the DOXAPY_PATH environment variable to its dist
+folder — it takes precedence over any pip-installed copy.
 """
 
 import argparse
 import csv
+import errno
+import functools
+import glob
 import io
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -43,11 +51,14 @@ IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff",
               ".ppm", ".pgm", ".pbm", ".pnm", ".webp", ".gif"}
 
 # PIL modes that are already single-channel: take the channel, skip color→luma.
-GRAY_MODES = {"L", "1", "LA", "La", "I", "F"}
+# (High-depth modes like I;16 are rescaled to L by _open_image before this check.)
+GRAY_MODES = {"L", "1", "LA", "La"}
 
-# Metrics, in display order, each with a direction (True = higher is better) and a
-# one-line gloss. DRDM and pseudo-F-Measure cite the paper that defined them, in the
-# same style as the algorithm listing.
+
+# ─── Reference data: metrics, algorithms, grayscale methods ─────────────────
+
+# Metrics, in display order, each with a direction (True = higher is better)
+# and a one-line gloss; DRDM and pseudo-FM name their defining paper.
 METRIC_INFO = [
     ("accuracy", True, "Percent of pixels classified correctly."),
     ("fm", True, "F-Measure — harmonic mean of recall and precision."),
@@ -56,172 +67,15 @@ METRIC_INFO = [
     ("mcc", True, "Matthews correlation coefficient (−1 to 1)."),
     ("psnr", True, "Peak signal-to-noise ratio, in decibels."),
     ("nrm", False, "Negative rate metric — mean false-negative/false-positive rate."),
-    ("drdm", False, '"Distance-reciprocal distortion measure for binary document images", 2004.'),
-    ("pseudo-fm", True, '"An objective evaluation methodology for document image binarization techniques", 2008.'),
+    ("drdm", False, "Distance-Reciprocal Distortion Measure (Lu et al., 2004) — perceptual distortion."),
+    ("pseudo-fm", True, "Stroke-weighted F-Measure (Ntirogiannis et al., 2008)."),
     ("pseudo-precision", True, "Precision weighted toward character strokes."),
     ("pseudo-recall", True, "Recall weighted toward character strokes."),
 ]
 METRIC_NAMES = [m[0] for m in METRIC_INFO]
 METRIC_HIGHER = {name: higher for name, higher, _ in METRIC_INFO}  # True = higher is better
 
-
-# ─── Lazy runtime (doxapy + numpy + Pillow) ──────────────────────────────────
-# Imported only when a command actually needs to touch images, so `info` and
-# `--help` work with zero heavy dependencies installed.
-_RT = {}
-
-
-def runtime():
-    """Return (doxapy, numpy, PIL.Image), importing and caching on first use."""
-    if _RT:
-        return _RT["doxapy"], _RT["np"], _RT["Image"]
-
-    if sys.version_info < (3, 12):
-        sys.exit("BinBench CLI requires Python 3.12+ (doxapy targets the stable cp312 ABI).")
-
-    try:
-        import doxapy
-    except ImportError:
-        dev = os.environ.get("DOXAPY_PATH")
-        if dev and os.path.isdir(dev):
-            sys.path.insert(0, dev)
-        try:
-            import doxapy
-        except ImportError:
-            sys.exit(
-                "Could not import 'doxapy'.\n"
-                "  • Install it once published:  pip install doxapy\n"
-                "  • Or set the DOXAPY_PATH environment variable to a local doxapy build (dist) folder."
-            )
-
-    try:
-        import numpy as np
-        from PIL import Image
-    except ImportError as e:
-        sys.exit(f"Missing dependency '{e.name}'. Install with:  pip install numpy pillow")
-
-    _RT.update(doxapy=doxapy, np=np, Image=Image)
-    return doxapy, np, Image
-
-
-# ─── Image helpers ───────────────────────────────────────────────────────────
-
-def _as_uint8(np, source):
-    """Materialize a writable, C-contiguous uint8 array for doxapy.
-
-    doxapy's nanobind bindings take non-const Pixel8 ndarrays, so the buffer
-    must be writable. np.array always copies into a fresh writable buffer
-    (np.asarray of a PIL image is read-only) — the same idiom the doxapy tests
-    and README use.
-    """
-    return np.array(source, dtype=np.uint8)
-
-
-def to_gray(arr3d, gray_name):
-    """Convert an RGB/RGBA uint8 array to a 2D grayscale array via doxapy."""
-    doxapy, _, _ = runtime()
-    algo = getattr(doxapy.GrayscaleAlgorithms, gray_name.upper())
-    return doxapy.to_grayscale(algo, arr3d)
-
-
-def load_gray(path, gray_name):
-    """Load any image as a 2D grayscale uint8 array (color → doxapy grayscale)."""
-    _, np, Image = runtime()
-    img = Image.open(path)
-    if img.mode in GRAY_MODES:
-        return _as_uint8(np, img if img.mode == "L" else img.convert("L"))
-    if img.mode not in ("RGB", "RGBA"):
-        img = img.convert("RGB")
-    return to_gray(_as_uint8(np, img), gray_name)
-
-
-def load_color(path):
-    """Load an image as a 3D RGB/RGBA uint8 array (already-gray → None)."""
-    _, np, Image = runtime()
-    img = Image.open(path)
-    if img.mode == "L":
-        return None  # already grayscale; nothing to convert
-    if img.mode not in ("RGB", "RGBA"):
-        img = img.convert("RGB")
-    return _as_uint8(np, img)
-
-
-def load_2d(path):
-    """Load an image as a single-channel 2D uint8 array (for GT / binary input)."""
-    _, np, Image = runtime()
-    return _as_uint8(np, Image.open(path).convert("L"))
-
-
-def save_2d(arr, path):
-    _, _, Image = runtime()
-    Image.fromarray(arr, "L").save(str(path))
-
-
-# ─── Path / input helpers ────────────────────────────────────────────────────
-
-def iter_inputs(path_str):
-    """Yield image file paths from a file or (non-recursively) a folder."""
-    p = Path(path_str)
-    if p.is_file():
-        return [p]
-    if p.is_dir():
-        files = sorted(q for q in p.iterdir()
-                       if q.is_file() and q.suffix.lower() in IMAGE_EXTS)
-        if not files:
-            sys.exit(f"No images found in folder: {p}")
-        return files
-    sys.exit(f"Input not found: {p}")
-
-
-def resolve_output(in_path, out_arg, suffix, ext, batch):
-    """Work out the output file path for a given input under file/folder rules."""
-    name = f"{Path(in_path).stem}{suffix}{ext}"
-    if out_arg is None:
-        return Path(in_path).with_name(name)
-    out = Path(out_arg)
-    treat_as_dir = batch or out.is_dir() or out_arg.endswith(("/", "\\")) or out.suffix == ""
-    if treat_as_dir:
-        out.mkdir(parents=True, exist_ok=True)
-        return out / name
-    out.parent.mkdir(parents=True, exist_ok=True)
-    return out
-
-
-# ─── Parameter parsing ───────────────────────────────────────────────────────
-
-def parse_params(pairs):
-    """Build a {name: int|float} parameter dict from -p key=value pairs."""
-    params = {}
-    for item in pairs or []:
-        if "=" not in item:
-            sys.exit(f"Bad parameter '{item}'. Use -p name=value (e.g. -p window=25).")
-        key, _, val = item.partition("=")
-        key, val = key.strip(), val.strip()
-        try:
-            params[key] = int(val)
-        except ValueError:
-            try:
-                params[key] = float(val)
-            except ValueError:
-                sys.exit(f"Parameter '{key}' must be a number, got '{val}'.")
-    return params
-
-
-# ─── DIBCO .dat weight files ─────────────────────────────────────────────────
-
-def read_dat(path):
-    """Read a DIBCO weight file: whitespace-separated doubles."""
-    with open(path, "r") as f:
-        return [float(x) for x in f.read().split()]
-
-
-def write_dat(path, weights):
-    """Write weights as whitespace-separated, full-precision doubles (Doxa format)."""
-    with open(path, "w") as f:
-        f.write(" ".join(repr(float(w)) for w in weights))
-
-
-# ─── Algorithm metadata (derived from BinBench web reference + algorithms.json) ──
+# Algorithm metadata (derived from BinBench web reference + algorithms.json).
 # Each entry: name, year, authors, paper, summary, params=[(name, default, guidance)]
 ALGO_INFO = {
     "otsu": {
@@ -257,7 +111,7 @@ ALGO_INFO = {
                    ("t", "15", "Percent below the local average to count as foreground.")],
     },
     "sauvola": {
-        "name": "Sauvola", "year": 1999, "authors": "J. Sauvola, M. Pietikäinen",
+        "name": "Sauvola", "year": 2000, "authors": "J. Sauvola, M. Pietikäinen",
         "paper": '"Adaptive document image binarization," Pattern Recognition, 2000',
         "summary": "The most widely used local method; refines Niblack with a dynamic-range "
                    "normalization term that sharply reduces background noise.",
@@ -289,7 +143,7 @@ ALGO_INFO = {
         "name": "Gatos", "year": 2006, "authors": "B. Gatos, I. Pratikakis, S. J. Perantonis",
         "paper": '"Adaptive degraded document image binarization," Pattern Recognition, 2006',
         "experimental": True,
-        "experimental_note": "The implementation is missing the post-processing steps",
+        "experimental_note": "the implementation is missing the paper's post-processing steps",
         "summary": "Reconstructs the document background surface and thresholds against it. Built for "
                    "shadows, bleed-through and non-uniform illumination.",
         "params": [("window", "25", "Sauvola window for the rough foreground estimate (odd)."),
@@ -315,6 +169,8 @@ ALGO_INFO = {
     "adotsu": {
         "name": "AdOtsu", "year": 2010, "authors": "R. F. Moghaddam, M. Cheriet",
         "paper": '"A multi-scale framework for adaptive binarization of degraded document images," Pattern Recognition, 2010',
+        "experimental": True,
+        "experimental_note": "under review for paper correctness; default parameters are likely correct, but k ≠ 1 may be off",
         "summary": "Applies Otsu's between-class variance maximization locally within a window, with a "
                    "k factor to adapt to degradation.",
         "params": [("window", "25", "Local window size (odd)."),
@@ -410,21 +266,274 @@ ALGO_ORDER = [
     "bradley", "nick", "adotsu", "su", "trsingh", "bataineh", "phansalkar", "xdog",
     "isauvola", "wan",
 ]
-ALGO_NAMES = ALGO_ORDER
 GRAYSCALE_NAMES = [g[0] for g in GRAYSCALE_INFO]
 
 
-def is_experimental(key):
+def _is_experimental(key):
     return ALGO_INFO.get(key, {}).get("experimental", False)
 
 
+# ─── Lazy runtime (doxapy + numpy + Pillow) ──────────────────────────────────
+# Imported only when a command actually touches images, so bare-command help
+# and the reference listings work with zero heavy dependencies installed.
+
+@functools.cache
+def _runtime():
+    """Import and return (doxapy, numpy, PIL.Image); cached after the first call."""
+    if sys.version_info < (3, 12):
+        sys.exit("BinBench CLI requires Python 3.12+ (doxapy targets the stable cp312 ABI).")
+
+    dev = os.environ.get("DOXAPY_PATH")
+    if dev:
+        if not os.path.isdir(dev):
+            sys.exit(f"DOXAPY_PATH is not a folder: {dev}")
+        sys.path.insert(0, dev)  # a local dev build outranks any pip-installed doxapy
+
+    try:
+        import doxapy
+    except ImportError as e:
+        sys.exit(
+            f"Could not import 'doxapy' ({e}).\n"
+            "  • Install it once published:  pip install doxapy\n"
+            "  • Or set the DOXAPY_PATH environment variable to a local doxapy build (dist) folder."
+        )
+
+    try:
+        import numpy as np
+        from PIL import Image
+    except ImportError as e:
+        sys.exit(f"Missing dependency '{e.name}'. Install with:  pip install numpy pillow")
+
+    return doxapy, np, Image
+
+
+# ─── Image helpers ───────────────────────────────────────────────────────────
+
+def _as_uint8(source):
+    """Materialize a writable, C-contiguous uint8 array for doxapy.
+
+    doxapy's nanobind bindings take non-const Pixel8 ndarrays, so the buffer
+    must be writable. np.array always copies into a fresh writable buffer
+    (np.asarray of a PIL image is read-only) — the same idiom the doxapy tests
+    and README use.
+    """
+    _, np, _ = _runtime()
+    return np.array(source, dtype=np.uint8)
+
+
+def _open_image(path):
+    """Open an image, normalizing the modes PIL's convert() mishandles.
+
+    Palette images honor their transparency (instead of exposing the palette
+    slot's opaque color), and 16/32-bit grayscale is rescaled to 8 bits
+    (convert("L") would clip everything above 255).
+    """
+    _, np, Image = _runtime()
+    img = Image.open(path)
+    if img.mode == "P":
+        img = img.convert("RGBA" if "transparency" in img.info else "RGB")
+    elif img.mode == "F":
+        raise OSError(errno.EINVAL, "32-bit float images are not supported; "
+                                    "convert the image to 8- or 16-bit first", str(path))
+    elif img.mode.startswith("I"):
+        arr = (np.clip(np.asarray(img, dtype=np.int64), 0, 65535) * 255 + 32767) // 65535
+        img = Image.fromarray(arr.astype(np.uint8))
+    return img
+
+
+def _to_gray(arr3d, gray_name):
+    """Convert an RGB/RGBA uint8 array to a 2D grayscale array via doxapy."""
+    doxapy, _, _ = _runtime()
+    algo = getattr(doxapy.GrayscaleAlgorithms, gray_name.upper())
+    return doxapy.to_grayscale(algo, arr3d)
+
+
+def _load_gray(path, gray_name):
+    """Load any image as a 2D grayscale uint8 array (color → doxapy grayscale)."""
+    img = _open_image(path)
+    if img.mode in GRAY_MODES:
+        return _as_uint8(img if img.mode == "L" else img.convert("L"))
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGB")
+    return _to_gray(_as_uint8(img), gray_name)
+
+
+def _load_color(path):
+    """Load an image as a 3D RGB/RGBA uint8 array (already-gray → None)."""
+    img = _open_image(path)
+    if img.mode in GRAY_MODES:
+        return None  # already single-channel; nothing to convert
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGB")
+    return _as_uint8(img)
+
+
+def _load_2d(path):
+    """Load an image as a single-channel 2D uint8 array (for GT / binary input)."""
+    return _as_uint8(_open_image(path).convert("L"))
+
+
+def _bilevel_problem(arr):
+    """Return None when arr is bilevel (only 0/255), else a short diagnosis.
+
+    The C++ comparison counts a pixel as ink only when it is exactly 0 and as
+    correct only on exact byte equality, so anything in between — JPEG
+    artifacts, anti-aliased edges, 0/1-valued data — silently scores as a
+    near-total mismatch. Better to refuse it here. Callers add the remedy,
+    which differs for ground truths and results.
+    """
+    _, np, _ = _runtime()
+    if bool(((arr == 0) | (arr == 255)).all()):
+        return None
+    values = np.unique(arr)
+    head = ", ".join(map(str, values[:6])) + (", …" if values.size > 6 else "")
+    return f"{values.size} gray levels ({head})"
+
+
+def _save_2d(arr, path):
+    _, _, Image = _runtime()
+    Image.fromarray(arr).save(str(path))
+
+
+# ─── Path / input helpers ────────────────────────────────────────────────────
+
+def _collect_inputs(path_str, required=True):
+    """Return image file paths from a file, a folder (non-recursive), or a glob.
+
+    Globs are expanded here because Windows shells pass wildcards through
+    verbatim. With required=False an empty folder is a warning instead of an
+    error, so a multi-folder evaluate can keep going.
+    """
+    p = Path(path_str)
+    if p.is_file():
+        return [p]
+    if p.is_dir():
+        files = sorted(q for q in p.iterdir()
+                       if q.is_file() and q.suffix.lower() in IMAGE_EXTS)
+        if not files:
+            if required:
+                sys.exit(f"No images found in folder: {p}")
+            print(f"! no images found in folder: {p}", file=sys.stderr)
+        return files
+    matches = [Path(m) for m in sorted(glob.glob(path_str))]
+    files = [m for m in matches if m.is_file() and m.suffix.lower() in IMAGE_EXTS]
+    if files:
+        return files
+    sys.exit(f"No images match: {path_str}" if matches else f"Input not found: {path_str}")
+
+
+def _resolve_output(in_path, out_arg, suffix, ext, batch):
+    """Work out the output file path for a given input under file/folder rules.
+
+    -o is a folder when it already exists as one, ends with a path separator,
+    or we are in batch mode (where it must be a folder). A lone extension-less
+    name is refused as ambiguous rather than guessed at. Whatever the rules
+    yield, the input file itself is never overwritten.
+    """
+    in_path = Path(in_path)
+    name = f"{in_path.stem}{suffix}{ext}"
+    if out_arg is None:
+        out = in_path.with_name(name)
+    else:
+        out = Path(out_arg)
+        if batch and out.suffix and not out.is_dir():
+            sys.exit(f"-o must be a folder when processing multiple images: {out_arg}")
+        if batch or out.is_dir() or out_arg.endswith(("/", "\\")):
+            out.mkdir(parents=True, exist_ok=True)
+            out = out / name
+        elif out.suffix:
+            out.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            sys.exit(f"Ambiguous output '{out_arg}': add a file extension to write a file, "
+                     f"or a trailing '{os.sep}' to write into a folder.")
+    if out.resolve() == in_path.resolve():
+        sys.exit(f"Refusing to overwrite the input: {in_path} — use -o or a non-empty --suffix.")
+    return out
+
+
+# ─── Parameter parsing ───────────────────────────────────────────────────────
+
+def _parse_params(pairs):
+    """Build a {name: int|float} parameter dict from -p key=value pairs."""
+    params = {}
+    for item in pairs or []:
+        if "=" not in item:
+            sys.exit(f"Invalid parameter '{item}'. Use -p name=value (e.g. -p window=25).")
+        key, _, val = item.partition("=")
+        key, val = key.strip(), val.strip()
+        try:
+            params[key] = int(val)
+        except ValueError:
+            try:
+                params[key] = float(val)
+            except ValueError:
+                sys.exit(f"Parameter '{key}' must be a number, got '{val}'.")
+    return params
+
+
+# ─── DIBCO .dat weight files ─────────────────────────────────────────────────
+
+def _read_dat(path):
+    """Read a DIBCO weight file: whitespace-separated doubles."""
+    try:
+        with open(path, "r") as f:
+            return [float(x) for x in f.read().split()]
+    except ValueError:  # also covers UnicodeDecodeError for binary junk
+        sys.exit(f"{path}: not a weight file (expected whitespace-separated numbers).")
+
+
+def _write_dat(path, weights):
+    """Write weights as whitespace-separated, full-precision doubles (Doxa format)."""
+    with open(path, "w") as f:
+        f.write(" ".join(repr(float(w)) for w in weights))
+
+
 # ─── Command: binarize ───────────────────────────────────────────────────────
+
+def _drop_prior_outputs(inputs, input_arg, suffix):
+    """Drop this tool's earlier outputs (files already carrying the suffix) from a folder scan.
+
+    Without this, re-running over the same folder re-binarizes its own results
+    into e.g. page_bin_bin.png.
+    """
+    if not suffix or not Path(input_arg).is_dir():
+        return inputs
+    kept = [p for p in inputs if not p.stem.endswith(suffix)]
+    if len(kept) != len(inputs):
+        print(f"! ignoring {len(inputs) - len(kept)} '*{suffix}' file(s) from an earlier run",
+              file=sys.stderr)
+        if not kept:
+            sys.exit(f"No images to process: {input_arg} contains only '*{suffix}' outputs.")
+    return kept
+
+
+def _process_images(args, convert):
+    """Convert each input with convert(src) and save it under the output rules.
+
+    A file that fails to load or convert is reported and skipped so one bad
+    image cannot abort a batch; any failure makes the exit code non-zero.
+    """
+    inputs = _drop_prior_outputs(_collect_inputs(args.input), args.input, args.suffix)
+    batch = len(inputs) > 1 or Path(args.input).is_dir()
+    failures = 0
+    for src in inputs:
+        dst = _resolve_output(src, args.output, args.suffix, ".png", batch)
+        try:
+            _save_2d(convert(src), dst)
+        except OSError as e:
+            failures += 1
+            print(f"! {src.name}: {e.strerror or e}", file=sys.stderr)
+            continue
+        print(f"{src.name}  →  {dst}")
+    if failures:
+        sys.exit(f"{failures} of {len(inputs)} image(s) failed.")
+
 
 def cmd_binarize(args):
     if args.describe:                         # --describe <algorithm> → one algorithm
         name = args.describe.lower()
         if name not in ALGO_INFO:
-            sys.exit(f"Unknown algorithm '{args.describe}'. Run 'binbench binarize' to list them.")
+            sys.exit(f"Unknown algorithm '{args.describe}'. Run 'binbench binarize' to list algorithms.")
         _print_algorithm_detail(name)
         return
     if not args.input or not args.algorithm:
@@ -434,23 +543,26 @@ def cmd_binarize(args):
     if algo not in ALGO_INFO:
         sys.exit(f"Unknown algorithm '{args.algorithm}'. Run 'binbench binarize' to list algorithms.")
 
-    if is_experimental(algo) and not args.experimental:
+    gray_name = args.grayscale.lower()
+    if gray_name not in GRAYSCALE_NAMES:
+        sys.exit(f"Unknown grayscale method '{args.grayscale}'. Run 'binbench grayscale' to list methods.")
+
+    if _is_experimental(algo) and not args.experimental:
         note = ALGO_INFO[algo]["experimental_note"]
         sys.exit(f"'{ALGO_INFO[algo]['name']}' is experimental — {note}.\n"
                  f"Re-run with --experimental to use it.")
 
-    doxapy, _, _ = runtime()
-    algo_enum = getattr(doxapy.Binarization.Algorithms, algo.upper())
-    params = parse_params(args.param)
+    params = _parse_params(args.param)
+    known = [p[0] for p in ALGO_INFO[algo]["params"]]
+    unknown = [k for k in params if k not in known]
+    if unknown:
+        detail = f"Valid: {', '.join(known)}" if known else "It takes no parameters"
+        sys.exit(f"Unknown parameter(s) for {ALGO_INFO[algo]['name']}: {', '.join(unknown)}.\n"
+                 f"{detail} — see 'binbench binarize --describe {algo}'.")
 
-    inputs = iter_inputs(args.input)
-    batch = len(inputs) > 1 or Path(args.input).is_dir()
-    for src in inputs:
-        gray = load_gray(src, args.grayscale)
-        binary = doxapy.to_binary(algo_enum, gray, params)
-        dst = resolve_output(src, args.output, args.suffix, ".png", batch)
-        save_2d(binary, dst)
-        print(f"{src.name}  →  {dst}")
+    doxapy, _, _ = _runtime()
+    algo_enum = getattr(doxapy.Binarization.Algorithms, algo.upper())
+    _process_images(args, lambda src: doxapy.to_binary(algo_enum, _load_gray(src, gray_name), params))
 
 
 # ─── Command: grayscale ──────────────────────────────────────────────────────
@@ -463,32 +575,49 @@ def cmd_grayscale(args):
     if gray_name not in GRAYSCALE_NAMES:
         sys.exit(f"Unknown grayscale method '{args.algorithm}'. Run 'binbench grayscale' to list methods.")
 
-    runtime()  # fail fast if deps/doxapy missing
-    inputs = iter_inputs(args.input)
-    batch = len(inputs) > 1 or Path(args.input).is_dir()
-    for src in inputs:
-        color = load_color(src)
-        gray = load_2d(src) if color is None else to_gray(color, gray_name)
-        dst = resolve_output(src, args.output, args.suffix, ".png", batch)
-        save_2d(gray, dst)
-        print(f"{src.name}  →  {dst}")
+    _runtime()  # fail fast if deps/doxapy missing
+
+    def convert(src):
+        color = _load_color(src)
+        return _load_2d(src) if color is None else _to_gray(color, gray_name)
+
+    _process_images(args, convert)
 
 
 # ─── Command: evaluate ───────────────────────────────────────────────────────
+
+def _load_weights(path, pixel_count):
+    """Read a weight .dat, requiring exactly one weight per ground-truth pixel.
+
+    The C++ comparison indexes the weights by pixel, so a file generated from
+    a different image would read out of bounds.
+    """
+    weights = _read_dat(path)
+    if len(weights) != pixel_count:
+        sys.exit(f"{path}: {len(weights)} weights for a {pixel_count}-pixel ground truth — "
+                 f"was it generated from a different image?")
+    return weights
+
 
 def cmd_evaluate(args):
     requested = _resolve_metrics(args.metrics)
     wants_pseudo = any(m.startswith("pseudo") for m in requested)
 
-    doxapy, np, _ = runtime()
-    gt = load_2d(args.gt)
+    doxapy, _, _ = _runtime()
+    gt = _load_2d(args.gt)
+    problem = _bilevel_problem(gt)
+    if problem:
+        sys.exit(f"Ground truth {args.gt} is not bilevel — {problem}. "
+                 f"Expected only pure black (0) and white (255).")
 
     precision_w, recall_w = [], []
     if wants_pseudo:
         if args.pweights and args.rweights:
-            precision_w, recall_w = read_dat(args.pweights), read_dat(args.rweights)
+            precision_w = _load_weights(args.pweights, gt.size)
+            recall_w = _load_weights(args.rweights, gt.size)
         elif args.pweights or args.rweights:
-            sys.exit("Pseudo metrics need BOTH --pweights and --rweights, or neither (auto-generate).")
+            sys.exit("Pseudo metrics require both --pweights and --rweights; "
+                     "omit both to generate weights from the ground truth.")
         else:
             precision_w, recall_w = doxapy.generate_pseudo_weights(gt)
 
@@ -496,14 +625,26 @@ def cmd_evaluate(args):
 
     images = []
     for arg in args.results:
-        images.extend(iter_inputs(arg))
+        images.extend(_collect_inputs(arg, required=False))
 
-    rows = []
+    rows, skipped = [], 0
     for img_path in images:
-        binary = load_2d(img_path)
+        try:
+            binary = _load_2d(img_path)
+        except OSError as e:
+            print(f"! {img_path.name}: {e.strerror or e}", file=sys.stderr)
+            skipped += 1
+            continue
         if binary.shape != gt.shape:
-            print(f"! skip {img_path.name}: size {binary.shape[1]}×{binary.shape[0]} "
+            print(f"! {img_path.name}: size {binary.shape[1]}×{binary.shape[0]} "
                   f"≠ ground truth {gt.shape[1]}×{gt.shape[0]}", file=sys.stderr)
+            skipped += 1
+            continue
+        problem = _bilevel_problem(binary)
+        if problem:
+            print(f"! {img_path.name}: not bilevel — {problem}; binarize it first",
+                  file=sys.stderr)
+            skipped += 1
             continue
         metrics = doxapy.calculate_performance_ex(
             gt, binary, precision_weights=precision_w, recall_weights=recall_w, **flags)
@@ -515,6 +656,8 @@ def cmd_evaluate(args):
     if not rows:
         sys.exit("No images evaluated.")
     _emit_metrics(rows, requested, args.format, args.output, args.delim)
+    if skipped:  # partial evaluation — make it visible to CI via the exit code
+        sys.exit(f"Skipped {skipped} of {len(images)} image(s) — see warnings above.")
 
 
 def _resolve_metrics(spec):
@@ -531,14 +674,8 @@ def _resolve_metrics(spec):
     return out or list(METRIC_NAMES)
 
 
-def _fmt_metric(name, value):
-    if value is None:
-        return "—"
-    if name == "psnr":
-        return f"{value:.4f}"
-    if name == "mcc":
-        return f"{value:.4f}"
-    return f"{value:.4f}"
+def _fmt_metric(value):
+    return "—" if value is None else f"{value:.4f}"
 
 
 def _emit_metrics(rows, metrics, fmt, output, delim=","):
@@ -548,7 +685,10 @@ def _emit_metrics(rows, metrics, fmt, output, delim=","):
         return
     if fmt == "csv":
         buf = io.StringIO()
-        writer = csv.writer(buf, delimiter=delim)
+        # csv defaults to \r\n row endings, which text-mode output would
+        # expand again to \r\r\n on Windows — emit \n and let the stream
+        # apply the platform convention once.
+        writer = csv.writer(buf, delimiter=delim, lineterminator="\n")
         writer.writerow(["image"] + metrics)
         for r in rows:
             writer.writerow([r["image"]] + [
@@ -560,7 +700,7 @@ def _emit_metrics(rows, metrics, fmt, output, delim=","):
     headers = ["image"] + [f"{m}{'↑' if METRIC_HIGHER[m] else '↓'}" for m in metrics]
     table = [headers]
     for r in rows:
-        table.append([r["image"]] + [_fmt_metric(m, r[m]) for m in metrics])
+        table.append([r["image"]] + [_fmt_metric(r[m]) for m in metrics])
     widths = [max(len(str(row[i])) for row in table) for i in range(len(headers))]
     lines = []
     for ri, row in enumerate(table):
@@ -572,11 +712,11 @@ def _emit_metrics(rows, metrics, fmt, output, delim=","):
     _write_text("\n".join(lines) + "\n", output)
 
 
-def _write_text(text, output):
-    if output:
-        Path(output).parent.mkdir(parents=True, exist_ok=True)
-        Path(output).write_text(text, encoding="utf-8")
-        print(f"Wrote {output}")
+def _write_text(text, path):
+    if path:
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        Path(path).write_text(text, encoding="utf-8")
+        print(f"Wrote {path}")
     else:
         sys.stdout.write(text)
 
@@ -584,30 +724,46 @@ def _write_text(text, output):
 # ─── Command: weights ────────────────────────────────────────────────────────
 
 def cmd_weights(args):
-    doxapy, _, _ = runtime()
-    for src in iter_inputs(args.input):
-        gt = load_2d(src)
+    doxapy, _, _ = _runtime()
+    inputs = _collect_inputs(args.input)
+    failures = 0
+    for src in inputs:
+        try:
+            gt = _load_2d(src)
+        except OSError as e:
+            print(f"! {src.name}: {e.strerror or e}", file=sys.stderr)
+            failures += 1
+            continue
+        problem = _bilevel_problem(gt)
+        if problem:
+            print(f"! {src.name}: not bilevel — {problem}", file=sys.stderr)
+            failures += 1
+            continue
         precision_w, recall_w = doxapy.generate_pseudo_weights(gt)
-        out_dir = Path(args.output) if args.output else Path(src).parent
+        out_dir = Path(args.output) if args.output else src.parent
         out_dir.mkdir(parents=True, exist_ok=True)
-        r_path = out_dir / f"{Path(src).stem}_RWeights.dat"
-        p_path = out_dir / f"{Path(src).stem}_PWeights.dat"
-        write_dat(r_path, recall_w)      # R = recall
-        write_dat(p_path, precision_w)   # P = precision
+        r_path = out_dir / f"{src.stem}_RWeights.dat"
+        p_path = out_dir / f"{src.stem}_PWeights.dat"
+        _write_dat(r_path, recall_w)      # R = recall
+        _write_dat(p_path, precision_w)   # P = precision
         print(f"{src.name}  →  {r_path.name}, {p_path.name}  ({len(recall_w)} weights each)")
+    if failures:
+        sys.exit(f"{failures} of {len(inputs)} image(s) failed.")
 
 
 # ─── Reference output (shown by a bare command or `--help [NAME]`) ───────────
 
 def _paper_title(key):
     """The paper's title alone (the quoted portion of the stored citation)."""
-    return ALGO_INFO[key]["paper"].split(',"')[0].lstrip('"')
+    citation = ALGO_INFO[key]["paper"]
+    match = re.match(r'"(.+?),?"', citation)
+    return match.group(1) if match else citation
 
 
 def _binarize_epilog():
     lines = ["Algorithms (the name you pass to -a):"]
     for k in ALGO_ORDER:
-        mark = "  (experimental)" if is_experimental(k) else ""
+        mark = "  (experimental)" if _is_experimental(k) else ""
         lines.append(f'  {k:<12} "{_paper_title(k)}", {ALGO_INFO[k]["year"]}.{mark}')
     lines += [
         "",
@@ -624,7 +780,7 @@ def _print_algorithm_detail(key):
     print()
     print(f"  Authors: {a['authors']}")
     print(f"  Paper:   {a['paper']}")
-    if is_experimental(key):
+    if _is_experimental(key):
         print(f"  ⚠ Experimental — {a['experimental_note']}. Pass --experimental to run it.")
     print()
     print(f"  {a['summary']}")
@@ -672,7 +828,16 @@ def _evaluate_epilog():
 
 # ─── Argument parsing ────────────────────────────────────────────────────────
 
-def build_parser():
+def _delim_char(text):
+    """argparse type for --delim: exactly one character ('\\t' means a tab)."""
+    if text == "\\t":
+        return "\t"
+    if len(text) != 1:
+        raise argparse.ArgumentTypeError("must be a single character")
+    return text
+
+
+def _build_parser():
     parser = argparse.ArgumentParser(
         prog="binbench",
         description=f"{APP_NAME} — {TAGLINE}",
@@ -726,12 +891,13 @@ def build_parser():
     e.add_argument("-m", "--metrics", default=None,
                    help="Comma list of metrics to report (default: all; run "
                         "'binbench evaluate' to list them).")
-    e.add_argument("--pweights", help="Precision weight .dat (pseudo metrics).")
-    e.add_argument("--rweights", help="Recall weight .dat (pseudo metrics).")
+    e.add_argument("--pweights", help="Precision weights — the *_PWeights.dat file (pseudo metrics).")
+    e.add_argument("--rweights", help="Recall weights — the *_RWeights.dat file (pseudo metrics).")
     e.add_argument("--format", choices=["table", "csv", "json"], default="table",
                    help="Output format (default: table).")
-    e.add_argument("--delim", default=",", metavar="CHAR",
-                   help="Field delimiter for --format csv (default: ','; use ';' for DIBCO/locale CSV).")
+    e.add_argument("--delim", default=",", metavar="CHAR", type=_delim_char,
+                   help="Field delimiter for --format csv (default: ','; use ';' for "
+                        "DIBCO-style CSV, '\\t' for tabs).")
     e.add_argument("-o", "--output", help="Write output to a file instead of stdout.")
     e.set_defaults(func=cmd_evaluate)
 
@@ -747,7 +913,7 @@ def build_parser():
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    parser, subs = build_parser()
+    parser, subs = _build_parser()
     # The whole help model: nothing, or a lone verb, prints help; anything else runs.
     if not argv:
         parser.print_help()
@@ -758,12 +924,15 @@ def main(argv=None):
         try:
             args.func(args)
         except FileNotFoundError as e:
-            sys.exit(f"File not found: {e.filename}")
+            sys.exit(f"File not found: {e.filename or e}")
         except OSError as e:
-            # Unreadable/unwritable path or a file that isn't a valid image
-            # (PIL's UnidentifiedImageError, permissions, etc. are all OSError).
+            # Unreadable/unwritable paths and invalid images (PIL's
+            # UnidentifiedImageError, permission errors) are all OSError.
+            if e.filename and e.strerror:
+                sys.exit(f"Could not process {e.filename}: {e.strerror}")
             sys.exit(f"Could not process file: {e}")
-    print()  # trailing blank line so output doesn't butt against the next prompt
+    if sys.stdout.isatty():
+        print()  # spacer for interactive use; piped/redirected output stays byte-clean
 
 
 if __name__ == "__main__":

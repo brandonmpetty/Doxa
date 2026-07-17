@@ -7,7 +7,7 @@
 #include <vector>
 #include "Image.hpp"
 #include "Convolution.hpp"
-#include "ChanMeanVarianceCalc.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa

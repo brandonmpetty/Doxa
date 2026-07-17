@@ -8,13 +8,13 @@ DoxaPy is an image binarization library focusing on local adaptive thresholding 
 * Bernsen - "Dynamic thresholding of gray-level images", 1986.
 * Niblack - "An Introduction to Digital Image Processing", 1986.
 * Wellner - "Interacting with Paper on the DigitalDesk", 1994.
-* Sauvola - "Adaptive document image binarization", 1999.
+* Sauvola - "Adaptive document image binarization", 2000.
 * Wolf - "Extraction and Recognition of Artificial Text in Multimedia Documents", 2003.
 * Feng - "Adaptive Binarization Method for Document Image Analysis", 2004.
 * Gatos - "Adaptive degraded document image binarization", 2005. (Partial)
 * Bradley - "Adaptive Thresholding Using the Integral Image", 2007.
 * NICK - "Comparison of Niblack inspired Binarization methods for ancient documents", 2009.
-* AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010.
+* AdOtsu - "A multi-scale framework for adaptive binarization of degraded document images", 2010. (Under Review)
 * Su - "Binarization of Historical Document Images Using the Local Maximum and Minimum", 2010.
 * T.R. Singh - "A New local Adaptive Thresholding Technique in Binarization", 2011.
 * Bataineh - "An adaptive local binarization method for document images based on a novel thresholding method and dynamic windows", 2011. (unreproducible)
@@ -25,7 +25,8 @@ DoxaPy is an image binarization library focusing on local adaptive thresholding 
 
 **Optimizations**
 * Shafait - "Efficient Implementation of Local Adaptive Thresholding Techniques Using Integral Images", 2008.
-* Petty - An algorithm for efficiently calculating the min and max of a local window.  Unpublished, 2019.
+* van Herk - "A fast algorithm for local minimum and maximum filters on rectangular and octagonal kernels", 1992.
+* Gil, Werman - "Computing 2-D min, median, and max filters", 1993.
 * Chan - "Memory-efficient and fast implementation of local adaptive binarization methods", 2019.
 * SIMD - SSE2, ARM NEON
 

@@ -167,6 +167,11 @@ namespace Doxa
 			if (!weightsPrecision.size() || !weightsRecall.size())
 				return CompareImages(classifications, controlImage, experimentImage);
 
+			// One weight per pixel, or the loop below would read out of bounds
+			if (weightsPrecision.size() != static_cast<size_t>(controlImage.size) ||
+				weightsRecall.size() != static_cast<size_t>(controlImage.size))
+				return false;
+
 			// Analyze using Pseudo Weights
 			for (int i = 0; i < controlImage.size; ++i)
 			{

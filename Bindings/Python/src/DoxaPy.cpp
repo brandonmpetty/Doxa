@@ -5,6 +5,8 @@
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/variant.h>
 
+#include <stdexcept>
+
 #include "Doxa/BinarizationFactory.hpp"
 #include "Doxa/ClassifiedPerformance.hpp"
 #include "Doxa/DRDM.hpp"
@@ -34,10 +36,12 @@ nb::dict CalculatePerformance(
 
 	ClassifiedPerformance::Classifications classifications;
 
-	if (!precisionWeights.empty() && !recallWeights.empty())
-		ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights);
-	else
+	const bool comparable = (!precisionWeights.empty() && !recallWeights.empty()) ?
+		ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights) :
 		ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
+
+	if (!comparable)
+		throw std::invalid_argument("Image dimensions must match, with one weight per pixel when weights are given.");
 
 	dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);
 	dict["fm"] = ClassifiedPerformance::CalculateFMeasure(classifications);
@@ -88,10 +92,12 @@ nb::dict CalculatePerformanceEx(
 	{
 		ClassifiedPerformance::Classifications classifications;
 
-		if (needsPseudo)
-			ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights);
-		else
+		const bool comparable = needsPseudo ?
+			ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage, precisionWeights, recallWeights) :
 			ClassifiedPerformance::CompareImages(classifications, groundTruthImage, binaryImage);
+
+		if (!comparable)
+			throw std::invalid_argument("Image dimensions must match, with one weight per pixel when weights are given.");
 
 		if (accuracy)
 			dict["accuracy"] = ClassifiedPerformance::CalculateAccuracy(classifications);

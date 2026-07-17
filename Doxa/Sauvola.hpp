@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "ChanMeanVarianceCalc.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa
@@ -13,7 +13,7 @@ namespace Doxa
 	/// <summary>
 	/// The Sauvola Algorithm: J. Sauvola, M. Pietikäinen
 	/// </summary>
-	/// <remarks>"Adaptive document image binarization", 1999.</remarks>
+	/// <remarks>"Adaptive document image binarization", 2000.</remarks>
 	class Sauvola : public Algorithm<Sauvola>, public ChanMeanVarianceCalc
 	{
 	public:

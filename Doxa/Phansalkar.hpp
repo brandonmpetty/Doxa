@@ -5,7 +5,7 @@
 
 #include "Algorithm.hpp"
 #include "LocalWindow.hpp"
-#include "ChanMeanVarianceCalc.hpp"
+#include "ChanCalc.hpp"
 
 
 namespace Doxa

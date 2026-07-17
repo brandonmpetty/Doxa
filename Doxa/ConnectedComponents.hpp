@@ -20,7 +20,6 @@ namespace Doxa
 	{
 		int           label = 0;               // 1..N (0 is reserved for background)
 		Region        bounds;                  // inclusive bounding box (upperLeft / bottomRight)
-		Region::Point seed;                    // raster-first pixel: always a top-edge contour point
 		int           pixelCount = 0;          // ink pixels (NOT bounds.Area(), which is the box)
 		int           strokeWidth = 0;         // Gsw_fg: 2*floor(mean medial factor over the skeleton), set by the measure
 	};
@@ -183,11 +182,8 @@ namespace Doxa
 					labels[idx] = L;
 
 					Component& c = result.items[L];
-					if (c.pixelCount == 0)        // first sighting: topmost row, a contour pixel
-					{
-						c.seed = Region::Point(x, y);
+					if (c.pixelCount == 0)        // first sighting
 						c.bounds = Region(x, y, x, y);
-					}
 					++c.pixelCount;
 					c.bounds.upperLeft.x   = std::min(c.bounds.upperLeft.x,   x);  // top y fixed by raster order
 					c.bounds.bottomRight.x = std::max(c.bounds.bottomRight.x, x);
